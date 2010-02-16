@@ -17,9 +17,13 @@ import javax.vecmath.Vector3f;
 
 
 /**
+ * A hive implementation that does nothing. It is represented by a static box in the
+ * world and has no behavior, sensors, or communication capabilities. Users can extend
+ * the class to add functionality.
+ *
  * @author bkate
  */
-public class SimpleHive extends AbstractPhysicalEntity implements Model {
+public class SimpleHive extends AbstractPhysicalModel {
 
     private float size = 1.0f;  // m
 
@@ -27,7 +31,7 @@ public class SimpleHive extends AbstractPhysicalEntity implements Model {
 
 
     @Override
-    public void update(double currTime) {
+    public void update(float currTime) {
     }
 
 
