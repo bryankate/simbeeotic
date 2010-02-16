@@ -9,6 +9,8 @@ import org.apache.log4j.Logger;
 
 
 /**
+ * A bee that makes random adjustments to its movement at every time step.
+ *
  * @author bkate
  */
 public class RandomWalkBee extends SimpleBee {
@@ -49,7 +51,8 @@ public class RandomWalkBee extends SimpleBee {
         Vector3f pos = getTruthPosition();
         Vector3f vel = getTruthLinearVelocity();
 
-        logger.info("time: " + currTime + "  " +
+        logger.info("ID: " + getModelId() + "  " + 
+                    "time: " + currTime + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
                     "vel: " + vel.x + " " + vel.y + " " + vel.z + " ");
     }
