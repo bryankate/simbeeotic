@@ -16,6 +16,11 @@ import java.util.Random;
 
 
 /**
+ * A convenience class that implements some of the base functionality that is
+ * common to all {@link PhysicalEntity} implementations. This class encapsulates
+ * a JBullet {@link RigidBody} and gives access to it via the {@link PhysicalEntity}
+ * facade (with some extra functionality introduced in this class).
+ *
  * @author bkate
  */
 public abstract class AbstractPhysicalEntity implements PhysicalEntity {
