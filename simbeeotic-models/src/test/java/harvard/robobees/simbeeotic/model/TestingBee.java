@@ -57,7 +57,8 @@ public class TestingBee extends SimpleBee {
         Vector3f accelSens = this.accelerometer.getLinearAcceleration();
         Vector3f gyroSens = this.gyro.getAngularVelocity();
 
-        System.out.println("time: " + currTime + "  " +
+        System.out.println("ID: " + getModelId() + "  " + 
+                           "time: " + currTime + "  " +
                            "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
 //                           "linVel: " + linVel.x + " " + linVel.y + " " + linVel.z + "  " +
 //                           "angVel: " + angVel.x + " " + angVel.y + " " + angVel.z + "  " +
