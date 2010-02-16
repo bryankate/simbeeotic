@@ -24,6 +24,7 @@
             <xs:element name="master-seed" type="scenario:MasterSeed" minOccurs="0" maxOccurs="1"/>
             <xs:element name="simulation" type="scenario:Simulation" minOccurs="1" maxOccurs="1"/>
             <xs:element name="environment" type="scenario:Environment" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="comms" type="scenario:Comms" minOccurs="0" maxOccurs="1"/>
             <xs:element name="colony" type="scenario:Colony" minOccurs="1" maxOccurs="1"/>
             <xs:element name="looping" type="scenario:Looping" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -77,6 +78,19 @@
     <xs:complexType name="Environment">
         <xs:sequence>
             <xs:element name="weather" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Comms">
+        <xs:sequence>
+            <xs:element name="propagation-model" minOccurs="1" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
