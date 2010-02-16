@@ -9,7 +9,6 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MotionState;
@@ -33,16 +32,27 @@ import harvard.robobees.simbeeotic.model.sensor.DefaultCompass;
 import harvard.robobees.simbeeotic.model.sensor.FlowerSensor;
 import harvard.robobees.simbeeotic.util.LinearMathUtil;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.comms.PropagationModel;
+import harvard.robobees.simbeeotic.comms.Radio;
+import harvard.robobees.simbeeotic.comms.DefaultRadio;
+import harvard.robobees.simbeeotic.comms.AbstractRadio;
 
 
 /**
+ * A simple bee platform that can be used as a starting point for creating
+ * more complicated bee models. This base class creates a physical body in
+ * the world (a sphere) and has primitive flight controls to simplify
+ * movement. A number of sensors are defined along with a radio, but the
+ * logic of the bee is left unimplemented.
+ *
  * @author bkate
  */
-public abstract class SimpleBee extends AbstractPhysicalEntity implements Model {
+public abstract class SimpleBee extends AbstractPhysicalModel {
 
-    private float length = 0.2f;   // m
-    private float mass = 0.128f;   // g
-
+    // parameters
+    private float length = 0.2f;                 // m
+    private float mass = 0.128f;                 // g
     private float positionSensorSigma = 0.5f;    // m
     private float compassSigma = 0.0016f;        // degrees
     private float gyroSigma = 0.0085f;           // rad/s
@@ -52,7 +62,9 @@ public abstract class SimpleBee extends AbstractPhysicalEntity implements Model 
     private float rangeSensorMax = 5.0f;         // m
     private float rangeSensorSigma = 0.05f;      // m
     private float flowerSensorMax = 1.0f;        // m
+    private float radioPowerMax = 50;            // mW
 
+    // sensors
     protected PositionSensor positionSensor;
     protected Compass compass;
     protected Gyroscope gyro;
@@ -66,6 +78,11 @@ public abstract class SimpleBee extends AbstractPhysicalEntity implements Model 
     protected RangeSensor rangeSensorBack;
     protected FlowerSensor flowerSensor;
 
+    // comms
+    private PropagationModel commModel;
+    protected AbstractRadio radio;
+
+    // physical state
     private RigidBody body;
     private Vector3f desiredLinVel = new Vector3f();
     private Vector3f hoverForce;
@@ -143,13 +160,17 @@ public abstract class SimpleBee extends AbstractPhysicalEntity implements Model 
 
         flowerSensor = new FlowerSensor(this, new Vector3f(0, 0, -halfLength), new Vector3f(0, 0, -1), world, flowerSensorMax);
 
+        // setup comms
+        radio = new DefaultRadio(commModel, this, radioPowerMax);
+        commModel.addRadio(radio);
+
         return body;
     }
 
 
     /** {@inheritDoc} */
     @Override
-    public final void update(double currTime) {
+    public final void update(float currTime) {
 
         applyLogic(currTime);
 
@@ -267,6 +288,15 @@ public abstract class SimpleBee extends AbstractPhysicalEntity implements Model 
     }
 
 
+    @Inject
+    public final void setCommModel(@GlobalScope PropagationModel commModel) {
+
+        if (!isInitialized()) {
+            this.commModel = commModel;
+        }
+    }
+
+
     @Inject(optional = true)
     public final void setLength(@Named(value = "length") final float length) {
 
@@ -353,6 +383,15 @@ public abstract class SimpleBee extends AbstractPhysicalEntity implements Model 
 
         if (!isInitialized()) {
             this.flowerSensorMax = flowerSensorMax;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setRadioPowerMax(@Named(value = "radio-power-max") final float radioPowerMax) {
+
+        if (!isInitialized()) {
+            this.radioPowerMax = radioPowerMax;
         }
     }
 }

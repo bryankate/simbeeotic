@@ -9,16 +9,18 @@ import harvard.robobees.simbeeotic.configuration.scenario.ConfigProps;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import harvard.robobees.simbeeotic.configuration.VariationIterator;
 import harvard.robobees.simbeeotic.configuration.Variation;
-import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.JaxbHelper;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
 import harvard.robobees.simbeeotic.util.DocUtils;
 import harvard.robobees.simbeeotic.environment.WorldMap;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
-import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 import harvard.robobees.simbeeotic.model.Contact;
+import harvard.robobees.simbeeotic.model.PhysicalModel;
+import harvard.robobees.simbeeotic.comms.PropagationModel;
+import harvard.robobees.simbeeotic.comms.DefaultPropagationModel;
 
 import javax.xml.bind.JAXBException;
 import javax.vecmath.Vector3f;
@@ -87,6 +89,9 @@ public class SimController {
 
             currVariation++;
 
+            // make a new clock
+            final SimClockImpl clock = new SimClockImpl(step);
+
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
             CollisionDispatcher dispatcher = new CollisionDispatcher(collisionConfiguration);
@@ -107,9 +112,6 @@ public class SimController {
             // setup the simulated world (obstacle, flowers, etc)
             final WorldMap map = new WorldMap(world, dynamicsWorld, variationSeedGenertor.nextLong());
 
-            // todo: setup environment
-
-
             // top level guice injector - all others are derived from this
             Injector injector = Guice.createInjector(new AbstractModule() {
 
@@ -123,19 +125,89 @@ public class SimController {
                         }
                     });
 
-                    bindConstant().annotatedWith(Names.named("time-step")).to(step);
+                    // model ID generator - this may not work well if the sim becomes multi-threaded
+                    bind(Integer.class).annotatedWith(Names.named("model-id")).toProvider(new Provider<Integer>() {
+
+                        int nextId = 1;
+
+                        public Integer get() {
+                            return nextId++;
+                        }
+                    });
+
+                    // the global access to timing information
+                    bind(SimClock.class).annotatedWith(GlobalScope.class).toInstance(clock);
 
                     // dynamics world
-                    bind(DiscreteDynamicsWorld.class).annotatedWith(ConfigurationAnnotations.GlobalScope.class).toInstance(dynamicsWorld);
+                    bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
 
                     // established simulated world instance
-                    bind(WorldMap.class).annotatedWith(ConfigurationAnnotations.GlobalScope.class).toInstance(map);
+                    bind(WorldMap.class).annotatedWith(GlobalScope.class).toInstance(map);
                 }
             });
 
 
+            // setup the RF environment
+            final PropagationModel commModel;
+            final Properties commModelProps;
+            final Class commModelClass;
+
+            if (scenario.getComms() != null) {
+
+                commModelProps = loadConfigProps(scenario.getComms().getPropagationModel().getProperties(), variation);
+
+                try {
+
+                    // locate the propagation model implementation
+                    commModelClass = Class.forName(scenario.getComms().getPropagationModel().getJavaClass());
+
+                    // make sure it implements PropagationModel
+                    if (!PropagationModel.class.isAssignableFrom(commModelClass)) {
+                        throw new RuntimeException("The propagation model implementation must extend from PropagationModel.");
+                    }
+                }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the propagation model class: " + scenario.getComms().getPropagationModel().getJavaClass(), cnf);
+                }
+            }
+            else {
+
+                commModelProps = new Properties();
+                commModelClass = DefaultPropagationModel.class;
+            }
+
+            Injector propModelInjector = injector.createChildInjector(new AbstractModule() {
+
+                protected void configure() {
+
+                    Names.bindProperties(binder(), commModelProps);
+
+                    // comm model class
+                    bind(PropagationModel.class).to(commModelClass);
+
+                    // a workaround for guice issue 282
+                    bind(commModelClass);
+                }
+            });
+
+            commModel = propModelInjector.getInstance(PropagationModel.class);
+
+            // update the main injector to contain the global comm model
+            injector = injector.createChildInjector(new AbstractModule() {
+
+                protected void configure() {
+
+                    // established simulated world instance
+                    bind(PropagationModel.class).annotatedWith(GlobalScope.class).toInstance(commModel);
+                }
+            });
+
+            
+            // todo: setup weather
+
+
             // create hive
-            final Model hive;
+            final PhysicalModel hive;
 
             // todo: get z loc from world map?
             final float startX = scenario.getColony().getHive().getPosition().getX();
@@ -149,9 +221,9 @@ public class SimController {
                 // locate the hive implementation
                 hiveClass = Class.forName(scenario.getColony().getHive().getJavaClass());
 
-                // make sure it extends AbstractHive
-                if (!Model.class.isAssignableFrom(hiveClass)) {
-                    throw new RuntimeException("The hive implementation must extend from Model.");
+                // make sure it implements PhysicalModel
+                if (!PhysicalModel.class.isAssignableFrom(hiveClass)) {
+                    throw new RuntimeException("The hive implementation must extend from PhysicalModel.");
                 }
             }
             catch(ClassNotFoundException cnf) {
@@ -168,14 +240,14 @@ public class SimController {
                     bindConstant().annotatedWith(Names.named("start-y")).to(startY + "");
 
                     // hive class
-                    bind(Model.class).to(hiveClass);
+                    bind(PhysicalModel.class).to(hiveClass);
 
                     // a workaround for guice issue 282
                     bind(hiveClass);
                 }
             });
 
-            hive = hiveInjector.getInstance(Model.class);
+            hive = hiveInjector.getInstance(PhysicalModel.class);
             hive.initialize();
 
 
@@ -215,7 +287,7 @@ public class SimController {
 
 
             // create bees
-            final Set<Model> bees = new HashSet<Model>();
+            final Set<PhysicalModel> bees = new HashSet<PhysicalModel>();
 
             for (Colony.BeeGroup group : scenario.getColony().getBeeGroup()) {
 
@@ -230,9 +302,9 @@ public class SimController {
                     // locate the bee implementation
                     beeClass = Class.forName(group.getJavaClass());
 
-                    // make sure it extends AbstractBee
-                    if (!Model.class.isAssignableFrom(beeClass)) {
-                        throw new RuntimeException("The bee implementation must extend from Model.");
+                    // make sure it implements PhysicalModel
+                    if (!PhysicalModel.class.isAssignableFrom(beeClass)) {
+                        throw new RuntimeException("The bee implementation must extend from PhysicalModel.");
                     }
                 }
                 catch(ClassNotFoundException cnf) {
@@ -251,7 +323,7 @@ public class SimController {
                         bindConstant().annotatedWith(Names.named("start-y")).to(startY + "");
 
                         // bee class
-                        bind(Model.class).to(beeClass);
+                        bind(PhysicalModel.class).to(beeClass);
 
                         // a workaround for guice issue 282
                         bind(beeClass);
@@ -260,7 +332,7 @@ public class SimController {
 
                 for (int i = 0; i < group.getCount(); i++) {
 
-                    Model b = beeInjector.getInstance(Model.class);
+                    PhysicalModel b = beeInjector.getInstance(PhysicalModel.class);
 
                     b.initialize();
                     bees.add(b);
@@ -283,25 +355,24 @@ public class SimController {
 
             // run it
             float endTime = scenario.getSimulation().getEndTime();
-            float currTime = 0.0f;
 
             // todo: turn this into a DES
-            while(currTime < endTime) {
+            while(clock.getCurrentTime() < endTime) {
 
                 // update positions in physical world
 //                dynamicsWorld.stepSimulation(step, 10);
                 dynamicsWorld.stepSimulation(step, 100, 1.0f / 240.0f);
 
-                currTime += step;
+                clock.incrementTime();
 
                 // todo: put this inside an internal tick callback
                 // update collisions
                 contactHandler.update();
 
                 hive.sampleKinematics(step);
-                hive.update(currTime);
+                hive.update(clock.getCurrentTime());
 
-                for (Model b : bees) {
+                for (PhysicalModel b : bees) {
 
                     // todo: put this inside an internal tick callback
                     // sample kinematic state to produce a truth
@@ -309,7 +380,7 @@ public class SimController {
                     b.sampleKinematics(step);
 
                     // update model behaviors
-                    b.update(currTime);
+                    b.update(clock.getCurrentTime());
                 }
             }
 
@@ -323,7 +394,7 @@ public class SimController {
             map.destroy();
             hive.destroy();
 
-            for (Model b : bees) {
+            for (PhysicalModel b : bees) {
                 b.destroy();
             }
         }
@@ -438,5 +509,34 @@ public class SimController {
             }
         }
     }
-    
+
+
+    /**
+     * An implementation of {@link SimClock} that is used as the main time
+     * reference for each scenario variation.
+     */
+    static final class SimClockImpl implements SimClock {
+
+        private float time = 0;
+        private float step;
+
+
+        public SimClockImpl(float step) {
+            this.step = step;
+        }
+
+        @Override
+        public float getCurrentTime() {
+            return time;
+        }
+
+        @Override
+        public float getTimeStep() {
+            return step;
+        }
+
+        public void incrementTime() {
+            time += step;
+        }
+    }
 }
