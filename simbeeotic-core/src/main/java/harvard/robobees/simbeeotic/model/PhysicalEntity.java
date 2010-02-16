@@ -9,6 +9,9 @@ import java.util.Set;
 
 
 /**
+ * An interface describing the base functionality of an object that has a physical
+ * presence in the simulation.
+ *
  * @author bkate
  */
 public interface PhysicalEntity {
