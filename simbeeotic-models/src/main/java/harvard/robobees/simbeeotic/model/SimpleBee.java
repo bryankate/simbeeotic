@@ -95,7 +95,7 @@ public abstract class SimpleBee extends AbstractPhysicalModel {
     /**
      * Executes the custom logic for this bee.
      */
-    protected abstract void applyLogic(final double currTime);
+    protected abstract void applyLogic(final float currTime);
 
 
     /** {@inheritDoc} */

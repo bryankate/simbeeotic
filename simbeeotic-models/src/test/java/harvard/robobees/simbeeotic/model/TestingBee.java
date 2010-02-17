@@ -44,7 +44,7 @@ public class TestingBee extends SimpleBee {
 
 
     @Override
-    public void applyLogic(double currTime) {
+    public void applyLogic(float currTime) {
 
         Vector3f pos = getTruthPosition();
         Vector3f linVel = getTruthLinearVelocity();

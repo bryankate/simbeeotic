@@ -43,7 +43,7 @@ public class BroadcastBee extends SimpleBee {
 
 
     @Override
-    protected void applyLogic(double currTime) {
+    protected void applyLogic(float currTime) {
 
         // when we start the sim, move in a fixed direction
         if (!started) {

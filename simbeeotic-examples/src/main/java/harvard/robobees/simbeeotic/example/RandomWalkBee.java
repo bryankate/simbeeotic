@@ -23,7 +23,7 @@ public class RandomWalkBee extends SimpleBee {
 
 
     @Override
-    protected void applyLogic(double currTime) {
+    protected void applyLogic(float currTime) {
 
         if (!isHovering()) {
             setHovering(true);
