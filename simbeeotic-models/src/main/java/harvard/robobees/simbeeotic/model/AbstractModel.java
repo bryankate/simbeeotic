@@ -11,7 +11,7 @@ import com.google.inject.name.Named;
  *
  * @author bkate
  */
-public abstract class AbstractModel extends AbstractPhysicalEntity implements Model {
+public abstract class AbstractModel implements Model {
 
     private int modelId;
 
@@ -25,9 +25,6 @@ public abstract class AbstractModel extends AbstractPhysicalEntity implements Mo
 
     @Inject
     public final void setModelId(@Named("model-id") final int id) {
-
-        if (!isInitialized()) {
-            this.modelId = id;
-        }
+        this.modelId = id;
     }
 }
