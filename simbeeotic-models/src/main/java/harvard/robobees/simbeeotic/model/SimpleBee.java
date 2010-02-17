@@ -343,6 +343,15 @@ public abstract class SimpleBee extends AbstractPhysicalModel {
 
 
     @Inject(optional = true)
+    public final void setCompassSigma(@Named(value = "compass-sigma") final float compassSigma) {
+
+        if (!isInitialized()) {
+            this.compassSigma = compassSigma;
+        }
+    }
+
+
+    @Inject(optional = true)
     public final void setContactSensorRadius(@Named(value = "contact-sensor-radius") final float contactSensorRadius) {
 
         if (!isInitialized()) {
