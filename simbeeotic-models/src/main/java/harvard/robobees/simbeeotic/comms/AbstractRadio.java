@@ -23,10 +23,10 @@ public abstract class AbstractRadio implements Radio {
      * receive notifications when a message is received.
      */
     @Override
-    public void receive(double time, byte[] data) {
+    public void receive(double time, byte[] data, float rxPower) {
 
         for (MessageListener l : listeners) {
-            l.messageReceived(time, data);
+            l.messageReceived(time, data, rxPower);
         }
     }
 

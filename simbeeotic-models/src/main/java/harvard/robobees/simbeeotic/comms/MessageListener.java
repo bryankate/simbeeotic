@@ -14,6 +14,7 @@ public interface MessageListener {
      *
      * @param time The start interval of the time step when the message was received.
      * @param data The data received.
+     * @param rxPower The strength of the received signal (in mW).
      */
-    public void messageReceived(double time, byte[] data);
+    public void messageReceived(double time, byte[] data, float rxPower);
 }

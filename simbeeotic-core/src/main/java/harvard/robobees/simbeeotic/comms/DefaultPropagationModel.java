@@ -65,16 +65,23 @@ public class DefaultPropagationModel implements PropagationModel {
 
             diff.sub(rx.getPosition(), txPos);
 
+            // todo: random degradation of signal
+
             // simple degradation with inverse-square law assuming a
             // point source and dipole antenna
             float rxPower = txPower / diff.lengthSquared();
+
+            if (rxPower == Float.POSITIVE_INFINITY) {
+                rxPower = txPower;
+            }
+
             float snr = 10 * (float)Math.log10(rxPower / noise);
 
             // enough power to capture signal?
             if (snr >= snrMargin) {
 
                 // todo: copy the data?
-                rx.receive(clock.getCurrentTime(), data);
+                rx.receive(clock.getCurrentTime(), data, rxPower);
             }
         }
     }

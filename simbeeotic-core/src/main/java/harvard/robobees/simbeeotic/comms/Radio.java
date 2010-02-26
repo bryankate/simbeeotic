@@ -27,8 +27,9 @@ public interface Radio {
      *
      * @param time The simulation time when the message was received.
      * @param data The data received.
+     * @param rxPower The strength of the received signal (in mW).
      */
-    public void receive(double time, byte[] data);
+    public void receive(double time, byte[] data, float rxPower);
 
 
     /**

@@ -17,44 +17,39 @@ import org.apache.log4j.Logger;
  */
 public class BroadcastBee extends SimpleBee {
 
-    private boolean started = false;
-
     private static Logger logger = Logger.getLogger(BroadcastBee.class);
 
 
     @Override
     public void initialize() {
 
+        // be sure to call the super class method, otherwise you will not have a body, sensors, or radio!
         super.initialize();
 
-        // add a message listener to print when a messageis received. normally a listener
+        // add a message listener to print when a message is received. normally a listener
         // would do a heck of a lot more, but this is just an example. it also does not need
         // to be added on initialization.
         radio.addMessageListener(new MessageListener() {
 
             @Override
-            public void messageReceived(double time, byte[] data) {
+            public void messageReceived(double time, byte[] data, float rxPower) {
                 logger.info("ID: " + getModelId() + "  " +
                             "time: " + time + "  " +
+                            "power: " + rxPower + "  " +
                             "recv from: " + new String(data));
             }
         });
+
+        // set some initial direction
+        setHovering(true);
+        setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
+                                              (float)getRandom().nextGaussian(),
+                                              (float)getRandom().nextGaussian()));
     }
 
 
     @Override
     protected void applyLogic(double currTime) {
-
-        // when we start the sim, move in a fixed direction
-        if (!started) {
-
-            setHovering(true);
-            setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
-                                                  (float)getRandom().nextGaussian(),
-                                                  (float)getRandom().nextGaussian()));
-
-            started = true;
-        }
 
         // send a message
         radio.transmit(("" + getModelId()).getBytes());
