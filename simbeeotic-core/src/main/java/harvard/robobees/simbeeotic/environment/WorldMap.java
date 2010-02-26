@@ -36,6 +36,9 @@ import java.util.Random;
 
 
 /**
+ * A class that establishes the physical layout of the world. The world contains a ground plane,
+ * obstacles, and flowers. All objects created in the world are static.
+ *
  * @author bkate
  */
 public class WorldMap {
@@ -253,6 +256,8 @@ public class WorldMap {
 
         if (meta != null) {
 
+            // todo: resolve scenario variable placeholders?
+            
             for (Meta.Prop p : meta.getProp()) {
                 props.setProperty(p.getName(), p.getValue());
             }
