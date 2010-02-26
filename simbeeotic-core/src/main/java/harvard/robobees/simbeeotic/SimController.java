@@ -54,6 +54,9 @@ import com.google.inject.name.Names;
  */
 public class SimController {
 
+    private static final double DEFAULT_SUBSTEP = 1.0f / 240.0f;
+    private static final int DEFAULT_MAX_SUBSTEPS = 100;
+
     private static Logger logger = Logger.getLogger(SimController.class);
 
     
@@ -77,7 +80,7 @@ public class SimController {
             throw new RuntimeException("Could not parse the given scenario or world file.", je);
         }
 
-        final float step = scenario.getSimulation().getStep();
+        final double step = scenario.getSimulation().getStep();
 
         int currVariation = 0;
         VariationIterator variations = new VariationIterator(scenario);
@@ -354,14 +357,13 @@ public class SimController {
             long variationStartTime = System.currentTimeMillis();
 
             // run it
-            float endTime = scenario.getSimulation().getEndTime();
+            double endTime = scenario.getSimulation().getEndTime();
 
             // todo: turn this into a DES
             while(clock.getCurrentTime() < endTime) {
 
                 // update positions in physical world
-//                dynamicsWorld.stepSimulation(step, 10);
-                dynamicsWorld.stepSimulation(step, 100, 1.0f / 240.0f);
+                dynamicsWorld.stepSimulation((float)step, DEFAULT_MAX_SUBSTEPS, (float)DEFAULT_SUBSTEP);
 
                 clock.incrementTime();
 
@@ -517,21 +519,21 @@ public class SimController {
      */
     static final class SimClockImpl implements SimClock {
 
-        private float time = 0;
-        private float step;
+        private double time = 0;
+        private double step;
 
 
-        public SimClockImpl(float step) {
+        public SimClockImpl(double step) {
             this.step = step;
         }
 
         @Override
-        public float getCurrentTime() {
+        public double getCurrentTime() {
             return time;
         }
 
         @Override
-        public float getTimeStep() {
+        public double getTimeStep() {
             return step;
         }
 

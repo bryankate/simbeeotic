@@ -15,5 +15,5 @@ public interface MessageListener {
      * @param time The start interval of the time step when the message was received.
      * @param data The data received.
      */
-    public void messageReceived(float time, byte[] data);
+    public void messageReceived(double time, byte[] data);
 }

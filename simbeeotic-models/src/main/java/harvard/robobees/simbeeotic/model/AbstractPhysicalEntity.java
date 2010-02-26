@@ -53,6 +53,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public void initialize() {
 
         initialized = true;
@@ -67,6 +68,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public void destroy() {
     }
 
@@ -77,18 +79,21 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public final void applyForce(final Vector3f F) {
         body.applyCentralForce(F);
     }
 
 
     /** {@inheritDoc} */
+    @Override
     public final void applyForce(final Vector3f F, final Vector3f offset) {
         body.applyForce(F, offset);
     }
 
 
     /** {@inheritDoc} */
+    @Override
     public final void applyTorque(final Vector3f T) {
         body.applyTorque(T);
     }
@@ -107,18 +112,21 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public final Vector3f getTruthPosition() {
         return new Vector3f(body.getMotionState().getWorldTransform(new Transform()).origin);
     }
 
 
     /** {@inheritDoc} */
+    @Override
     public final Quat4f getTruthOrientation() {
         return body.getOrientation(new Quat4f());
     }
 
 
     /** {@inheritDoc} */
+    @Override
     public final Vector3f getTruthLinearVelocity() {
 
         if (isActive()) {
@@ -130,6 +138,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public final Vector3f getTruthAngularVelocity() {
 
         if (isActive()) {
@@ -141,6 +150,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public final Vector3f getTruthLinearAcceleration() {
 
         if (isActive()) {
@@ -152,12 +162,14 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
+    @Override
     public final Vector3f getTruthAngularAcceleration() {
         return new Vector3f(angularAccel);
     }
 
 
     /** ${@inheritDoc} */
+    @Override
     public final BoundingSphere getTruthBoundingSphere() {
 
         Vector3f center = new Vector3f();
@@ -180,7 +192,8 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     /** {@inheritDoc} */
-    public final void sampleKinematics(final float timeStep) {
+    @Override
+    public final void sampleKinematics(final double timeStep) {
 
         if (isActive()) {
 
@@ -192,8 +205,8 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
             angularAccel.sub(currAngularVel, lastAngularVel);
 
             // scale by time step to get a reading in m/s^2
-            linearAccel.scale(1.0f / timeStep);
-            angularAccel.scale(1.0f / timeStep);
+            linearAccel.scale(1.0f / (float)timeStep);
+            angularAccel.scale(1.0f / (float)timeStep);
 
             lastLinearVel = currLinearVel;
             lastAngularVel = currAngularVel;
@@ -215,6 +228,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
      * This does not return a copy of the contact points, so an effort must be made to
      * not mutate the points (vectors). The properties can be altered as needed.
      */
+    @Override
     public final Set<Contact> getContactPoints() {
         return ((EntityInfo)body.getUserPointer()).getContactPoints();
     }

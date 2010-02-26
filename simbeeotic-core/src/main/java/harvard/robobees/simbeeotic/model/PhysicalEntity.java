@@ -139,7 +139,7 @@ public interface PhysicalEntity {
      *
      * @param timeStep The amount of time that has elapsed since the last sample.
      */
-    public void sampleKinematics(final float timeStep);
+    public void sampleKinematics(final double timeStep);
 
 
     /**

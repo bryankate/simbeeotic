@@ -28,7 +28,7 @@ public interface Radio {
      * @param time The simulation time when the message was received.
      * @param data The data received.
      */
-    public void receive(float time, byte[] data);
+    public void receive(double time, byte[] data);
 
 
     /**

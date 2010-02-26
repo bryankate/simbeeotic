@@ -15,9 +15,9 @@ public interface SimClock {
      * Gets the current simulated time. This time represents the starting
      * point of the step currently being simulated.
      *
-     * @return The current time, in seconds.
+     * @return The start time of the current simulation step, in seconds.
      */
-    public float getCurrentTime();
+    public double getCurrentTime();
 
 
     /**
@@ -26,5 +26,5 @@ public interface SimClock {
      *
      * @return The simulation time step.
      */
-    public float getTimeStep();
+    public double getTimeStep();
 }

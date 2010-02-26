@@ -13,7 +13,7 @@ public interface Model {
     /**
      * Initializes the model before the simulation starts. This method
      * will be called exactly once by the simulation executive prior to
-     * any call to {@link #update(float)}.
+     * any call to {@link #update(double)}.
      */
     public void initialize();
 
@@ -25,7 +25,7 @@ public interface Model {
      *
      * @param currTime The time at the beginning of the time step being simulated (in seconds).
      */
-    public void update(final float currTime);
+    public void update(final double currTime);
 
 
     /**

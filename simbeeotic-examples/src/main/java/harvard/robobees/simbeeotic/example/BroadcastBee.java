@@ -33,7 +33,7 @@ public class BroadcastBee extends SimpleBee {
         radio.addMessageListener(new MessageListener() {
 
             @Override
-            public void messageReceived(float time, byte[] data) {
+            public void messageReceived(double time, byte[] data) {
                 logger.info("ID: " + getModelId() + "  " +
                             "time: " + time + "  " +
                             "recv from: " + new String(data));
@@ -43,7 +43,7 @@ public class BroadcastBee extends SimpleBee {
 
 
     @Override
-    protected void applyLogic(float currTime) {
+    protected void applyLogic(double currTime) {
 
         // when we start the sim, move in a fixed direction
         if (!started) {

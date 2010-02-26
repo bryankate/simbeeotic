@@ -31,7 +31,7 @@ public class SimpleHive extends AbstractPhysicalModel {
 
 
     @Override
-    public void update(float currTime) {
+    public void update(double currTime) {
     }
 
 
