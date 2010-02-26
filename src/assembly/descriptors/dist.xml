@@ -1,0 +1,72 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+
+    <id>dist</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <!-- assemble jars and 3rd party dependencies -->
+    <moduleSets>
+        <moduleSet>
+            <includes>
+                <include>harvard.robobees.simbeeotic:*</include>
+            </includes>
+            <binaries>
+                <outputDirectory>jar</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <excludes>
+                            <exclude>harvard.robobees.simbeeotic:*</exclude>
+                        </excludes>
+                        <outputDirectory>jar/3rd_party</outputDirectory>
+                        <unpack>false</unpack>
+                        <scope>runtime</scope>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+
+
+    <fileSets>
+
+        <!-- copy test scripts -->
+        <fileSet>
+            <directory>src/assembly/resources</directory>
+            <includes>
+                <include>run*</include>
+            </includes>
+            <fileMode>0755</fileMode>
+            <outputDirectory>.</outputDirectory>
+        </fileSet>
+
+        <!-- copy schemas -->
+        <fileSet>
+            <directory>simbeeotic-core/src/main/resources</directory>
+            <includes>
+                <include>*.xsd</include>
+            </includes>
+            <outputDirectory>schemas</outputDirectory>
+        </fileSet>
+
+        <!-- copy example source and scenarios -->
+        <fileSet>
+            <directory>simbeeotic-examples/src/main/java</directory>
+            <outputDirectory>examples/src</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>simbeeotic-examples/src/main/resources/scenarios</directory>
+            <outputDirectory>examples/scenarios</outputDirectory>
+        </fileSet>
+
+        <!-- copy javadoc -->
+        <fileSet>
+            <directory>target/site/apidocs</directory>
+            <outputDirectory>doc/api</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+</assembly>
