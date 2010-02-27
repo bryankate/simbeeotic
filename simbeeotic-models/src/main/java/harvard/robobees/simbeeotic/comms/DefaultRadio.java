@@ -7,7 +7,7 @@ import javax.vecmath.Vector3f;
 
 
 /**
- * A radio that has a simple dipole antenna and transmits at maximum power. There
+ * A radio that has a simple isotropic antenna and transmits at maximum power. There
  * is no concept of bandwidth or rate.
  *
  * @author bkate
