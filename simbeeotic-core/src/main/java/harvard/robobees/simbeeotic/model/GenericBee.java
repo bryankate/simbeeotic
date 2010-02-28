@@ -85,37 +85,6 @@ public class GenericBee extends GenericModel {
 
         logic.intialize(this);
 
-//        // setup sensors
-//        positionSensor = new DefaultPositionSensor(this, positionSensorSigma, getRandom().nextLong());
-//        compass = new DefaultCompass(this, compassSigma, getRandom().nextLong());
-//        gyro = new DefaultGyroscope(this, gyroSigma, getRandom().nextLong());
-//        accelerometer = new DefaultAccelerometer(this, accelerometerSigma, getRandom().nextLong());
-//        contactSensorBottom = new DefaultContactSensor(this, new Vector3f(0, 0, -halfLength), contactSensorRadius, getRandom().nextLong());
-//
-//        rangeSensorTop = new DefaultRangeSensor(this, new Vector3f(0, 0, halfLength), new Vector3f(0, 0, 1), world,
-//                                                rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        rangeSensorBottom = new DefaultRangeSensor(this, new Vector3f(0, 0, -halfLength), new Vector3f(0, 0, -1), world,
-//                                                   rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        rangeSensorLeft = new DefaultRangeSensor(this, new Vector3f(0, -halfLength, 0), new Vector3f(0, -1, 0), world,
-//                                                 rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        rangeSensorRight = new DefaultRangeSensor(this, new Vector3f(0, halfLength, 0), new Vector3f(0, 1, 0), world,
-//                                                  rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        rangeSensorFront = new DefaultRangeSensor(this, new Vector3f(halfLength, 0, 0), new Vector3f(1, 0, 0), world,
-//                                                  rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        rangeSensorBack = new DefaultRangeSensor(this, new Vector3f(-halfLength, 0, 0), new Vector3f(-1, 0, 0), world,
-//                                                 rangeSensorMin, rangeSensorMax, rangeSensorSigma, getRandom().nextLong());
-//
-//        flowerSensor = new FlowerSensor(this, new Vector3f(0, 0, -halfLength), new Vector3f(0, 0, -1), world, flowerSensorMax);
-//
-//        // setup comms
-//        radio = new DefaultRadio(commModel, this, radioPowerMax);
-//        commModel.addRadio(radio);
-
         return body;
     }
 
