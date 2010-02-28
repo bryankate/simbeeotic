@@ -6,31 +6,16 @@ import harvard.robobees.simbeeotic.model.Contact;
 
 import javax.vecmath.Vector3f;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 
 /**
  * @author bkate
  */
 public class DefaultContactSensor extends AbstractSensor implements ContactSensor {
 
-    private Vector3f offset;
-    private float radius;
-
-
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param offset The offset, relative to the host's body origin, of the sensor's origin.
-     * @param radius The radius of the bounding sphere representing the sensor's area of sensitivity.
-     * @param seed The seed for the random number generator, used for adding noise to readings.
-     */
-    public DefaultContactSensor(PhysicalEntity host, Vector3f offset, float radius, long seed) {
-
-        super(host, seed, 0);
-
-        this.offset = offset;
-        this.radius = radius;
-    }
+    private float radius = 0.005f;  // m
 
 
     /** {@inheritDoc} */
@@ -41,7 +26,7 @@ public class DefaultContactSensor extends AbstractSensor implements ContactSenso
 
             Vector3f diff = new Vector3f(contact.getBodyContactPoint());
 
-            diff.sub(offset);
+            diff.sub(getOffset());
 
             if (diff.length() <= radius) {
                 return true;
@@ -49,5 +34,11 @@ public class DefaultContactSensor extends AbstractSensor implements ContactSenso
         }
 
         return false;
+    }
+
+
+    @Inject(optional = true)
+    public final void setradius(@Named(value = "radius") final float radius) {
+        this.radius = radius;
     }
 }

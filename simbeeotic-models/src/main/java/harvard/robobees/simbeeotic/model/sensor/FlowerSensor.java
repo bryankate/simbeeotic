@@ -4,12 +4,14 @@ package harvard.robobees.simbeeotic.model.sensor;
 import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import javax.vecmath.Vector3f;
 
-import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 import harvard.robobees.simbeeotic.model.Contact;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 
 import java.util.Properties;
 
@@ -24,34 +26,9 @@ public class FlowerSensor extends AbstractSensor {
 
     private DynamicsWorld world;
 
-    private Vector3f offset;
-    private Vector3f pointing;
-    private float maxRange;
+    private float maxRange  = 1.0f;  // m;
 
     private static final float CONTACT_EPSILON = 0.01f;
-
-
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param offset The offset, relative to the host's body origin, of the sensor.
-     * @param pointing The pointing vector, relative to the coordinate frame of the offset position.
-     * @param world The physics world in which the sensor is sensing.
-     * @param maxRange The maximum range for which this sensor is calibrated (meters).
-     */
-    public FlowerSensor(PhysicalEntity host, Vector3f offset, Vector3f pointing, DynamicsWorld world, float maxRange) {
-
-        super(host, 0, 0);
-
-        this.world = world;
-
-        this.offset = offset;
-        this.pointing = pointing;
-        this.pointing.normalize();
-
-        this.maxRange = maxRange;
-    }
 
 
     /**
@@ -71,7 +48,7 @@ public class FlowerSensor extends AbstractSensor {
         for (Contact c : getHost().getContactPoints()) {
 
             Vector3f diff = new Vector3f();
-            diff.sub(offset, c.getBodyContactPoint());
+            diff.sub(getOffset(), c.getBodyContactPoint());
 
             if (diff.length() <= CONTACT_EPSILON) {
                 return isFlower(c.getContactProperties());
@@ -81,8 +58,8 @@ public class FlowerSensor extends AbstractSensor {
 
         // we need to find the sensor's position and pointing vector
         // (in world coordinates) given the body's current orientation
-        Vector3f rotatedOffset = new Vector3f(offset);
-        Vector3f rotatedPointing = new Vector3f(pointing);
+        Vector3f rotatedOffset = new Vector3f(getOffset());
+        Vector3f rotatedPointing = new Vector3f(getPointing());
 
         rotatedPointing.scale(maxRange);
 
@@ -120,6 +97,18 @@ public class FlowerSensor extends AbstractSensor {
         String prop = info.getProperty("isFlower");
 
         return ((prop != null) && Boolean.parseBoolean(prop));
+    }
+
+
+    @Inject
+    public final void setDynamicsWorld(@GlobalScope DynamicsWorld world) {
+        this.world = world;
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxRange(@Named(value = "max-range") final float maxRange) {
+        this.maxRange = maxRange;
     }
 
 

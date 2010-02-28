@@ -4,6 +4,8 @@ package harvard.robobees.simbeeotic.model.sensor;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 
 /**
@@ -11,17 +13,7 @@ import harvard.robobees.simbeeotic.model.PhysicalEntity;
  */
 public class DefaultPositionSensor extends AbstractSensor implements PositionSensor {
 
-
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param sigma The standard deviation of the error associated with readings from this sensor (rad).
-     * @param seed The seed for the random number generator, used for adding noise to readings.
-     */
-    public DefaultPositionSensor(PhysicalEntity host, float sigma, long seed) {
-        super(host, seed, sigma);
-    }
+    private float sigma = 0.5f;  // m
 
 
     /** {@inheritDoc} */
@@ -29,7 +21,14 @@ public class DefaultPositionSensor extends AbstractSensor implements PositionSen
 
         Vector3f pos = getHost().getTruthPosition();
 
-        return new Vector3f(addNoise(pos.x), addNoise(pos.y), addNoise(pos.z));
-        
+        return new Vector3f(addNoise(pos.x, sigma),
+                            addNoise(pos.y, sigma),
+                            addNoise(pos.z, sigma));
+    }
+
+
+    @Inject(optional = true)
+    public final void setSigma(@Named(value = "sigma") final float sigma) {
+        this.sigma = sigma;
     }
 }

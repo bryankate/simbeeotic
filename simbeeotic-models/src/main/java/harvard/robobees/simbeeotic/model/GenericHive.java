@@ -17,21 +17,27 @@ import javax.vecmath.Vector3f;
 
 
 /**
- * A hive implementation that does nothing. It is represented by a static box in the
- * world and has no behavior, sensors, or communication capabilities. Users can extend
- * the class to add functionality.
+ * A hive implementation represented by a static box in the
+ * world. Users can add sensors, a radio, and custom logic to
+ * give it more interesting behavior.
  *
  * @author bkate
  */
-public class SimpleHive extends AbstractPhysicalModel {
+public class GenericHive extends GenericModel {
 
+    private GenericHiveLogic logic;
+
+    // parameters
     private float size = 1.0f;  // m
 
-    private static Logger logger = Logger.getLogger(SimpleHive.class);
+    private static Logger logger = Logger.getLogger(GenericHive.class);
 
 
+    /** {@inheritDoc} */
     @Override
     public void update(double currTime) {
+
+        logic.update(currTime);
     }
 
 
@@ -64,6 +70,19 @@ public class SimpleHive extends AbstractPhysicalModel {
 
     public final float getSize() {
         return size;
+    }
+
+
+    public final void setLogic(final GenericHiveLogic logic) {
+
+        if (!isInitialized()) {
+
+            this.logic = logic;
+
+            if (getRadio() != null) {
+                getRadio().addMessageListener(logic);
+            }
+        }
     }
 
 

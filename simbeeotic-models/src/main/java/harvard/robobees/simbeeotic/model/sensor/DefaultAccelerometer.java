@@ -6,6 +6,8 @@ import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.linearmath.Transform;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 
 /**
@@ -13,18 +15,9 @@ import com.bulletphysics.linearmath.Transform;
  */
 public class DefaultAccelerometer extends AbstractSensor implements Accelerometer {
 
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param sigma The standard deviation of the error associated with readings from this sensor (m/s^2).
-     * @param seed The seed for the random number generator, used for adding noise to readings.
-     */
-    public DefaultAccelerometer(PhysicalEntity host, float sigma, long seed) {
-        super(host, seed, sigma);
-    }
+    private float sigma = 0.005f;   // m/s^2
 
-    
+
     /** {@inheritDoc} */
     public Vector3f getLinearAcceleration() {
 
@@ -40,6 +33,14 @@ public class DefaultAccelerometer extends AbstractSensor implements Acceleromete
         trans.transform(accel);
 
         // add noise
-        return new Vector3f(addNoise(accel.x), addNoise(accel.y), addNoise(accel.z));
+        return new Vector3f(addNoise(accel.x, sigma),
+                            addNoise(accel.y, sigma),
+                            addNoise(accel.z, sigma));
+    }
+
+
+    @Inject(optional = true)
+    public final void setSigma(@Named(value = "sigma") final float sigma) {
+        this.sigma = sigma;
     }
 }

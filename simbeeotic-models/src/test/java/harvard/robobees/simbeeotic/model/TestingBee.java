@@ -3,21 +3,16 @@ package harvard.robobees.simbeeotic.model;
 
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-import com.bulletphysics.linearmath.Transform;
-import com.bulletphysics.linearmath.MatrixUtil;
 
 import javax.vecmath.Vector3f;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
 
 import harvard.robobees.simbeeotic.util.LinearMathUtil;
-import harvard.robobees.simbeeotic.environment.PhysicalConstants;
 
 
 /**
  * @author bkate
  */
-public class TestingBee extends SimpleBee {
+public class TestingBee extends GenericBee {
 
     @Override
     protected RigidBody initializeBody(DiscreteDynamicsWorld world) {

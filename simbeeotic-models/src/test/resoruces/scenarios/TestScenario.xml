@@ -15,7 +15,7 @@
 
     <colony>
         <hive>
-            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
+            <java-class>harvard.robobees.simbeeotic.model.GenericHive</java-class>
             <position x="0" y="0"/>
         </hive>
         <bee-group>

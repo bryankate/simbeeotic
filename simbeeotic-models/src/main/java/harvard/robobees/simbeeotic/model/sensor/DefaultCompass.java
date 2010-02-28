@@ -12,6 +12,8 @@ import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.TransformUtil;
 import com.bulletphysics.linearmath.QuaternionUtil;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 
 /**
@@ -19,16 +21,7 @@ import com.bulletphysics.linearmath.QuaternionUtil;
  */
 public class DefaultCompass extends AbstractSensor implements Compass {
 
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param sigma The standard deviation of the error associated with readings from this sensor (degrees).
-     * @param seed The seed for the random number generator, used for adding noise to readings.
-     */
-    public DefaultCompass(PhysicalEntity host, float sigma, long seed) {
-        super(host, seed, sigma);
-    }
+    private float sigma = 0.0016f;   // degrees
 
 
     /** {@inheritDoc} */
@@ -41,7 +34,7 @@ public class DefaultCompass extends AbstractSensor implements Compass {
         Vector3f unitX = new Vector3f(1, 0, 0);
         orient.transform(unitX);
 
-        float heading = (float)Math.toDegrees(Math.atan2(unitX.y, unitX.x));
+        float heading = addNoise((float)Math.toDegrees(Math.atan2(unitX.y, unitX.x)), sigma);
 
         // put into [0,360)
         if (heading < 0) {
@@ -56,5 +49,11 @@ public class DefaultCompass extends AbstractSensor implements Compass {
         }
 
         return heading;
+    }
+
+
+    @Inject(optional = true)
+    public final void setSigma(@Named(value = "sigma") final float sigma) {
+        this.sigma = sigma;
     }
 }

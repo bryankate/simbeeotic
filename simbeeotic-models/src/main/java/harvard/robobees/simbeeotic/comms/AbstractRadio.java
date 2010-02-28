@@ -1,8 +1,15 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import com.google.inject.Inject;
+
 import java.util.Set;
 import java.util.HashSet;
+
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.model.PhysicalModel;
+
+import javax.vecmath.Vector3f;
 
 
 /**
@@ -13,6 +20,8 @@ import java.util.HashSet;
  */
 public abstract class AbstractRadio implements Radio {
 
+    private PhysicalModel host;
+    private PropagationModel propModel;
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
 
 
@@ -28,6 +37,13 @@ public abstract class AbstractRadio implements Radio {
         for (MessageListener l : listeners) {
             l.messageReceived(time, data, rxPower);
         }
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3f getPosition() {
+        return host.getTruthPosition();
     }
 
 
@@ -49,5 +65,27 @@ public abstract class AbstractRadio implements Radio {
      */
     public final void removeMessageListener(MessageListener listener) {
         listeners.remove(listener);
+    }
+
+
+    protected final PhysicalModel getHost() {
+        return host;
+    }
+    
+
+    protected final PropagationModel getPropagationModel() {
+        return propModel;
+    }
+
+
+    @Inject
+    public final void setHost(final PhysicalModel host) {
+        this.host = host;
+    }
+
+
+    @Inject
+    public final void setPropagationModel(@GlobalScope PropagationModel propModel) {
+        this.propModel = propModel;
     }
 }

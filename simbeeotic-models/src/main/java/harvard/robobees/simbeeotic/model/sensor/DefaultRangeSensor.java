@@ -4,11 +4,13 @@ package harvard.robobees.simbeeotic.model.sensor;
 import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.linearmath.Transform;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import javax.vecmath.Vector3f;
 
-import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.Contact;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 
 
 /**
@@ -18,41 +20,12 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
 
     private DynamicsWorld world;
 
-    private Vector3f offset;
-    private Vector3f pointing;
-    private float minRange;
-    private float maxRange;
+    private float sigma = 0.05f;    // m
+    private float minRange = 0.1f;  // m
+    private float maxRange = 5.0f;  // m
 
     private static final float CONTACT_EPSILON = 0.01f;
     
-
-    /**
-     * Standard constructor.
-     *
-     * @param host The physical entity to which the sensor is being attached.
-     * @param offset The offset, relative to the host's body origin, of the sensor.
-     * @param pointing The pointing vector, relative to the coordinate frame of the offset position.
-     * @param world The physics world in which the sensor is sensing.
-     * @param minRange The minimum range for which this sensor is calibrated (meters).
-     * @param maxRange The maximum range for which this sensor is calibrated (meters).
-     * @param sigma The standard deviation of the sensor error (meters).
-     * @param seed The seed for the random number generator, used for adding noise to readings.
-     */
-    public DefaultRangeSensor(PhysicalEntity host, Vector3f offset, Vector3f pointing, DynamicsWorld world,
-                              float minRange, float maxRange, float sigma, long seed) {
-
-        super(host, seed, sigma);
-
-        this.world = world;
-
-        this.offset = offset;
-        this.pointing = pointing;
-        this.pointing.normalize();
-
-        this.minRange = minRange;
-        this.maxRange = maxRange;
-    }
-
 
     /** {@inheritDoc} */
     public float getRange() {
@@ -67,7 +40,7 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
         for (Contact c : getHost().getContactPoints()) {
 
             Vector3f diff = new Vector3f();
-            diff.sub(offset, c.getBodyContactPoint());
+            diff.sub(getOffset(), c.getBodyContactPoint());
 
             if (diff.length() <= CONTACT_EPSILON) {
                 return Float.POSITIVE_INFINITY;
@@ -77,8 +50,8 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
 
         // we need to find the sensor's position and pointing vector
         // (in world coordinates) given the body's current orientation
-        Vector3f rotatedOffset = new Vector3f(offset);
-        Vector3f rotatedPointing = new Vector3f(pointing);
+        Vector3f rotatedOffset = new Vector3f(getOffset());
+        Vector3f rotatedPointing = new Vector3f(getPointing());
 
         rotatedPointing.scale(maxRange);
 
@@ -103,13 +76,37 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
         world.rayTest(from, to, callback);
 
         // add noise and check bounds
-        float range = addNoise(callback.getMinDIstance());
+        float range = addNoise(callback.getMinDIstance(), sigma);
 
         if ((range < minRange) || (range > maxRange)) {
             range = Float.POSITIVE_INFINITY;
         }
 
         return range;
+    }
+
+
+    @Inject
+    public final void setDynamicsWorld(@GlobalScope DynamicsWorld world) {
+        this.world = world;
+    }
+
+
+    @Inject(optional = true)
+    public final void setSigma(@Named(value = "sigma") final float sigma) {
+        this.sigma = sigma;
+    }
+
+
+    @Inject(optional = true)
+    public final void setMinRange(@Named(value = "min-range") final float minRange) {
+        this.minRange = minRange;
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxRange(@Named(value = "max-range") final float maxRange) {
+        this.maxRange = maxRange;
     }
 
 
