@@ -7,64 +7,75 @@ import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import harvard.robobees.simbeeotic.model.sensor.Compass;
+import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
+import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
+import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
+import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
+import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 
 
 /**
  * @author bkate
  */
-public class TestingBee extends GenericBee {
+public class TestingBee implements GenericBeeLogic {
+
+    private GenericBee host;
+
+    private Accelerometer accelerometer;
+    private Gyroscope gyro;
+    private Compass compass;
+    private RangeSensor rangeBottom;
+    private ContactSensor contactBottom;
+
 
     @Override
-    protected RigidBody initializeBody(DiscreteDynamicsWorld world) {
+    public void intialize(GenericBee bee) {
 
-        RigidBody body = super.initializeBody(world);
+        host = bee;
 
-//        float piOver2 = (float)Math.PI / 2;
-//
-//        Matrix3f rot = LinearMathUtil.eulerZYXtoDCM(piOver2, 0, 0);
-//        Quat4f quat= new Quat4f();
-//
-//        MatrixUtil.getRotation(rot, quat);
-//
-//        Transform trans = new Transform();
-//
-//        body.getWorldTransform(trans);
-//        trans.setRotation(quat);
-//
-//        body.setWorldTransform(trans);
-//        body.setAngularVelocity(new Vector3f(0, 0, 0));
-
-        return body;
+        accelerometer = host.getSensor("accelerometer", Accelerometer.class);
+        gyro = host.getSensor("gyro", Gyroscope.class);
+        compass = host.getSensor("compass", Compass.class);
+        rangeBottom = host.getSensor("rangeBottom", RangeSensor.class);
+        contactBottom = host.getSensor("contactBottom", ContactSensor.class);
     }
 
 
     @Override
-    public void applyLogic(double currTime) {
+    public void update(double time) {
 
-        Vector3f pos = getTruthPosition();
-        Vector3f linVel = getTruthLinearVelocity();
-        Vector3f angVel = getTruthAngularVelocity();
-        Vector3f linAccel = getTruthLinearAcceleration();
-        Vector3f angAccel = getTruthAngularAcceleration();
-        Vector3f orient = LinearMathUtil.quaternionToEulerZYX(getTruthOrientation());
+        Vector3f pos = host.getTruthPosition();
+        Vector3f linVel = host.getTruthLinearVelocity();
+        Vector3f angVel = host.getTruthAngularVelocity();
+        Vector3f linAccel = host.getTruthLinearAcceleration();
+        Vector3f angAccel = host.getTruthAngularAcceleration();
+        Vector3f orient = LinearMathUtil.quaternionToEulerZYX(host.getTruthOrientation());
 
-        float heading = this.compass.getHeading();
-        Vector3f accelSens = this.accelerometer.getLinearAcceleration();
-        Vector3f gyroSens = this.gyro.getAngularVelocity();
+        float heading = compass.getHeading();
+        Vector3f accelSens = accelerometer.getLinearAcceleration();
+        Vector3f gyroSens = gyro.getAngularVelocity();
+        float rangeSens = rangeBottom.getRange();
+        boolean contactSens = contactBottom.isTripped();
 
-        System.out.println("ID: " + getModelId() + "  " + 
-                           "time: " + currTime + "  " +
+        System.out.println("ID: " + host.getModelId() + "  " +
+                           "time: " + time + "  " +
                            "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
-//                           "linVel: " + linVel.x + " " + linVel.y + " " + linVel.z + "  " +
-//                           "angVel: " + angVel.x + " " + angVel.y + " " + angVel.z + "  " +
-//                           "linAccel: " + linAccel.x + " " + linAccel.y + " " + linAccel.z + "  " +
-//                           "angAccel: " + angAccel.x + " " + angAccel.y + " " + angAccel.z + "  " +
-//                           "orient: " + orient.x + " " + orient.y + " " + orient.z + "  " +
-//                           "accelerometer: " + accelSens.x + " " + accelSens.y + " " + accelSens.z + "  " +
-//                           "gyro: " + gyroSens.x + " " + gyroSens.y + " " + gyroSens.z + "  " +
-//                           "heading: " + heading + "  " +
-//                           "range: " + this.rangeSensorBottom.getRange() + "  " +
-//                           "contact: " + this.contactSensorBottom.isTripped() + "  " +
-                           "active: " + this.isActive());
+                           "linVel: " + linVel.x + " " + linVel.y + " " + linVel.z + "  " +
+                           "angVel: " + angVel.x + " " + angVel.y + " " + angVel.z + "  " +
+                           "linAccel: " + linAccel.x + " " + linAccel.y + " " + linAccel.z + "  " +
+                           "angAccel: " + angAccel.x + " " + angAccel.y + " " + angAccel.z + "  " +
+                           "orient: " + orient.x + " " + orient.y + " " + orient.z + "  " +
+                           "accelerometer: " + accelSens.x + " " + accelSens.y + " " + accelSens.z + "  " +
+                           "gyro: " + gyroSens.x + " " + gyroSens.y + " " + gyroSens.z + "  " +
+                           "heading: " + heading + "  " +
+                           "range: " + rangeSens + "  " +
+                           "contact: " + contactSens + "  " +
+                           "active: " + host.isActive());
+    }
+
+
+    @Override
+    public void messageReceived(double time, byte[] data, float rxPower) {
     }
 }

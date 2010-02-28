@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
 import harvard.robobees.simbeeotic.configuration.scenario.Colony;
 import harvard.robobees.simbeeotic.configuration.scenario.ConfigProps;
+import harvard.robobees.simbeeotic.configuration.scenario.Sensor;
+import harvard.robobees.simbeeotic.configuration.scenario.GenericModelConfig;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import harvard.robobees.simbeeotic.configuration.VariationIterator;
 import harvard.robobees.simbeeotic.configuration.Variation;
@@ -19,8 +21,15 @@ import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 import harvard.robobees.simbeeotic.model.Contact;
 import harvard.robobees.simbeeotic.model.PhysicalModel;
+import harvard.robobees.simbeeotic.model.GenericHive;
+import harvard.robobees.simbeeotic.model.GenericHiveLogic;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import harvard.robobees.simbeeotic.model.GenericModel;
+import harvard.robobees.simbeeotic.model.GenericBee;
+import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.comms.PropagationModel;
 import harvard.robobees.simbeeotic.comms.DefaultPropagationModel;
+import harvard.robobees.simbeeotic.comms.AbstractRadio;
 
 import javax.xml.bind.JAXBException;
 import javax.vecmath.Vector3f;
@@ -41,6 +50,7 @@ import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Injector;
 import com.google.inject.Guice;
@@ -170,7 +180,8 @@ public class SimController {
                     }
                 }
                 catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the propagation model class: " + scenario.getComms().getPropagationModel().getJavaClass(), cnf);
+                    throw new RuntimeException("Could not locate the propagation model class: " +
+                                               scenario.getComms().getPropagationModel().getJavaClass(), cnf);
                 }
             }
             else {
@@ -216,21 +227,28 @@ public class SimController {
             final float startX = scenario.getColony().getHive().getPosition().getX();
             final float startY = scenario.getColony().getHive().getPosition().getY();
 
-            final Properties hiveProps = loadConfigProps(scenario.getColony().getHive().getProperties(), variation);
             final Class hiveClass;
+            final Properties hiveProps = loadConfigProps(scenario.getColony().getHive().getProperties(), variation);
 
-            try {
+            if (scenario.getColony().getHive().getCustomHive() != null) {
 
-                // locate the hive implementation
-                hiveClass = Class.forName(scenario.getColony().getHive().getJavaClass());
+                try {
 
-                // make sure it implements PhysicalModel
-                if (!PhysicalModel.class.isAssignableFrom(hiveClass)) {
-                    throw new RuntimeException("The hive implementation must extend from PhysicalModel.");
+                    // locate the hive implementation
+                    hiveClass = Class.forName(scenario.getColony().getHive().getCustomHive().getJavaClass());
+
+                    // make sure it implements PhysicalModel
+                    if (!PhysicalModel.class.isAssignableFrom(hiveClass)) {
+                        throw new RuntimeException("The custom hive implementation must extend from PhysicalModel.");
+                    }
+                }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the hive class: " +
+                                               scenario.getColony().getHive().getCustomHive().getJavaClass(), cnf);
                 }
             }
-            catch(ClassNotFoundException cnf) {
-                throw new RuntimeException("Could not locate the hive class: " + scenario.getColony().getHive().getJavaClass(), cnf);
+            else {
+                hiveClass = GenericHive.class;
             }
 
             Injector hiveInjector = injector.createChildInjector(new AbstractModule() {
@@ -251,9 +269,15 @@ public class SimController {
             });
 
             hive = hiveInjector.getInstance(PhysicalModel.class);
+
+            // if a generic hive, instantiate components
+            if (scenario.getColony().getHive().getGenericHive() != null) {
+                loadGenericModelComponents(injector, scenario.getColony().getHive().getGenericHive(), variation, hive, false);
+            }
+
             hive.initialize();
 
-
+            
             // this callback is used to filter out collisions between bees when they are inside the hive
             dynamicsWorld.getBroadphase().getOverlappingPairCache().setOverlapFilterCallback(new OverlapFilterCallback() {
 
@@ -299,22 +323,28 @@ public class SimController {
                 }
 
                 final Class beeClass;
+                final Properties beeProps = loadConfigProps(group.getProperties(), variation);
 
-                try {
+                if (group.getCustomBee() != null) {
 
-                    // locate the bee implementation
-                    beeClass = Class.forName(group.getJavaClass());
+                    try {
 
-                    // make sure it implements PhysicalModel
-                    if (!PhysicalModel.class.isAssignableFrom(beeClass)) {
-                        throw new RuntimeException("The bee implementation must extend from PhysicalModel.");
+                        // locate the bee implementation
+                        beeClass = Class.forName(group.getCustomBee().getJavaClass());
+
+                        // make sure it implements PhysicalModel
+                        if (!PhysicalModel.class.isAssignableFrom(beeClass)) {
+                            throw new RuntimeException("The bee implementation must extend from PhysicalModel.");
+                        }
+                    }
+                    catch(ClassNotFoundException cnf) {
+                        throw new RuntimeException("Could not locate the bee class: " +
+                                                   group.getCustomBee().getJavaClass(), cnf);
                     }
                 }
-                catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the bee class: " + group.getJavaClass(), cnf);
+                else {
+                    beeClass = GenericBee.class;
                 }
-
-                final Properties beeProps = loadConfigProps(group.getProperties(), variation);
 
                 Injector beeInjector = injector.createChildInjector(new AbstractModule() {
 
@@ -336,6 +366,10 @@ public class SimController {
                 for (int i = 0; i < group.getCount(); i++) {
 
                     PhysicalModel b = beeInjector.getInstance(PhysicalModel.class);
+
+                    if (group.getGenericBee() != null) {
+                        loadGenericModelComponents(injector, group.getGenericBee(), variation, b, true);
+                    }
 
                     b.initialize();
                     bees.add(b);
@@ -399,6 +433,163 @@ public class SimController {
             for (PhysicalModel b : bees) {
                 b.destroy();
             }
+        }
+    }
+
+
+    private void loadGenericModelComponents(Injector injector, GenericModelConfig model, Variation variation,
+                                            final PhysicalModel host, final boolean isBee) {
+
+        GenericModel genModel = (GenericModel)host;
+
+        // radio
+        if (model.getRadio() != null) {
+
+            final Class radioClass;
+            final Properties radioProps = loadConfigProps(model.getRadio().getProperties(),
+                                                          variation);
+
+            try {
+
+                radioClass = Class.forName(model.getRadio().getJavaClass());
+
+                if (!AbstractRadio.class.isAssignableFrom(radioClass)) {
+                    throw new RuntimeException("The hive radio implementation must implement AbstractRadio.");
+                }
+            }
+            catch(ClassNotFoundException cnf) {
+                throw new RuntimeException("Could not locate the hive radio class: " +
+                                           model.getRadio().getJavaClass(), cnf);
+            }
+
+            Injector radioInjector = injector.createChildInjector(new AbstractModule() {
+
+                protected void configure() {
+
+                    Names.bindProperties(binder(), radioProps);
+
+                    bind(PhysicalModel.class).toInstance(host);
+                    bind(AbstractRadio.class).to(radioClass);
+
+                    // a workaround for guice issue 282
+                    bind(radioClass);
+                }
+            });
+
+            genModel.setRadio(radioInjector.getInstance(AbstractRadio.class));
+        }
+
+
+        // sensors
+        if (model.getSensors() != null) {
+
+            for (Sensor sensor : model.getSensors().getSensor()) {
+
+                final Class sensorClass;
+                final Properties sensorProps = loadConfigProps(sensor.getProperties(), variation);
+
+                try {
+
+                    sensorClass = Class.forName(sensor.getJavaClass());
+
+                    if (!AbstractSensor.class.isAssignableFrom(sensorClass)) {
+                        throw new RuntimeException("The hive sensor implementation must implement AbstractSensor.");
+                    }
+                }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the hive sensor class: " +
+                                               sensor.getJavaClass(), cnf);
+                }
+
+                final Vector3f offset = new Vector3f();
+                final Vector3f pointing = new Vector3f();
+
+                if (sensor.getOffset() != null) {
+
+                    offset.set(sensor.getOffset().getX(),
+                               sensor.getOffset().getY(),
+                               sensor.getOffset().getZ());
+                }
+
+                if (sensor.getPointing() != null) {
+
+                    pointing.set(sensor.getPointing().getX(),
+                                 sensor.getPointing().getY(),
+                                 sensor.getPointing().getZ());
+                }
+
+                Injector sensorInjector = injector.createChildInjector(new AbstractModule() {
+
+                    protected void configure() {
+
+                        Names.bindProperties(binder(), sensorProps);
+
+                        bind(PhysicalModel.class).toInstance(host);
+                        bind(Vector3f.class).annotatedWith(Names.named("offset")).toInstance(offset);
+                        bind(Vector3f.class).annotatedWith(Names.named("pointing")).toInstance(offset);
+
+                        bind(AbstractSensor.class).to(sensorClass);
+
+                        // a workaround for guice issue 282
+                        bind(sensorClass);
+                    }
+                });
+
+                genModel.addSensor(sensor.getName(), sensorInjector.getInstance(AbstractSensor.class));
+            }
+        }
+
+        // logic
+        final Class logicClass;
+        final Properties logicProps = loadConfigProps(model.getLogic().getProperties(), variation);
+
+        try {
+
+            logicClass = Class.forName(model.getLogic().getJavaClass());
+
+            if (isBee) {
+
+                if (!GenericBeeLogic.class.isAssignableFrom(logicClass)) {
+                    throw new RuntimeException("The bee logic implementation must implement GenericBeeLogic.");
+                }
+            }
+            else {
+
+                if (!GenericHiveLogic.class.isAssignableFrom(logicClass)) {
+                    throw new RuntimeException("The hive logic implementation must implement GenericHiveLogic.");
+                }
+            }
+        }
+        catch(ClassNotFoundException cnf) {
+            throw new RuntimeException("Could not locate the hive logic class: " +
+                                       model.getLogic().getJavaClass(), cnf);
+        }
+
+        Injector logicInjector = injector.createChildInjector(new AbstractModule() {
+
+            protected void configure() {
+
+                Names.bindProperties(binder(), logicProps);
+
+                bind(PhysicalModel.class).toInstance(host);
+
+                if (isBee) {
+                    bind(GenericBeeLogic.class).to(logicClass);
+                }
+                else {
+                    bind(GenericHiveLogic.class).to(logicClass);
+                }
+
+                // a workaround for guice issue 282
+                bind(logicClass);
+            }
+        });
+
+        if (isBee) {
+            ((GenericBee)genModel).setLogic(logicInjector.getInstance(GenericBeeLogic.class));
+        }
+        else {
+            ((GenericHive)genModel).setLogic(logicInjector.getInstance(GenericHiveLogic.class));
         }
     }
 

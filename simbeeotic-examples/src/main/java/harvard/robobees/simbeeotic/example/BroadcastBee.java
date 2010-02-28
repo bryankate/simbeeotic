@@ -1,8 +1,8 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.SimpleBee;
-import harvard.robobees.simbeeotic.comms.MessageListener;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import harvard.robobees.simbeeotic.model.GenericBee;
 
 import javax.vecmath.Vector3f;
 
@@ -15,49 +15,46 @@ import org.apache.log4j.Logger;
  * 
  * @author bkate
  */
-public class BroadcastBee extends SimpleBee {
+public class BroadcastBee implements GenericBeeLogic {
+
+    private GenericBee host;
 
     private static Logger logger = Logger.getLogger(BroadcastBee.class);
 
 
     @Override
-    public void initialize() {
+    public void intialize(GenericBee bee) {
 
-        // be sure to call the super class method, otherwise you will not have a body, sensors, or radio!
-        super.initialize();
-
-        // add a message listener to print when a message is received. normally a listener
-        // would do a heck of a lot more, but this is just an example. it also does not need
-        // to be added on initialization.
-        radio.addMessageListener(new MessageListener() {
-
-            @Override
-            public void messageReceived(double time, byte[] data, float rxPower) {
-                logger.info("ID: " + getModelId() + "  " +
-                            "time: " + time + "  " +
-                            "power: " + rxPower + "  " +
-                            "recv from: " + new String(data));
-            }
-        });
+        host = bee;
 
         // set some initial direction
-        setHovering(true);
-        setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
-                                              (float)getRandom().nextGaussian(),
-                                              (float)getRandom().nextGaussian()));
+        host.setHovering(true);
+        host.setDesiredLinearVelocity(new Vector3f((float)host.getRandom().nextGaussian(),
+                                                   (float)host.getRandom().nextGaussian(),
+                                                   (float)host.getRandom().nextGaussian()));
     }
 
 
     @Override
-    protected void applyLogic(double currTime) {
+    public void update(double time) {
 
         // send a message
-        radio.transmit(("" + getModelId()).getBytes());
+        host.getRadio().transmit(("" + host.getModelId()).getBytes());
 
-        Vector3f pos = getTruthPosition();
+        Vector3f pos = host.getTruthPosition();
 
-        logger.info("ID: " + getModelId() + "  " + 
-                    "time: " + currTime + "  " +
+        logger.info("ID: " + host.getModelId() + "  " +
+                    "time: " + time + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z);
+    }
+
+
+    @Override
+    public void messageReceived(double time, byte[] data, float rxPower) {
+
+        logger.info("ID: " + host.getModelId() + "  " +
+                    "time: " + time + "  " +
+                    "power: " + rxPower + "  " +
+                    "recv from: " + new String(data));
     }
 }

@@ -1,6 +1,10 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+
 /**
  * A radio that has a simple isotropic antenna and transmits at maximum power. There
  * is no concept of bandwidth or rate.
@@ -17,5 +21,11 @@ public class DefaultRadio extends AbstractRadio {
     @Override
     public void transmit(byte[] data) {
         getPropagationModel().transmit(this, data, maxPower);
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxPower(@Named(value = "max-power") final float power) {
+        this.maxPower = power;
     }
 }

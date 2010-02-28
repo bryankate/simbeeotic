@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic.model.sensor;
 
 
-import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
@@ -18,7 +18,7 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
  */
 public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
 
-    private DynamicsWorld world;
+    private DiscreteDynamicsWorld world;
 
     private float sigma = 0.05f;    // m
     private float minRange = 0.1f;  // m
@@ -87,7 +87,7 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
 
 
     @Inject
-    public final void setDynamicsWorld(@GlobalScope DynamicsWorld world) {
+    public final void setDynamicsWorld(@GlobalScope DiscreteDynamicsWorld world) {
         this.world = world;
     }
 

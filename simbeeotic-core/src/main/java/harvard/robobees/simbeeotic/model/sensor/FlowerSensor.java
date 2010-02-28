@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic.model.sensor;
 
 
-import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.google.inject.Inject;
@@ -24,7 +24,7 @@ import java.util.Properties;
  */
 public class FlowerSensor extends AbstractSensor {
 
-    private DynamicsWorld world;
+    private DiscreteDynamicsWorld world;
 
     private float maxRange  = 1.0f;  // m;
 
@@ -101,7 +101,7 @@ public class FlowerSensor extends AbstractSensor {
 
 
     @Inject
-    public final void setDynamicsWorld(@GlobalScope DynamicsWorld world) {
+    public final void setDynamicsWorld(@GlobalScope DiscreteDynamicsWorld world) {
         this.world = world;
     }
 

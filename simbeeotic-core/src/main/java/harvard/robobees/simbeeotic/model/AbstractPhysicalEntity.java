@@ -106,7 +106,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
      *
      * @return The seeded random number begerator for this entity.
      */
-    protected Random getRandom() {
+    public Random getRandom() {
         return rand;
     }
 

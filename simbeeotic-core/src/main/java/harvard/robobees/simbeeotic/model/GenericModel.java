@@ -35,6 +35,27 @@ public abstract class GenericModel extends AbstractPhysicalModel {
 
 
     /**
+     * Gets the sensor with the given name. An attempt will be made to cast
+     * the sensor to the givne type.
+     *
+     * @param name The name of the sensor to retrieve.
+     * @param type The type to which the sensor is cast prior to returning.
+     *
+     * @return The sensor, or {@code null} if none exists for the given name.
+     */
+    public final <T> T getSensor(final String name, Class<T> type) {
+
+        AbstractSensor sensor = sensors.get(name);
+
+        if (sensor != null) {
+            return type.cast(sensor);
+        }
+
+        return null; 
+    }
+
+
+    /**
      * Gets all the sensors attached to this model.
      *
      * @return The set of sensors.
