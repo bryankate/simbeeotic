@@ -19,10 +19,6 @@
             <groupId>harvard.robobees.simbeeotic</groupId>
             <artifactId>simbeeotic-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>harvard.robobees.simbeeotic</groupId>
-            <artifactId>simbeeotic-models</artifactId>
-        </dependency>
     </dependencies>
 
     <!-- todo: remove this when we get a real repo -->

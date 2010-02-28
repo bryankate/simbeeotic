@@ -20,7 +20,6 @@
 
     <modules>
         <module>simbeeotic-core</module>
-        <module>simbeeotic-models</module>
         <module>simbeeotic-examples</module>
         <module>simbeeotic-app</module>
     </modules>
@@ -32,11 +31,6 @@
             <dependency>
                 <groupId>harvard.robobees.simbeeotic</groupId>
                 <artifactId>simbeeotic-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>harvard.robobees.simbeeotic</groupId>
-                <artifactId>simbeeotic-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
