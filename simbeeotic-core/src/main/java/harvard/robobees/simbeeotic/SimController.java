@@ -498,11 +498,11 @@ public class SimController {
                 radioClass = Class.forName(model.getRadio().getJavaClass());
 
                 if (!AbstractRadio.class.isAssignableFrom(radioClass)) {
-                    throw new RuntimeException("The hive radio implementation must implement AbstractRadio.");
+                    throw new RuntimeException("The radio implementation must implement AbstractRadio.");
                 }
             }
             catch(ClassNotFoundException cnf) {
-                throw new RuntimeException("Could not locate the hive radio class: " +
+                throw new RuntimeException("Could not locate the radio class: " +
                                            model.getRadio().getJavaClass(), cnf);
             }
 
@@ -539,11 +539,11 @@ public class SimController {
                     sensorClass = Class.forName(sensor.getJavaClass());
 
                     if (!AbstractSensor.class.isAssignableFrom(sensorClass)) {
-                        throw new RuntimeException("The hive sensor implementation must implement AbstractSensor.");
+                        throw new RuntimeException("The sensor implementation must implement AbstractSensor.");
                     }
                 }
                 catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the hive sensor class: " +
+                    throw new RuntimeException("Could not locate the sensor class: " +
                                                sensor.getJavaClass(), cnf);
                 }
 
@@ -596,18 +596,18 @@ public class SimController {
             if (isBee) {
 
                 if (!GenericBeeLogic.class.isAssignableFrom(logicClass)) {
-                    throw new RuntimeException("The bee logic implementation must implement GenericBeeLogic.");
+                    throw new RuntimeException("The logic implementation must implement GenericBeeLogic.");
                 }
             }
             else {
 
                 if (!GenericHiveLogic.class.isAssignableFrom(logicClass)) {
-                    throw new RuntimeException("The hive logic implementation must implement GenericHiveLogic.");
+                    throw new RuntimeException("The logic implementation must implement GenericHiveLogic.");
                 }
             }
         }
         catch(ClassNotFoundException cnf) {
-            throw new RuntimeException("Could not locate the hive logic class: " +
+            throw new RuntimeException("Could not locate the logic class: " +
                                        model.getLogic().getJavaClass(), cnf);
         }
 

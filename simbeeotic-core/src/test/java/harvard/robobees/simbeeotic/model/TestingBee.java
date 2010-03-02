@@ -1,9 +1,6 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.util.LinearMathUtil;
@@ -12,7 +9,6 @@ import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
 import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
 import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
 import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
-import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 
 
 /**
