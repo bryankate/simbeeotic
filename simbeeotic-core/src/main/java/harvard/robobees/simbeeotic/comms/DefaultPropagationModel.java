@@ -27,13 +27,13 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
 public class DefaultPropagationModel implements PropagationModel {
 
     private SimClock clock;
-
-    private float snrMargin = 10;            // dB
-    private float noiseFloorMean = 0.01f;    // mW
-    private float noiseFloorSigma = 0.005f;  // mW
-
     private Random rand = new Random(112181);
     private Set<Radio> radios = new HashSet<Radio>();
+
+    // parameters
+    private float rangeThreshSq = 100;       // m
+    private float noiseFloorMean = 0.01f;    // mW
+    private float noiseFloorSigma = 0.005f;  // mW
 
 
     /** {@inheritDoc} */
@@ -58,10 +58,7 @@ public class DefaultPropagationModel implements PropagationModel {
         Vector3f txPointing = tx.getPointing();
         Vector3f diff = new Vector3f();
 
-        // generate a random noise level
-        float noise = noiseFloorMean + ((float)rand.nextGaussian() * noiseFloorSigma);
-
-        // degrade the signal to each radio
+        // determine the received signal strength at each radio
         for (Radio rx : radios) {
 
             // do not overhear your own transmission
@@ -72,6 +69,11 @@ public class DefaultPropagationModel implements PropagationModel {
             diff.sub(rx.getPosition(), txPos);
 
             float distSq = diff.lengthSquared();
+
+            // a course filtering of recipients based on range
+            if (distSq > rangeThreshSq) {
+                continue;
+            }
 
             if (distSq > 0) {
 
@@ -113,15 +115,21 @@ public class DefaultPropagationModel implements PropagationModel {
                 rxPower /= distSq;
             }
 
-            float snr = 10 * (float)Math.log10(rxPower / noise);
-
-            // enough power to capture signal?
-            if (snr >= snrMargin) {
-
-                // todo: copy the data?
-                rx.receive(clock.getCurrentTime(), data, rxPower);
-            }
+            // todo: copy the data?
+            rx.receive(clock.getCurrentTime(), data, rxPower);
         }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation generates a random value using a Gaussian
+     * distribution around a noise floor mean.
+     */
+    @Override
+    public float getNoiseFloor() {
+        return noiseFloorMean + ((float)rand.nextGaussian() * noiseFloorSigma);
     }
 
 
@@ -138,12 +146,6 @@ public class DefaultPropagationModel implements PropagationModel {
 
 
     @Inject(optional = true)
-    public final void setSnrMargin(@Named(value = "snr-margin") final float margin) {
-        this.snrMargin = margin;
-    }
-
-
-    @Inject(optional = true)
     public final void setNoiseFloorMean(@Named(value = "noise-floor-mean") final float noiseFloorMean) {
         this.noiseFloorMean = noiseFloorMean;
     }
@@ -152,5 +154,11 @@ public class DefaultPropagationModel implements PropagationModel {
     @Inject(optional = true)
     public final void setNoiseFloorSigma(@Named(value = "noise-floor-sigma") final float noiseFloorSigma) {
         this.noiseFloorSigma = noiseFloorSigma;
+    }
+
+
+    @Inject(optional = true)
+    public final void setReceiveRadiusThreshold(@Named(value = "range-thresh") final float thresh) {
+        this.rangeThreshSq = thresh * thresh;
     }
 }

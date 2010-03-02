@@ -23,10 +23,14 @@ import javax.vecmath.Vector3f;
 public abstract class AbstractRadio implements Radio {
 
     private PhysicalModel host;
+    private PropagationModel propModel;
+
+    // parameters
+    private float snrMargin = 10;   // dB
+
     private Vector3f offset = new Vector3f();
     private Vector3f pointing = new Vector3f(0, 0, 1);
     private AntennaPattern pattern;
-    private PropagationModel propModel;
 
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
 
@@ -34,14 +38,21 @@ public abstract class AbstractRadio implements Radio {
     /**
      * {@inheritDoc}
      *
-     * This implementation invokes all listeners registered with this radio to
-     * receive notifications when a message is received.
+     * This implementation performs an SNR thresholding and invokes all listeners
+     * registered with this radio to receive notifications when a message is received.
      */
     @Override
     public void receive(double time, byte[] data, float rxPower) {
 
-        for (MessageListener l : listeners) {
-            l.messageReceived(time, data, rxPower);
+        float noise = propModel.getNoiseFloor();
+        float snr = 10 * (float)Math.log10(rxPower / noise);
+
+        // enough power to capture signal?
+        if (snr >= snrMargin) {
+
+            for (MessageListener l : listeners) {
+                l.messageReceived(time, data, rxPower);
+            }
         }
     }
 
@@ -177,5 +188,11 @@ public abstract class AbstractRadio implements Radio {
     @Inject
     public final void setAntennaPattern(final AntennaPattern pattern) {
         this.pattern = pattern;
+    }
+
+
+    @Inject(optional = true)
+    public final void setSnrMargin(@Named(value = "snr-margin") final float margin) {
+        this.snrMargin = margin;
     }
 }
