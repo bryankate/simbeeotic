@@ -223,9 +223,9 @@ public class SimController {
             // create hive
             final PhysicalModel hive;
 
-            // todo: get z loc from world map?
-            final float startX = scenario.getColony().getHive().getPosition().getX();
-            final float startY = scenario.getColony().getHive().getPosition().getY();
+            // todo: get z loc from world map (terrain)?
+            final float hiveStartX = scenario.getColony().getHive().getPosition().getX();
+            final float hiveStartY = scenario.getColony().getHive().getPosition().getY();
 
             final Class hiveClass;
             final Properties hiveProps = loadConfigProps(scenario.getColony().getHive().getProperties(), variation);
@@ -257,8 +257,8 @@ public class SimController {
 
                     Names.bindProperties(binder(), hiveProps);
 
-                    bindConstant().annotatedWith(Names.named("start-x")).to(startX + "");
-                    bindConstant().annotatedWith(Names.named("start-y")).to(startY + "");
+                    bindConstant().annotatedWith(Names.named("start-x")).to(hiveStartX + "");
+                    bindConstant().annotatedWith(Names.named("start-y")).to(hiveStartY + "");
 
                     // hive class
                     bind(PhysicalModel.class).to(hiveClass);
@@ -325,6 +325,21 @@ public class SimController {
                 final Class beeClass;
                 final Properties beeProps = loadConfigProps(group.getProperties(), variation);
 
+                final float beeStartX;
+                final float beeStartY;
+
+                // default to starting in the hive unless otherwise given
+                if (group.getStartPosition() != null) {
+
+                    beeStartX = group.getStartPosition().getX();
+                    beeStartY = group.getStartPosition().getY();
+                }
+                else {
+
+                    beeStartX = hiveStartX;
+                    beeStartY = hiveStartY;
+                }
+
                 if (group.getCustomBee() != null) {
 
                     try {
@@ -352,8 +367,8 @@ public class SimController {
 
                         Names.bindProperties(binder(), beeProps);
 
-                        bindConstant().annotatedWith(Names.named("start-x")).to(startX + "");
-                        bindConstant().annotatedWith(Names.named("start-y")).to(startY + "");
+                        bindConstant().annotatedWith(Names.named("start-x")).to(beeStartX + "");
+                        bindConstant().annotatedWith(Names.named("start-y")).to(beeStartY + "");
 
                         // bee class
                         bind(PhysicalModel.class).to(beeClass);

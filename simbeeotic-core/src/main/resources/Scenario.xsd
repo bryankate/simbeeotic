@@ -135,6 +135,7 @@
                             </xs:element>
                         </xs:choice>
                         <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
+                        <xs:element name="start-position" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
                         <xs:element name="count" type="xs:int" minOccurs="1" maxOccurs="1"/>
                     </xs:sequence>
                 </xs:complexType>
