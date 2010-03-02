@@ -176,6 +176,14 @@
     <xs:complexType name="Radio">
         <xs:sequence>
             <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="antenna-pattern" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>

@@ -2,7 +2,6 @@ package harvard.robobees.simbeeotic.comms;
 
 
 import javax.vecmath.Vector3f;
-import java.util.Queue;
 
 
 /**
@@ -38,4 +37,21 @@ public interface Radio {
      * @return The position of the radio's antenna, in the world reference frame.
      */
     public Vector3f getPosition();
+
+
+    /**
+     * Gets the pointing vector of the antenna. This is a vector that points
+     * along the major antenna axis.
+     *
+     * @return The pointing vector of the antenna, in the world reference frame.
+     */
+    public Vector3f getPointing();
+
+
+    /**
+     * Gets the radiation pattern of the antenna attached to the radio.
+     *
+     * @return The antenna pattern in use.
+     */
+    public AntennaPattern getAntennaPattern();
 }

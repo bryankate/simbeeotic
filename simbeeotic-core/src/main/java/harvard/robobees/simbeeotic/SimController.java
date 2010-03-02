@@ -30,6 +30,8 @@ import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.comms.PropagationModel;
 import harvard.robobees.simbeeotic.comms.DefaultPropagationModel;
 import harvard.robobees.simbeeotic.comms.AbstractRadio;
+import harvard.robobees.simbeeotic.comms.AntennaPattern;
+import harvard.robobees.simbeeotic.comms.IsotropicAntenna;
 
 import javax.xml.bind.JAXBException;
 import javax.vecmath.Vector3f;
@@ -37,6 +39,7 @@ import java.util.Random;
 import java.util.Properties;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
@@ -56,7 +59,11 @@ import com.google.inject.Injector;
 import com.google.inject.Guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
+import com.google.inject.Provides;
+import com.google.inject.Module;
+import com.google.inject.Singleton;
 import com.google.inject.name.Names;
+import com.google.inject.name.Named;
 
 
 /**
@@ -98,6 +105,7 @@ public class SimController {
         // todo: parallelize the running of variations
         for (Variation variation : variations) {
 
+            final AtomicInteger nextId = new AtomicInteger(0);
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
             currVariation++;
@@ -126,27 +134,9 @@ public class SimController {
             final WorldMap map = new WorldMap(world, dynamicsWorld, variationSeedGenertor.nextLong());
 
             // top level guice injector - all others are derived from this
-            Injector injector = Guice.createInjector(new AbstractModule() {
+            Module baseModule = new AbstractModule() {
 
                 protected void configure() {
-
-                    // random seed generator - this may not work well if the sim becomes multi-threaded
-                    bind(Long.class).annotatedWith(Names.named("random-seed")).toProvider(new Provider<Long>() {
-
-                        public Long get() {
-                            return variationSeedGenertor.nextLong();
-                        }
-                    });
-
-                    // model ID generator - this may not work well if the sim becomes multi-threaded
-                    bind(Integer.class).annotatedWith(Names.named("model-id")).toProvider(new Provider<Integer>() {
-
-                        int nextId = 1;
-
-                        public Integer get() {
-                            return nextId++;
-                        }
-                    });
 
                     // the global access to timing information
                     bind(SimClock.class).annotatedWith(GlobalScope.class).toInstance(clock);
@@ -157,7 +147,21 @@ public class SimController {
                     // established simulated world instance
                     bind(WorldMap.class).annotatedWith(GlobalScope.class).toInstance(map);
                 }
-            });
+
+                // todo: figure out how to get these providers to not be called for each child injector?
+
+                @Provides @Named("random-seed")
+                public long generateRandomSeed() {
+                    return variationSeedGenertor.nextLong();
+                }
+
+                @Provides @Named("model-id")
+                public int generateModelId() {
+                    return nextId.incrementAndGet();
+                }
+            };
+
+            Injector injector = Guice.createInjector(baseModule);
 
 
             // setup the RF environment
@@ -445,6 +449,46 @@ public class SimController {
         // radio
         if (model.getRadio() != null) {
 
+            final AntennaPattern pattern;
+
+            if (model.getRadio().getAntennaPattern() != null) {
+
+                final Class patternClass;
+                final Properties patternProps = loadConfigProps(model.getRadio().getAntennaPattern().getProperties(),
+                                                                variation);
+
+                try {
+
+                    patternClass = Class.forName(model.getRadio().getAntennaPattern().getJavaClass());
+
+                    if (!AntennaPattern.class.isAssignableFrom(patternClass)) {
+                        throw new RuntimeException("The antenna pattern implementation must implement AntennaPattern.");
+                    }
+                }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the antenna pattern class: " +
+                                               model.getRadio().getAntennaPattern().getJavaClass(), cnf);
+                }
+
+                Injector patternInjector = injector.createChildInjector(new AbstractModule() {
+
+                    protected void configure() {
+
+                        Names.bindProperties(binder(), patternProps);
+
+                        bind(AntennaPattern.class).to(patternClass);
+
+                        // a workaround for guice issue 282
+                        bind(patternClass);
+                    }
+                });
+
+                pattern = patternInjector.getInstance(AntennaPattern.class);
+            }
+            else {
+                pattern = new IsotropicAntenna();
+            }
+
             final Class radioClass;
             final Properties radioProps = loadConfigProps(model.getRadio().getProperties(),
                                                           variation);
@@ -467,6 +511,8 @@ public class SimController {
                 protected void configure() {
 
                     Names.bindProperties(binder(), radioProps);
+
+                    bind(AntennaPattern.class).toInstance(pattern);
 
                     bind(PhysicalModel.class).toInstance(host);
                     bind(AbstractRadio.class).to(radioClass);

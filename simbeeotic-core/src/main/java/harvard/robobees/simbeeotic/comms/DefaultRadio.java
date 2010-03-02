@@ -6,8 +6,7 @@ import com.google.inject.name.Named;
 
 
 /**
- * A radio that has a simple isotropic antenna and transmits at maximum power. There
- * is no concept of bandwidth or rate.
+ * A radio that transmits at maximum power. There is no concept of bandwidth or rate.
  *
  * @author bkate
  */

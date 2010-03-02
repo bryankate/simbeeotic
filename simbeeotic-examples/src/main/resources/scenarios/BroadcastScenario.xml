@@ -5,7 +5,7 @@
           xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
 
     <master-seed>
-        <constant value="112181"/>
+        <constant value="111982"/>
     </master-seed>
 
     <simulation>

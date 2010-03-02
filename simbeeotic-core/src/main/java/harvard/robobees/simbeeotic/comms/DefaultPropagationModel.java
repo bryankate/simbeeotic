@@ -3,19 +3,24 @@ package harvard.robobees.simbeeotic.comms;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.bulletphysics.linearmath.QuaternionUtil;
+import com.bulletphysics.linearmath.Transform;
 
 import javax.vecmath.Vector3f;
+import javax.vecmath.Quat4f;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
 
 import harvard.robobees.simbeeotic.SimClock;
+import harvard.robobees.simbeeotic.util.LinearMathUtil;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 
 
 /**
- * An RF propagation model that treats all radios as point source dipole
- * antennas where transmitted power degrades as a function of range.
+ * An RF propagation model that treats all radios as point sources and
+ * transmitted power degrades as a function of range according to
+ * the inverse-square law.
  * 
  * @author bkate
  */
@@ -50,6 +55,7 @@ public class DefaultPropagationModel implements PropagationModel {
     public void transmit(Radio tx, byte[] data, float txPower) {
 
         Vector3f txPos = tx.getPosition();
+        Vector3f txPointing = tx.getPointing();
         Vector3f diff = new Vector3f();
 
         // generate a random noise level
@@ -65,14 +71,46 @@ public class DefaultPropagationModel implements PropagationModel {
 
             diff.sub(rx.getPosition(), txPos);
 
-            // todo: random degradation of signal
+            float distSq = diff.lengthSquared();
+
+            if (distSq > 0) {
+
+                // find the rotation needed to get from the pointing vector
+                // in the world frame to the antenna frame. the calculated
+                // azimuth and elevation must be in the antenna frame before
+                // querying the antenna pattern
+                Quat4f rot = LinearMathUtil.getRotation(txPointing, new Vector3f(0, 0, 1));
+                Transform trans = new Transform();
+
+                trans.setIdentity();
+
+                if (!rot.equals(new Quat4f())) {
+                    trans.setRotation(rot);
+                }
+
+                // transform the vector between rx and tx using this rotation to make it
+                // relative to the antenna frame
+                trans.transform(diff);
+                diff.normalize();
+
+                float az = (float)Math.atan2(diff.y, diff.x);
+                float el = (float)Math.atan2(diff.x, diff.z);
+
+                // adjust the power according to the tx antenna pattern
+                float output = tx.getAntennaPattern().getPower(az, el);
+
+                txPower *= Math.pow(10, output / 10);
+            }
+
+            // todo: use antenna pattern of receiver?
+
+            // todo: random degradation of signal?
+            float rxPower = txPower;
 
             // simple degradation with inverse-square law assuming a
-            // point source and dipole antenna
-            float rxPower = txPower / diff.lengthSquared();
-
-            if (rxPower == Float.POSITIVE_INFINITY) {
-                rxPower = txPower;
+            // point source and isotropic rx antenna
+            if (distSq >= 1) {
+                rxPower /= distSq;
             }
 
             float snr = 10 * (float)Math.log10(rxPower / noise);
