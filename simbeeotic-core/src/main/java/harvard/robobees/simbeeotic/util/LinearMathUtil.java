@@ -1,6 +1,9 @@
 package harvard.robobees.simbeeotic.util;
 
 
+import com.bulletphysics.linearmath.QuaternionUtil;
+import com.bulletphysics.linearmath.ScalarUtil;
+
 import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Matrix3f;
@@ -105,5 +108,43 @@ public class LinearMathUtil {
         }
 
         return new Vector3f((float)phi, (float)theta, (float)psi);
+    }
+
+
+    /**
+     * Gets the rotation (expressed as a quaternion) necessary to rotate from one
+     * vecgtor to another.
+     *
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     *
+     * @return The rotation required to get from v1 to v2.
+     */
+    public static Quat4f getRotation(final Vector3f v1, final Vector3f v2) {
+
+        // use the axis-angle method to find the rotation between the two
+
+        Vector3f v1Norm = new Vector3f(v1);
+        Vector3f v2Norm = new Vector3f(v2);
+
+        v1Norm.normalize();
+        v2Norm.normalize();
+
+        // parallel vectors?
+        if (ScalarUtil.fuzzyZero(v1Norm.angle(v2Norm))) {
+            return new Quat4f();
+        }
+
+        Vector3f rotAxis = new Vector3f();
+
+        rotAxis.cross(v1Norm, v2Norm);
+        rotAxis.normalize();
+
+        float rotAng = (float)Math.acos(v1Norm.dot(v2Norm));
+
+        Quat4f rot = new Quat4f();
+        QuaternionUtil.setRotation(rot, rotAxis, rotAng);
+
+        return rot;
     }
 }
