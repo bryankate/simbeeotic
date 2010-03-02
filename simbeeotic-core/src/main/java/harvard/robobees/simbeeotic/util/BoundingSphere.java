@@ -1,8 +1,6 @@
 package harvard.robobees.simbeeotic.util;
 
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-
 import javax.vecmath.Vector3f;
 
 

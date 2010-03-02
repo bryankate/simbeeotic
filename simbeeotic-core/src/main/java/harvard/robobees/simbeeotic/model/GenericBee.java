@@ -1,24 +1,23 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import org.apache.log4j.Logger;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
-import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
-
-import javax.vecmath.Vector3f;
-import javax.vecmath.Quat4f;
-
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import com.bulletphysics.linearmath.MotionState;
+import com.bulletphysics.linearmath.Transform;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
+import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import org.apache.log4j.Logger;
+
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 
 
 /**

@@ -1,18 +1,16 @@
 package harvard.robobees.simbeeotic.model.sensor;
 
 
+import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.linearmath.Transform;
-import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.model.Contact;
+import harvard.robobees.simbeeotic.model.EntityInfo;
 
 import javax.vecmath.Vector3f;
-
-import harvard.robobees.simbeeotic.model.EntityInfo;
-import harvard.robobees.simbeeotic.model.Contact;
-import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
-
 import java.util.Properties;
 
 

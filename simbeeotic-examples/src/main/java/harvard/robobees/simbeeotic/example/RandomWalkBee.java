@@ -1,17 +1,16 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.GenericBeeLogic;
 import harvard.robobees.simbeeotic.model.GenericBee;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
 import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
-import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
 import harvard.robobees.simbeeotic.model.sensor.Compass;
-import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
 import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
+import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
+import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
+import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
-
-import org.apache.log4j.Logger;
 
 
 /**

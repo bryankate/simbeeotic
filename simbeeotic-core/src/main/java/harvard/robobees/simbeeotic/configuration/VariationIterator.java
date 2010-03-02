@@ -1,22 +1,22 @@
 package harvard.robobees.simbeeotic.configuration;
 
 
+import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
+import harvard.robobees.simbeeotic.configuration.scenario.Variable;
+import harvard.robobees.simbeeotic.configuration.scenario.Variables;
 import harvard.robobees.simbeeotic.configuration.variable.AbstractLoopingVariable;
 import harvard.robobees.simbeeotic.configuration.variable.LoopingVariableFactory;
 import harvard.robobees.simbeeotic.configuration.variable.RandomVariable;
-import harvard.robobees.simbeeotic.configuration.scenario.Variable;
-import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
-import harvard.robobees.simbeeotic.configuration.scenario.Variables;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Random;
-import java.util.LinkedList;
+import java.util.Set;
 
 
 /**

@@ -1,13 +1,13 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.comms.AbstractRadio;
+import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**

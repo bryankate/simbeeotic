@@ -2,24 +2,19 @@ package harvard.robobees.simbeeotic.util;
 
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**

@@ -1,10 +1,10 @@
 package harvard.robobees.simbeeotic.configuration.variable;
 
 
-import java.util.List;
-import java.util.ArrayList;
-
 import harvard.robobees.simbeeotic.util.DocUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

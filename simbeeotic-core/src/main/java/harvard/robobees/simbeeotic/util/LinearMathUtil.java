@@ -4,9 +4,9 @@ package harvard.robobees.simbeeotic.util;
 import com.bulletphysics.linearmath.QuaternionUtil;
 import com.bulletphysics.linearmath.ScalarUtil;
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.Quat4f;
 import javax.vecmath.Matrix3f;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 
 
 /**

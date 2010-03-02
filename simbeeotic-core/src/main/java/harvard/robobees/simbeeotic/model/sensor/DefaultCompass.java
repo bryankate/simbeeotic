@@ -1,19 +1,11 @@
 package harvard.robobees.simbeeotic.model.sensor;
 
 
-import harvard.robobees.simbeeotic.model.PhysicalEntity;
-import static harvard.robobees.simbeeotic.util.LinearMathUtil.quaternionToEulerZYX;
-
-import javax.vecmath.Vector3f;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-
-import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
-import com.bulletphysics.linearmath.TransformUtil;
-import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import javax.vecmath.Vector3f;
 
 
 /**

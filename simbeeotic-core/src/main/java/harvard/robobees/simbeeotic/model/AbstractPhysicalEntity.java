@@ -1,18 +1,18 @@
 package harvard.robobees.simbeeotic.model;
 
 
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-import com.bulletphysics.linearmath.Transform;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
-import java.util.Set;
+import javax.vecmath.Vector3f;
 import java.util.Random;
+import java.util.Set;
 
 
 /**

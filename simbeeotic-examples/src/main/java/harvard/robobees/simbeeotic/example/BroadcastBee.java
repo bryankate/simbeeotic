@@ -1,12 +1,11 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.GenericBeeLogic;
 import harvard.robobees.simbeeotic.model.GenericBee;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
-
-import org.apache.log4j.Logger;
 
 
 /**

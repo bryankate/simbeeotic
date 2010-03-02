@@ -1,20 +1,18 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.bulletphysics.linearmath.QuaternionUtil;
-import com.bulletphysics.linearmath.Transform;
+import harvard.robobees.simbeeotic.SimClock;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.util.LinearMathUtil;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
-import java.util.Set;
+import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Random;
-
-import harvard.robobees.simbeeotic.SimClock;
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
-import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import java.util.Set;
 
 
 /**

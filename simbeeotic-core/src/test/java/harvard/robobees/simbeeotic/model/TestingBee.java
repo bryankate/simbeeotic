@@ -1,14 +1,14 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import javax.vecmath.Vector3f;
-
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
-import harvard.robobees.simbeeotic.model.sensor.Compass;
 import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
+import harvard.robobees.simbeeotic.model.sensor.Compass;
+import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
 import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
 import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
-import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
+import harvard.robobees.simbeeotic.util.LinearMathUtil;
+
+import javax.vecmath.Vector3f;
 
 
 /**

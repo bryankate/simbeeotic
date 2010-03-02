@@ -1,12 +1,11 @@
 package harvard.robobees.simbeeotic.util;
 
 
+import com.bulletphysics.linearmath.Transform;
 import junit.framework.TestCase;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
-
-import com.bulletphysics.linearmath.Transform;
+import javax.vecmath.Vector3f;
 
 
 /**

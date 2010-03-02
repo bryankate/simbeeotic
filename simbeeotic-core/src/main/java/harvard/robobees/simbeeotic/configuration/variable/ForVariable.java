@@ -3,8 +3,8 @@ package harvard.robobees.simbeeotic.configuration.variable;
 
 import harvard.robobees.simbeeotic.util.DocUtils;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**

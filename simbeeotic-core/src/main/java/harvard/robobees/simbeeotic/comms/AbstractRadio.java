@@ -1,17 +1,15 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.bulletphysics.linearmath.Transform;
-
-import java.util.Set;
-import java.util.HashSet;
-
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.PhysicalModel;
 
 import javax.vecmath.Vector3f;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**

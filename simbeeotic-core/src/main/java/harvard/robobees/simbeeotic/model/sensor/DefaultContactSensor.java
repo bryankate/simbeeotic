@@ -1,13 +1,11 @@
 package harvard.robobees.simbeeotic.model.sensor;
 
 
-import harvard.robobees.simbeeotic.model.PhysicalEntity;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.model.Contact;
 
 import javax.vecmath.Vector3f;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 
 /**

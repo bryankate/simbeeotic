@@ -3,8 +3,8 @@ package harvard.robobees.simbeeotic.model;
 
 import harvard.robobees.simbeeotic.util.BoundingSphere;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 import java.util.Set;
 
 
