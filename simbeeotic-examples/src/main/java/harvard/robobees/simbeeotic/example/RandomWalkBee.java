@@ -12,6 +12,9 @@ import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 
 /**
  * A bee that makes random adjustments to its movement at every time step.
@@ -84,5 +87,23 @@ public class RandomWalkBee implements GenericBeeLogic {
 
     @Override
     public void messageReceived(double time, byte[] data, float rxPower) {
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxVelocity(@Named(value = "max-vel") final float vel) {
+        this.maxVelocity = vel;
+    }
+
+
+    @Inject(optional = true)
+    public final void setVelocitySigma(@Named(value = "vel-sigma") final float sigma) {
+        this.velocitySigma = sigma;
+    }
+
+
+    @Inject(optional = true)
+    public final void setHeadingSigma(@Named(value = "heading-sigma") final float sigma) {
+        this.headingSigma = sigma;
     }
 }
