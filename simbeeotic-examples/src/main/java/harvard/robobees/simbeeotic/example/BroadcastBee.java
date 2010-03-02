@@ -17,6 +17,7 @@ import javax.vecmath.Vector3f;
 public class BroadcastBee implements GenericBeeLogic {
 
     private GenericBee host;
+    private double lastTx = Double.NEGATIVE_INFINITY;
 
     private static Logger logger = Logger.getLogger(BroadcastBee.class);
 
@@ -37,8 +38,12 @@ public class BroadcastBee implements GenericBeeLogic {
     @Override
     public void update(double time) {
 
-        // send a message
-        host.getRadio().transmit(("" + host.getModelId()).getBytes());
+        // send a message every second
+        if ((time - lastTx) >= 1.0) {
+
+            host.getRadio().transmit(("" + host.getModelId()).getBytes());
+            lastTx = time;
+        }
 
         Vector3f pos = host.getTruthPosition();
 
