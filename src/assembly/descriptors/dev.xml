@@ -6,6 +6,7 @@
     <formats>
         <format>dir</format>
     </formats>
+    <baseDirectory>.</baseDirectory>
 
     <!-- assemble jars and 3rd party dependencies -->
     <moduleSets>
