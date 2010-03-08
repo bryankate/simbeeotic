@@ -115,7 +115,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <!--<version>2.6.1</version>-->
+                <version>2.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -134,7 +134,8 @@
                         <duplicateBehavior>skip</duplicateBehavior>
                     </archiverConfig>
                     <descriptors>
-                        <descriptor>src/assembly/descriptors/dist.xml</descriptor>
+                        <descriptor>src/assembly/descriptors/dev.xml</descriptor>
+                        <!--<descriptor>src/assembly/descriptors/dist.xml</descriptor>-->
                     </descriptors>
                 </configuration>
             </plugin>
