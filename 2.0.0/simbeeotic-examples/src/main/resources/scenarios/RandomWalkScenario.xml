@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <step>0.1</step>
+        <end-time>200.0</end-time>
+    </simulation>
+
+    <colony>
+        <hive>
+            <generic-hive>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
+                </logic>
+            </generic-hive>
+            <position x="0" y="0" z="0" />
+        </hive>
+        <bee-group>
+            <generic-bee>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
+                </logic>
+                <sensors>
+                    <sensor>
+                        <name>accelerometer</name>
+                        <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultAccelerometer</java-class>
+                    </sensor>
+                    <sensor>
+                        <name>gyro</name>
+                        <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultGyroscope</java-class>
+                    </sensor>
+                    <sensor>
+                        <name>compass</name>
+                        <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultCompass</java-class>
+                    </sensor>
+                    <sensor>
+                        <name>range-bottom</name>
+                        <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultRangeSensor</java-class>
+                        <offset x="0" y="0" z="-0.1"/>
+                        <pointing x="0" y="0" z="-1"/>
+                        <properties>
+                            <prop name="sigma" value="0.075"/>
+                            <prop name="min-range" value="0.2"/>
+                            <prop name="max-range" value="7.0"/>
+                        </properties>
+                    </sensor>
+                    <sensor>
+                        <name>contact-bottom</name>
+                        <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultContactSensor</java-class>
+                        <offset x="0" y="0" z="-0.1"/>
+                        <properties>
+                            <prop name="radius" value="0.007"/>
+                        </properties>
+                    </sensor>
+                </sensors>
+            </generic-bee>
+            <properties>
+                <prop name="length" value="0.2"/>
+                <prop name="mass" value="0.12"/>
+            </properties>
+            <count>1</count>
+        </bee-group>
+    </colony>
+
+    <looping repetitions="1"/>
+</scenario>
