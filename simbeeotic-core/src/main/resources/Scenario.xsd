@@ -26,7 +26,7 @@
             <xs:element name="environment" type="scenario:Environment" minOccurs="0" maxOccurs="1"/>
             <xs:element name="comms" type="scenario:Comms" minOccurs="0" maxOccurs="1"/>
             <xs:element name="colony" type="scenario:Colony" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="misc-models" type="scenario:MiscModels" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="misc-models" type="scenario:MiscModels" minOccurs="0" maxOccurs="1"/>
             <xs:element name="looping" type="scenario:Looping" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
