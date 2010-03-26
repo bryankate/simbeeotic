@@ -105,13 +105,10 @@ public class DefaultPropagationModel implements PropagationModel {
             // todo: use antenna pattern of receiver?
 
             // todo: random degradation of signal?
-            float rxPower = txPower;
 
             // simple degradation with inverse-square law assuming a
             // point source and isotropic rx antenna
-            if (distSq >= 1) {
-                rxPower /= distSq;
-            }
+            float rxPower = txPower / (distSq + 1);
 
             // todo: copy the data?
             rx.receive(clock.getCurrentTime(), data, rxPower);
