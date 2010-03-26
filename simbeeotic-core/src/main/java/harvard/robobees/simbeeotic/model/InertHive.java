@@ -15,7 +15,7 @@ public class InertHive implements GenericHiveLogic {
      * Does nothing.
      */
     @Override
-    public void intialize(GenericHive bee) {
+    public void initialize(GenericHive bee) {
     }
 
 
