@@ -34,6 +34,7 @@ import harvard.robobees.simbeeotic.configuration.scenario.ConfigProps;
 import harvard.robobees.simbeeotic.configuration.scenario.GenericModelConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
 import harvard.robobees.simbeeotic.configuration.scenario.Sensor;
+import harvard.robobees.simbeeotic.configuration.scenario.MiscModels;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
 import harvard.robobees.simbeeotic.environment.WorldMap;
@@ -46,6 +47,7 @@ import harvard.robobees.simbeeotic.model.GenericHiveLogic;
 import harvard.robobees.simbeeotic.model.GenericModel;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.PhysicalModel;
+import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
 import harvard.robobees.simbeeotic.util.DocUtils;
@@ -63,6 +65,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
+ * The entry point to the simulation. The controller takes descriptions of the scenario and world
+ * and executes the variations.
+ *
  * @author bkate
  */
 public class SimController {
@@ -76,22 +81,10 @@ public class SimController {
     /**
      * Runs all simulation variations of a given scenario.
      *
-     * @param scenarioDoc The raw scenario document, which will be parsed and executed.
-     * @param worldDoc The raw world description document, which will be parsed and loaded.
+     * @param scenario The scenario, describing the models to execute.
+     * @param world The world in which the models operate.
      */
-    public void runSim(final Document scenarioDoc, final Document worldDoc) {
-
-        Scenario scenario;
-        World world;
-
-        try {
-
-            scenario = JaxbHelper.objectFromNode(scenarioDoc, Scenario.class);
-            world = JaxbHelper.objectFromNode(worldDoc, World.class);
-        }
-        catch(JAXBException je) {
-            throw new RuntimeException("Could not parse the given scenario or world file.", je);
-        }
+    public void runSim(final Scenario scenario, final World world) {
 
         final double step = scenario.getSimulation().getStep();
 
@@ -392,6 +385,53 @@ public class SimController {
             }
 
 
+            // create misc models, if any exist
+            final Set<Model> miscModels = new HashSet<Model>();
+
+            if (scenario.getMiscModels() != null) {
+                
+                for (MiscModels.Model model : scenario.getMiscModels().getModel()) {
+
+                    final Class modelClass;
+                    final Properties modelProps = loadConfigProps(model.getProperties(), variation);
+
+                    try {
+
+                        // locate the bee implementation
+                        modelClass = Class.forName(model.getJavaClass());
+
+                        // make sure it implements PhysicalModel
+                        if (!Model.class.isAssignableFrom(modelClass)) {
+                            throw new RuntimeException("The model implementation must extend from Model.");
+                        }
+                    }
+                    catch(ClassNotFoundException cnf) {
+                        throw new RuntimeException("Could not locate the model class: " +
+                                                   model.getJavaClass(), cnf);
+                    }
+
+                    Injector modelInjector = injector.createChildInjector(new AbstractModule() {
+
+                        protected void configure() {
+
+                            Names.bindProperties(binder(), modelProps);
+
+                            // model class
+                            bind(PhysicalModel.class).to(modelClass);
+
+                            // a workaround for guice issue 282
+                            bind(modelClass);
+                        }
+                    });
+
+                    Model m = modelInjector.getInstance(Model.class);
+
+                    miscModels.add(m);
+                    m.initialize();
+                }
+            }
+
+
             // setup a handler for dealing with contacts and informing objects
             // of when they collide
             ContactHandler contactHandler = new ContactHandler(dynamicsWorld);
@@ -432,6 +472,10 @@ public class SimController {
 
                     // update model behaviors
                     b.update(clock.getCurrentTime());
+                }
+
+                for (Model m : miscModels) {
+                    m.update(clock.getCurrentTime());
                 }
             }
 
@@ -767,22 +811,24 @@ public class SimController {
      */
     static final class SimClockImpl implements SimClock {
 
-        private double time = 0;
-        private double step;
+        private long time = 0;
+        private long step;
+
+        private static final long PRECISION = 1000;
 
 
         public SimClockImpl(double step) {
-            this.step = step;
+            this.step = (long)(step * PRECISION);
         }
 
         @Override
         public double getCurrentTime() {
-            return time;
+            return (double)time / PRECISION;
         }
 
         @Override
         public double getTimeStep() {
-            return step;
+            return (double)step / PRECISION;
         }
 
         public void incrementTime() {
