@@ -250,6 +250,17 @@ public class WorldMap {
     }
 
 
+    /**
+     * Gets the radius of a bounding half-sphere that defines the "edge" of the physical world. Physical
+     * entities are permitted to exceed these bounds but they may not be subject to collision detection.
+     *
+     * @return The world bounds, as a radius (in meters).
+     */
+    public float getBounds() {
+        return world.getRadius();
+    }
+
+
     private Properties loadProperties(Meta meta) {
 
         Properties props = new Properties();
