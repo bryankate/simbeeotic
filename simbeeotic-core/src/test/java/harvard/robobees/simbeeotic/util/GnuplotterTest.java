@@ -20,7 +20,7 @@ public class GnuplotterTest extends TestCase {
 
         Gnuplotter plot = new Gnuplotter();
 
-        plot.setProperty("term", "aqua");
+        plot.setProperty("term", "x11");
         plot.unsetProperty("key");
         plot.setProperty("title", "'Test Plot'");
 
