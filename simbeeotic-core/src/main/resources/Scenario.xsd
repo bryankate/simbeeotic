@@ -26,6 +26,7 @@
             <xs:element name="environment" type="scenario:Environment" minOccurs="0" maxOccurs="1"/>
             <xs:element name="comms" type="scenario:Comms" minOccurs="0" maxOccurs="1"/>
             <xs:element name="colony" type="scenario:Colony" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="misc-models" type="scenario:MiscModels" minOccurs="1" maxOccurs="1"/>
             <xs:element name="looping" type="scenario:Looping" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
@@ -137,6 +138,19 @@
                         <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
                         <xs:element name="start-position" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
                         <xs:element name="count" type="xs:int" minOccurs="1" maxOccurs="1"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MiscModels">
+        <xs:sequence>
+            <xs:element name="model" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
