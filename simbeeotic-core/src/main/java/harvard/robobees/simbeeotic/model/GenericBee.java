@@ -82,9 +82,14 @@ public class GenericBee extends GenericModel {
 
         hoverForce = new Vector3f(0, 0, mass * -PhysicalConstants.EARTH_GRAVITY);
 
-        logic.intialize(this);
-
         return body;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected void initializeBehavior() {
+        logic.initialize(this);
     }
 
 

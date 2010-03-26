@@ -35,14 +35,6 @@ public class GenericHive extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
-    public void update(double currTime) {
-
-        logic.update(currTime);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
     protected RigidBody initializeBody(DiscreteDynamicsWorld world) {
 
         // establish the static hive geometry
@@ -65,6 +57,20 @@ public class GenericHive extends GenericModel {
         world.addRigidBody(body, COLLISION_HIVE, COLLISION_NONE);
 
         return body;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected void initializeBehavior() {
+        logic.initialize(this);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void update(double currTime) {
+        logic.update(currTime);
     }
 
 

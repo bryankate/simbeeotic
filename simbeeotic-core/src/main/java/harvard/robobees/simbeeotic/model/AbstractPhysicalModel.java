@@ -16,6 +16,23 @@ public abstract class AbstractPhysicalModel extends AbstractPhysicalEntity imple
     private int modelId;
 
 
+    /**
+     * Initializes any model behavior prior to starting the simulation time steps.
+     */
+    protected abstract void initializeBehavior();
+
+
+    @Override
+    public void initialize() {
+
+        // physical initialization
+        super.initialize();
+
+        // model initialization
+        initializeBehavior();
+    }
+
+
     /** {@inheritDoc} */
     @Override
     public final int getModelId() {
