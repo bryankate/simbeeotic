@@ -39,7 +39,7 @@ public class RandomWalkBee implements GenericBeeLogic {
 
 
     @Override
-    public void intialize(GenericBee bee) {
+    public void initialize(GenericBee bee) {
 
         host = bee;
 

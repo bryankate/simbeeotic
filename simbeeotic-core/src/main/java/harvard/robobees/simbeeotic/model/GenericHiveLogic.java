@@ -19,7 +19,7 @@ public interface GenericHiveLogic extends MessageListener {
      *
      * @param bee The hive that the logic is controlling.
      */
-    public void intialize(GenericHive bee);
+    public void initialize(GenericHive bee);
 
 
     /**

@@ -19,7 +19,7 @@ public interface GenericBeeLogic extends MessageListener {
      *
      * @param bee The bee that the logic is controlling.
      */
-    public void intialize(GenericBee bee);
+    public void initialize(GenericBee bee);
 
 
     /**
