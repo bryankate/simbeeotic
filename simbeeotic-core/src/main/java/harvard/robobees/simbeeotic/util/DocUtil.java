@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
 /**
  * @author bkate
  */
-public class DocUtils {
+public class DocUtil {
 
-    private static final Logger logger = Logger.getLogger(DocUtils.class);
+    private static final Logger logger = Logger.getLogger(DocUtil.class);
 
     /**
      * regex for variable placeholders.<p/>
@@ -46,7 +46,7 @@ public class DocUtils {
      *
      * @param value The value to check.
      *
-     * @return True if the value matches the {@link DocUtils#PLACEHOLDER_PATTERN} regular expression.
+     * @return True if the value matches the {@link DocUtil#PLACEHOLDER_PATTERN} regular expression.
      */
     public static boolean isPlaceholder(String value) {
 
