@@ -6,7 +6,7 @@ import harvard.robobees.simbeeotic.model.sensor.Compass;
 import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
 import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
 import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import harvard.robobees.simbeeotic.util.MathUtil;
 
 import javax.vecmath.Vector3f;
 
@@ -46,7 +46,7 @@ public class TestingBee implements GenericBeeLogic {
         Vector3f angVel = host.getTruthAngularVelocity();
         Vector3f linAccel = host.getTruthLinearAcceleration();
         Vector3f angAccel = host.getTruthAngularAcceleration();
-        Vector3f orient = LinearMathUtil.quaternionToEulerZYX(host.getTruthOrientation());
+        Vector3f orient = MathUtil.quaternionToEulerZYX(host.getTruthOrientation());
 
         float heading = compass.getHeading();
         Vector3f accelSens = accelerometer.getLinearAcceleration();
