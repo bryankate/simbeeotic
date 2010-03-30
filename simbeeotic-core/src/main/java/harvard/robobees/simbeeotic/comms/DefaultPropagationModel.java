@@ -6,7 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimClock;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import harvard.robobees.simbeeotic.util.MathUtil;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -29,9 +29,9 @@ public class DefaultPropagationModel implements PropagationModel {
     private Set<Radio> radios = new HashSet<Radio>();
 
     // parameters
-    private float rangeThreshSq = 100;       // m
-    private float noiseFloorMean = 0.01f;    // mW
-    private float noiseFloorSigma = 0.005f;  // mW
+    private float rangeThreshSq = 100;      // m
+    private float noiseFloorMean = -100;    // dBm
+    private float noiseFloorSigma = 10;     // dBm
 
 
     /** {@inheritDoc} */
@@ -73,13 +73,15 @@ public class DefaultPropagationModel implements PropagationModel {
                 continue;
             }
 
+            float txPwr = (float)MathUtil.dbmToMw(txPower);
+
             if (distSq > 0) {
 
                 // find the rotation needed to get from the pointing vector
                 // in the world frame to the antenna frame. the calculated
                 // azimuth and elevation must be in the antenna frame before
                 // querying the antenna pattern
-                Quat4f rot = LinearMathUtil.getRotation(txPointing, new Vector3f(0, 0, 1));
+                Quat4f rot = MathUtil.getRotation(txPointing, new Vector3f(0, 0, 1));
                 Transform trans = new Transform();
 
                 trans.setIdentity();
@@ -99,7 +101,7 @@ public class DefaultPropagationModel implements PropagationModel {
                 // adjust the power according to the tx antenna pattern
                 float output = tx.getAntennaPattern().getPower(az, el);
 
-                txPower *= Math.pow(10, output / 10);
+                txPwr *= Math.pow(10, output / 10);
             }
 
             // todo: use antenna pattern of receiver?
@@ -108,10 +110,10 @@ public class DefaultPropagationModel implements PropagationModel {
 
             // simple degradation with inverse-square law assuming a
             // point source and isotropic rx antenna
-            float rxPower = txPower / (distSq + 1);
+            float rxPower = txPwr / (distSq + 1);
 
             // todo: copy the data?
-            rx.receive(clock.getCurrentTime(), data, rxPower);
+            rx.receive(clock.getCurrentTime(), data, (float)MathUtil.mwToDbm(rxPower));
         }
     }
 
@@ -120,7 +122,7 @@ public class DefaultPropagationModel implements PropagationModel {
      * {@inheritDoc}
      *
      * This implementation generates a random value using a Gaussian
-     * distribution around a noise floor mean.
+     * distribution around a noise floor mean using the given sigma.
      */
     @Override
     public float getNoiseFloor() {

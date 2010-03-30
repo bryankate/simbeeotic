@@ -58,7 +58,7 @@ public class BroadcastBee implements GenericBeeLogic {
 
         logger.info("ID: " + host.getModelId() + "  " +
                     "time: " + time + "  " +
-                    "power: " + rxPower + "  " +
+                    "power: " + rxPower + "  (dBm) " +
                     "recv from: " + new String(data));
     }
 }

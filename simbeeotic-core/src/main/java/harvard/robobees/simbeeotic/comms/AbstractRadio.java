@@ -86,7 +86,7 @@ public abstract class AbstractRadio implements Radio {
      *
      * @param time The simulation time when the message was received.
      * @param data The data received.
-     * @param rxPower The strength of the received signal (in mW).
+     * @param rxPower The strength of the received signal (in dBm).
      */
     protected final void notifyListeners(double time, byte[] data, float rxPower) {
 

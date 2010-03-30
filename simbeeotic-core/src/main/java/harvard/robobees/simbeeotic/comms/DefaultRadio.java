@@ -13,8 +13,8 @@ import com.google.inject.name.Named;
  */
 public class DefaultRadio extends AbstractRadio {
 
-    private float snrMargin = 10;   // dB
-    private float maxPower = 50;    // mW
+    private float snrMargin = 10;   // dBm
+    private float maxPower = 15;    // dBm
     // You don't snuggle with Max Power, you strap yourself in and feel the G's!
 
 
@@ -38,8 +38,7 @@ public class DefaultRadio extends AbstractRadio {
     @Override
     public void receive(double time, byte[] data, float rxPower) {
 
-        float noise = getPropagationModel().getNoiseFloor();
-        float snr = 10 * (float)Math.log10(rxPower / noise);
+        float snr = rxPower - getPropagationModel().getNoiseFloor();
 
         // enough power to capture signal?
         if (snr >= snrMargin) {

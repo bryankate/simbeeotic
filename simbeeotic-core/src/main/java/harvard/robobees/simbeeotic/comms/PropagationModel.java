@@ -32,7 +32,7 @@ public interface PropagationModel {
      *
      * @param tx The {@link Radio} that is transmitting.
      * @param data The data to be transferred.
-     * @param txPower The amount of energy used to transmit the data (in mW).
+     * @param txPower The amount of energy used to transmit the data (in dBm).
      */
     public void transmit(Radio tx, byte[] data, float txPower);
 
@@ -41,7 +41,7 @@ public interface PropagationModel {
      * Gets a noise floor measurement from the RF environment. The returned value
      * from this call may not be constant over time.
      *
-     * @return The current noise floor (mW).
+     * @return The current noise floor (in dBm).
      */
     public float getNoiseFloor();
 }

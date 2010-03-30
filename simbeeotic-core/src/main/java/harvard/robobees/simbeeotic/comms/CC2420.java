@@ -17,8 +17,8 @@ public class CC2420 extends AbstractRadio {
 
     private Random rand;
 
-    private double txPower = 1.0;        // mW (0 dBm)
-    private double minRxPower = 1.0E-9;  // mW (-90 dBm)
+    private double txPower = 0;       // dBm
+    private double minRxPower = -90;  // dBm
 
     private static Logger logger = Logger.getLogger(CC2420.class);
 
@@ -55,7 +55,7 @@ public class CC2420 extends AbstractRadio {
         }
 
         // consult the PRR/SNR curve
-        double snr = 10 * Math.log10(rxPower / getPropagationModel().getNoiseFloor());  // dB
+        double snr = rxPower - getPropagationModel().getNoiseFloor();
 
         // todo: find a more reliable source?
         // this function approximates the SNR curve from the paper
@@ -82,42 +82,42 @@ public class CC2420 extends AbstractRadio {
 
             case 31:
                 
-                txPower = 1.0;  // 0 dBm
+                txPower = 0;
                 break;
 
             case 27:
 
-                txPower = 0.794328234724;  // -1 dBm
+                txPower = -1;
                 break;
 
             case 23:
 
-                txPower = 0.501187233627;  // -3 dBm
+                txPower = -3;
                 break;
 
             case 19:
 
-                txPower = 0.316227766017;  // -5 dBm
+                txPower = -5;
                 break;
 
             case 15:
 
-                txPower = 0.199526231497;  // -7 dBm
+                txPower = -7;
                 break;
 
             case 11:
 
-                txPower = 0.1;  // -10 dBm
+                txPower = -10;
                 break;
 
             case 7:
 
-                txPower = 0.0316227766017;  // -15 dBm
+                txPower = -15;
                 break;
 
             case 3:
 
-                txPower = 0.00316227766017;  // -25 dBm
+                txPower = -25;
                 break;
 
             default:
