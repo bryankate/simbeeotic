@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic.configuration.variable;
 
 
-import harvard.robobees.simbeeotic.util.DocUtils;
+import harvard.robobees.simbeeotic.util.DocUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +28,7 @@ public class ConstantVariable extends AbstractLoopingVariable {
 
         this.value = value;
 
-        if ((value != null) && DocUtils.isPlaceholder(value)) {
-            addDependency(DocUtils.extractPlaceholderName(value));
-        }
+        addDepIfNeeded(value);
     }
 
 
@@ -50,8 +48,8 @@ public class ConstantVariable extends AbstractLoopingVariable {
         String val = value;
 
         // see if it needs to be resolved
-        if (DocUtils.isPlaceholder(value)) {
-            val = getDependencyValue(DocUtils.extractPlaceholderName(value));
+        if (DocUtil.isPlaceholder(value)) {
+            val = getDependencyValue(DocUtil.extractPlaceholderName(value));
         }
 
         results.add(val);
