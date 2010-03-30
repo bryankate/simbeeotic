@@ -13,7 +13,7 @@ import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
-import harvard.robobees.simbeeotic.util.LinearMathUtil;
+import harvard.robobees.simbeeotic.util.MathUtil;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Quat4f;
@@ -147,7 +147,7 @@ public class GenericBee extends GenericModel {
         float heading = (float)Math.atan2(unitX.y, unitX.x) + angle;
         Quat4f quat = new Quat4f();
 
-        MatrixUtil.getRotation(LinearMathUtil.eulerZYXtoDCM(0, 0, heading), quat);
+        MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM(0, 0, heading), quat);
 
         body.getWorldTransform(orient);
         orient.setRotation(quat);
