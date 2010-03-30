@@ -12,7 +12,7 @@ import javax.vecmath.Vector3f;
 /**
  * @author bkate
  */
-public class LinearMathUtil {
+public class MathUtil {
 
 
     /**
@@ -147,4 +147,29 @@ public class LinearMathUtil {
 
         return rot;
     }
+
+
+    /**
+     * Converts a value in millWatts to dBm (the power ratio referenced to one milliWatt).
+     *
+     * @param mW The input power.
+     *
+     * @return The power ratio in dBm.
+     */
+    public static double mwToDbm(final double mW) {
+        return 10 * Math.log10(mW / 1);
+    }
+
+
+    /**
+     * Converts a power ratio given in dBm to milliWatts.
+     *
+     * @param dBm The power ratio to convert.
+     *
+     * @return The power in milliWatts.
+     */
+    public static double dbmToMw(final double dBm) {
+        return Math.pow(10, dBm / 10);
+    }
+
 }
