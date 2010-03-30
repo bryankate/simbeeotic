@@ -50,13 +50,10 @@ import harvard.robobees.simbeeotic.model.PhysicalModel;
 import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
-import harvard.robobees.simbeeotic.util.DocUtils;
-import harvard.robobees.simbeeotic.util.JaxbHelper;
+import harvard.robobees.simbeeotic.util.DocUtil;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
 
 import javax.vecmath.Vector3f;
-import javax.xml.bind.JAXBException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
@@ -716,9 +713,9 @@ public class SimController {
 
             String val = prop.getValue();
 
-            if (DocUtils.isPlaceholder(val)) {
+            if (DocUtil.isPlaceholder(val)) {
 
-                String var = DocUtils.extractPlaceholderName(val);
+                String var = DocUtil.extractPlaceholderName(val);
 
                 if (variation.getVariables().containsKey(var)) {
                     val = variation.getVariables().get(val);
@@ -727,7 +724,7 @@ public class SimController {
 
                     logger.warn("The variable '" + prop.getName() + "' has not been set.");
 
-                    String def = DocUtils.extractPlaceholderDefault(val);
+                    String def = DocUtil.extractPlaceholderDefault(val);
 
                     if (def != null) {
                         val = def;
