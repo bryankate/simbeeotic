@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic;
 
 
-import harvard.robobees.simbeeotic.util.DocUtils;
+import harvard.robobees.simbeeotic.util.DocUtil;
 import harvard.robobees.simbeeotic.util.JaxbHelper;
 import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
 import harvard.robobees.simbeeotic.configuration.world.World;
@@ -101,7 +101,7 @@ public class Simbeeotic {
 
                 InputStream stream = new FileInputStream((File)opts.valueOf(OPTION_SCENARIO));
 
-                scenarioDoc = DocUtils.getDocumentFromXml(stream);
+                scenarioDoc = DocUtil.getDocumentFromXml(stream);
             }
             catch(FileNotFoundException fnf) {
 
@@ -125,7 +125,7 @@ public class Simbeeotic {
 
                 InputStream stream = new FileInputStream((File)opts.valueOf(OPTION_WORLD));
 
-                worldDoc = DocUtils.getDocumentFromXml(stream);
+                worldDoc = DocUtil.getDocumentFromXml(stream);
             }
             catch(FileNotFoundException fnf) {
 
