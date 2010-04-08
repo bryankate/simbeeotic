@@ -29,4 +29,11 @@ public interface GenericHiveLogic extends MessageListener {
      * @param time The start time of the current time step (in seconds).
      */
     public void update(double time);
+
+
+    /**
+     * Finalizes the hive logic. This method will be invoked after all simulation
+     * steps have completed.
+     */
+    public void finish();
 }

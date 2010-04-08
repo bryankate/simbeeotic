@@ -29,6 +29,14 @@ public interface Model {
 
 
     /**
+     * Finalizes the model after the simulation has completed. This method will be
+     * called exactly once, and no call to {@link #update(double)} will be made after this
+     * method is invoked.
+     */
+    public void finish();
+
+
+    /**
      * Retrieves the unique model identifier assigned by the simulation executive
      * prior to initialization.
      *

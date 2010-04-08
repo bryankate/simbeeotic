@@ -95,6 +95,13 @@ public class GenericBee extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
+    public void finish() {
+        logic.finish();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public final void update(double currTime) {
 
         logic.update(currTime);

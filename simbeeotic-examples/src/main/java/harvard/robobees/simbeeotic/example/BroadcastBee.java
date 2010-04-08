@@ -61,4 +61,9 @@ public class BroadcastBee implements GenericBeeLogic {
                     "power: " + rxPower + "  (dBm) " +
                     "recv from: " + new String(data));
     }
+
+
+    @Override
+    public void finish() {
+    }
 }

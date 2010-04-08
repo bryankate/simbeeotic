@@ -69,6 +69,13 @@ public class GenericHive extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
+    public void finish() {
+        logic.finish();
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public void update(double currTime) {
         logic.update(currTime);
     }

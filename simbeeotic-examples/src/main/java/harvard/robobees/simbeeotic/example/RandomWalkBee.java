@@ -90,6 +90,11 @@ public class RandomWalkBee implements GenericBeeLogic {
     }
 
 
+    @Override
+    public void finish() {
+    }
+
+
     @Inject(optional = true)
     public final void setMaxVelocity(@Named(value = "max-vel") final float vel) {
         this.maxVelocity = vel;
