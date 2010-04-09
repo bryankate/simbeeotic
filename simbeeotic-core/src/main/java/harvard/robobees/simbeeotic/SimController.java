@@ -490,19 +490,28 @@ public class SimController {
                 }
             }
 
-            logger.info("");
-            logger.info("--------------------------------------------");
-            logger.info("Scenario variation " + currVariation + " executed in " +
-                        (double)(System.currentTimeMillis() - variationStartTime) / 1000.0 + " seconds.");
-            logger.info("--------------------------------------------");
+            double runTime = (double)(System.currentTimeMillis() - variationStartTime) / 1000.0;
 
             // cleanup
             map.destroy();
+
+            hive.finish();
             hive.destroy();
 
             for (PhysicalModel b : bees) {
+
+                b.finish();
                 b.destroy();
             }
+
+            for (Model m : miscModels) {
+                m.finish();
+            }
+
+            logger.info("");
+            logger.info("--------------------------------------------");
+            logger.info("Scenario variation " + currVariation + " executed in " + runTime + " seconds.");
+            logger.info("--------------------------------------------");
         }
     }
 
