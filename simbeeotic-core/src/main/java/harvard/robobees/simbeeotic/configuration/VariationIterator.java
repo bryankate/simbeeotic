@@ -139,7 +139,7 @@ public class VariationIterator implements Iterator<Variation>, Iterable<Variatio
         // outer loop is for the master seeds
         for (String currMasterSeed : masterSeed.getValues()) {
 
-            long seed = Long.valueOf(currMasterSeed);
+            long seed = (long)Math.floor(Double.valueOf(currMasterSeed));
             Random rand = new Random(seed);
             List<Variation> finishedMaps = new LinkedList<Variation>();
 
