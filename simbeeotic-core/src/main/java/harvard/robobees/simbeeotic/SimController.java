@@ -91,6 +91,7 @@ public class SimController {
         // todo: parallelize the running of variations
         for (Variation variation : variations) {
 
+            final int varId = currVariation;
             final AtomicInteger nextId = new AtomicInteger(0);
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
@@ -124,6 +125,9 @@ public class SimController {
 
                 protected void configure() {
 
+                    // the variation number of this scenario variation
+                    bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
+
                     // the global access to timing information
                     bind(SimClock.class).annotatedWith(GlobalScope.class).toInstance(clock);
 
@@ -140,14 +144,9 @@ public class SimController {
                 public long generateRandomSeed() {
                     return variationSeedGenertor.nextLong();
                 }
-
-                @Provides @Named("model-id")
-                public int generateModelId() {
-                    return nextId.incrementAndGet();
-                }
             };
 
-            Injector injector = Guice.createInjector(baseModule);
+            Injector baseInjector = Guice.createInjector(baseModule);
 
 
             // setup the RF environment
@@ -180,7 +179,7 @@ public class SimController {
                 commModelClass = DefaultPropagationModel.class;
             }
 
-            Injector propModelInjector = injector.createChildInjector(new AbstractModule() {
+            Injector propModelInjector = baseInjector.createChildInjector(new AbstractModule() {
 
                 protected void configure() {
 
@@ -197,7 +196,7 @@ public class SimController {
             commModel = propModelInjector.getInstance(PropagationModel.class);
 
             // update the main injector to contain the global comm model
-            injector = injector.createChildInjector(new AbstractModule() {
+            baseInjector = baseInjector.createChildInjector(new AbstractModule() {
 
                 protected void configure() {
 
@@ -241,7 +240,7 @@ public class SimController {
                 hiveClass = GenericHive.class;
             }
 
-            Injector hiveInjector = injector.createChildInjector(new AbstractModule() {
+            Injector hiveInjector = baseInjector.createChildInjector(new AbstractModule() {
 
                 protected void configure() {
 
@@ -256,13 +255,18 @@ public class SimController {
                     // a workaround for guice issue 282
                     bind(hiveClass);
                 }
+
+                @Provides @Named("model-id")
+                public int generateModelId() {
+                    return nextId.incrementAndGet();
+                }
             });
 
             hive = hiveInjector.getInstance(PhysicalModel.class);
 
             // if a generic hive, instantiate components
             if (scenario.getColony().getHive().getGenericHive() != null) {
-                loadGenericModelComponents(injector, scenario.getColony().getHive().getGenericHive(), variation, hive, false);
+                loadGenericModelComponents(baseInjector, scenario.getColony().getHive().getGenericHive(), variation, hive, false);
             }
 
             hive.initialize();
@@ -351,7 +355,7 @@ public class SimController {
                     beeClass = GenericBee.class;
                 }
 
-                Injector beeInjector = injector.createChildInjector(new AbstractModule() {
+                Injector beeInjector = baseInjector.createChildInjector(new AbstractModule() {
 
                     protected void configure() {
 
@@ -366,6 +370,11 @@ public class SimController {
                         // a workaround for guice issue 282
                         bind(beeClass);
                     }
+
+                    @Provides @Named("model-id")
+                    public int generateModelId() {
+                        return nextId.incrementAndGet();
+                    }
                 });
 
                 for (int i = 0; i < group.getCount(); i++) {
@@ -373,7 +382,7 @@ public class SimController {
                     PhysicalModel b = beeInjector.getInstance(PhysicalModel.class);
 
                     if (group.getGenericBee() != null) {
-                        loadGenericModelComponents(injector, group.getGenericBee(), variation, b, true);
+                        loadGenericModelComponents(baseInjector, group.getGenericBee(), variation, b, true);
                     }
 
                     b.initialize();
@@ -407,7 +416,7 @@ public class SimController {
                                                    model.getJavaClass(), cnf);
                     }
 
-                    Injector modelInjector = injector.createChildInjector(new AbstractModule() {
+                    Injector modelInjector = baseInjector.createChildInjector(new AbstractModule() {
 
                         protected void configure() {
 
@@ -418,6 +427,11 @@ public class SimController {
 
                             // a workaround for guice issue 282
                             bind(modelClass);
+                        }
+
+                        @Provides @Named("model-id")
+                        public int generateModelId() {
+                            return nextId.incrementAndGet();
                         }
                     });
 

@@ -40,7 +40,9 @@ public abstract class AbstractPhysicalModel extends AbstractPhysicalEntity imple
     }
 
 
-    @Inject
+    // this is not really optional. we just made it optional here to avoid having it double-injected
+    // when an instance of this class is used in a Guice child injector module.
+    @Inject(optional = true)
     public final void setModelId(@Named("model-id") final int id) {
 
         if (!isInitialized()) {
