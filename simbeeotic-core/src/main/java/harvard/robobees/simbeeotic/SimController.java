@@ -91,11 +91,16 @@ public class SimController {
         // todo: parallelize the running of variations
         for (Variation variation : variations) {
 
-            final int varId = currVariation;
+            final int varId = ++currVariation;
+
+            logger.info("");
+            logger.info("--------------------------------------------");
+            logger.info("Executing scenario variation " + currVariation);
+            logger.info("--------------------------------------------");
+            logger.info("");
+
             final AtomicInteger nextId = new AtomicInteger(0);
             final Random variationSeedGenertor = new Random(variation.getSeed());
-
-            currVariation++;
 
             // make a new clock
             final SimClockImpl clock = new SimClockImpl(step);
@@ -448,12 +453,6 @@ public class SimController {
             ContactHandler contactHandler = new ContactHandler(dynamicsWorld);
 
 
-            logger.info("");
-            logger.info("--------------------------------------------");
-            logger.info("Executing scenario variation " + currVariation);
-            logger.info("--------------------------------------------");
-            logger.info("");
-
             long variationStartTime = System.currentTimeMillis();
 
             // run it
@@ -741,7 +740,7 @@ public class SimController {
                 String var = DocUtil.extractPlaceholderName(val);
 
                 if (variation.getVariables().containsKey(var)) {
-                    val = variation.getVariables().get(val);
+                    val = variation.getVariables().get(var);
                 }
                 else {
 
@@ -834,7 +833,7 @@ public class SimController {
         private long time = 0;
         private long step;
 
-        private static final long PRECISION = 1000;
+        private static final long PRECISION = 1000000;
 
 
         public SimClockImpl(double step) {
