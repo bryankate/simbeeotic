@@ -78,7 +78,8 @@ public class GenericBee extends GenericModel {
         // todo: put the bee's properties into the entity info?
         body.setUserPointer(new EntityInfo());
 
-        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_BEE | COLLISION_FLOWER));
+//        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_BEE | COLLISION_FLOWER));
+        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
 
         hoverForce = new Vector3f(0, 0, mass * -PhysicalConstants.EARTH_GRAVITY);
 
