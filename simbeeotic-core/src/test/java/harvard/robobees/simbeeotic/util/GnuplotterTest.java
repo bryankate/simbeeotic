@@ -26,15 +26,6 @@ public class GnuplotterTest extends TestCase {
 
         plot.setPlotParams("u 1:($2*10) w l");
 
-        try {
-
-            plot.plot();
-            fail("plotting with no data should throw an exception!");
-        }
-        catch(Exception e) {
-            // test passed
-        }
-
         plot.setData(lineData);
         plot.plot();
 
