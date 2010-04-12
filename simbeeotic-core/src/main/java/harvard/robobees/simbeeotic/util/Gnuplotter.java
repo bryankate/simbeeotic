@@ -141,7 +141,7 @@ public class Gnuplotter {
 
 
     public void setData(String lines) {
-        setData(DEFAULT_PLOT);
+        setData(DEFAULT_PLOT, lines);
     }
 
 
