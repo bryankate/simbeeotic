@@ -53,7 +53,7 @@ public class TestRadio implements Radio {
 
     @Override
     public void receive(double time, byte[] data, double rxPower, double frequency) {
-        logger.info("received message wih power: " + rxPower + " dBm ( " + MathUtil.dbmToMw(rxPower) + " mW )");
+        logger.debug("received message wih power: " + rxPower + " dBm ( " + MathUtil.dbmToMw(rxPower) + " mW )");
     }
 
 
