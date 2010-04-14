@@ -35,7 +35,7 @@ public class InertHive implements GenericHiveLogic {
      * Does nothing.
      */
     @Override
-    public void messageReceived(double time, byte[] data, float rxPower) {
+    public void messageReceived(double time, byte[] data, double rxPower) {
     }
 
 

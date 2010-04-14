@@ -15,7 +15,7 @@
 
     <comms>
         <propagation-model>
-            <java-class>harvard.robobees.simbeeotic.comms.DefaultPropagationModel</java-class>
+            <java-class>harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel</java-class>
             <properties>
                 <prop name="noise-floor-mean" value="-50"/>
                 <prop name="noise-floor-sigma" value="10"/>

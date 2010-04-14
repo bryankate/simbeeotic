@@ -54,7 +54,7 @@ public class BroadcastBee implements GenericBeeLogic {
 
 
     @Override
-    public void messageReceived(double time, byte[] data, float rxPower) {
+    public void messageReceived(double time, byte[] data, double rxPower) {
 
         logger.info("ID: " + host.getModelId() + "  " +
                     "time: " + time + "  " +

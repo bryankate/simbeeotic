@@ -72,7 +72,7 @@ public class TestingBee implements GenericBeeLogic {
 
 
     @Override
-    public void messageReceived(double time, byte[] data, float rxPower) {
+    public void messageReceived(double time, byte[] data, double rxPower) {
     }
 
 
