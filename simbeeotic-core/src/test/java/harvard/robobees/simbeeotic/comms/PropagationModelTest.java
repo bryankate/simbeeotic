@@ -27,7 +27,7 @@ public class PropagationModelTest extends TestCase {
         byte[] data = new byte[] {0x01, 0x02, 0x03, 0x04};
 
         // move the receiver along a line away from the transmitter
-        for (float i = 0; i < 20; i += 0.1) {
+        for (float i = 0; i < 20; i += 0.01) {
 
             rx.setPosition(new Vector3f(i, 0, 1));
 
@@ -51,7 +51,7 @@ public class PropagationModelTest extends TestCase {
         byte[] data = new byte[] {0x01, 0x02, 0x03, 0x04};
 
         // move the receiver along a line away from the transmitter
-        for (float i = 0; i < 20; i += 0.1) {
+        for (float i = 0; i < 20; i += 0.01) {
 
             rx.setPosition(new Vector3f(i, 0, 1));
 
