@@ -81,7 +81,7 @@ public class GenericBee extends GenericModel {
 //        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_BEE | COLLISION_FLOWER));
         world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
 
-        hoverForce = new Vector3f(0, 0, mass * -PhysicalConstants.EARTH_GRAVITY);
+        hoverForce = new Vector3f(0, 0, mass * (float)-PhysicalConstants.EARTH_GRAVITY);
 
         return body;
     }

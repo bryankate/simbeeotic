@@ -23,7 +23,7 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import harvard.robobees.simbeeotic.comms.AbstractRadio;
 import harvard.robobees.simbeeotic.comms.AntennaPattern;
-import harvard.robobees.simbeeotic.comms.DefaultPropagationModel;
+import harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel;
 import harvard.robobees.simbeeotic.comms.IsotropicAntenna;
 import harvard.robobees.simbeeotic.comms.PropagationModel;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
@@ -120,7 +120,7 @@ public class SimController {
             final DiscreteDynamicsWorld dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, overlappingPairCache,
                                                                                   solver, collisionConfiguration);
 
-            dynamicsWorld.setGravity(new Vector3f(0, 0, EARTH_GRAVITY));
+            dynamicsWorld.setGravity(new Vector3f(0, 0, (float)EARTH_GRAVITY));
 
             // setup the simulated world (obstacle, flowers, etc)
             final WorldMap map = new WorldMap(world, dynamicsWorld, variationSeedGenertor.nextLong());
@@ -181,7 +181,7 @@ public class SimController {
             else {
 
                 commModelProps = new Properties();
-                commModelClass = DefaultPropagationModel.class;
+                commModelClass = FreeSpacePropagationModel.class;
             }
 
             Injector propModelInjector = baseInjector.createChildInjector(new AbstractModule() {
