@@ -33,8 +33,9 @@ public interface PropagationModel {
      * @param tx The {@link Radio} that is transmitting.
      * @param data The data to be transferred.
      * @param txPower The amount of energy used to transmit the data (in dBm).
+     * @param band The RF band for this transmission.
      */
-    public void transmit(Radio tx, byte[] data, float txPower);
+    public void transmit(Radio tx, byte[] data, double txPower, Band band);
 
 
     /**
@@ -43,5 +44,5 @@ public interface PropagationModel {
      *
      * @return The current noise floor (in dBm).
      */
-    public float getNoiseFloor();
+    public double getNoiseFloor();
 }

@@ -13,8 +13,9 @@ import com.google.inject.name.Named;
  */
 public class DefaultRadio extends AbstractRadio {
 
-    private float snrMargin = 10;   // dBm
-    private float maxPower = 15;    // dBm
+    private Band band = new Band(2442.5, 85);
+    private double snrMargin = 10;          // dBm
+    private double maxPower = 15;           // dBm
     // You don't snuggle with Max Power, you strap yourself in and feel the G's!
 
 
@@ -25,7 +26,7 @@ public class DefaultRadio extends AbstractRadio {
      */
     @Override
     public void transmit(byte[] data) {
-        getPropagationModel().transmit(this, data, maxPower);
+        getPropagationModel().transmit(this, data, maxPower, band);
     }
 
 
@@ -36,9 +37,9 @@ public class DefaultRadio extends AbstractRadio {
      * registered with this radio to receive notifications when a message is received.
      */
     @Override
-    public void receive(double time, byte[] data, float rxPower) {
+    public void receive(double time, byte[] data, double rxPower, double frequency) {
 
-        float snr = rxPower - getPropagationModel().getNoiseFloor();
+        double snr = rxPower - getPropagationModel().getNoiseFloor();
 
         // enough power to capture signal?
         if (snr >= snrMargin) {
@@ -47,14 +48,33 @@ public class DefaultRadio extends AbstractRadio {
     }
 
 
+    /** {@inheritDoc} */
+    @Override
+    public Band getOperatingBand() {
+        return band;
+    }
+
+
     @Inject(optional = true)
-    public final void setMaxPower(@Named(value = "max-power") final float power) {
+    public final void setCenterFrequency(@Named(value = "center-frequency") final double freq) {
+        this.band = new Band(freq, this.band.getBandwidth());
+    }
+
+
+    @Inject(optional = true)
+    public final void setBandwidth(@Named(value = "bandwidth") final double bandwidth) {
+        this.band = new Band(this.band.getCenterFrequency(), bandwidth);
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxPower(@Named(value = "max-power") final double power) {
         this.maxPower = power;
     }
 
 
     @Inject(optional = true)
-    public final void setSnrMargin(@Named(value = "snr-margin") final float margin) {
+    public final void setSnrMargin(@Named(value = "snr-margin") final double margin) {
         this.snrMargin = margin;
     }
 }

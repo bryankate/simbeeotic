@@ -16,5 +16,5 @@ public interface MessageListener {
      * @param data The data received.
      * @param rxPower The strength of the received signal (in dBm).
      */
-    public void messageReceived(double time, byte[] data, float rxPower);
+    public void messageReceived(double time, byte[] data, double rxPower);
 }

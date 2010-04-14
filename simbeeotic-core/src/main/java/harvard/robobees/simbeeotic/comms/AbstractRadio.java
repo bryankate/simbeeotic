@@ -88,7 +88,7 @@ public abstract class AbstractRadio implements Radio {
      * @param data The data received.
      * @param rxPower The strength of the received signal (in dBm).
      */
-    protected final void notifyListeners(double time, byte[] data, float rxPower) {
+    protected final void notifyListeners(double time, byte[] data, double rxPower) {
 
         for (MessageListener l : listeners) {
             l.messageReceived(time, data, rxPower);

@@ -17,8 +17,11 @@ public class CC2420 extends AbstractRadio {
 
     private Random rand;
 
-    private double txPower = 0;       // dBm
-    private double minRxPower = -90;  // dBm
+    private Band band = new Band(2405, 5);  // channel 11
+    private double txPower = 0;             // dBm
+    private double minRxPower = -90;        // dBm
+
+    private static Band operating = new Band(2442.5, 85);  // zigbee spectrum
 
     private static Logger logger = Logger.getLogger(CC2420.class);
 
@@ -26,13 +29,13 @@ public class CC2420 extends AbstractRadio {
     /**
      * {@inheritDoc}
      *
-     * Transmits a packet at the currently set power level. The CC2420 spec defines
-     * 8 transmit power settings ranging from 0 dBm to -25 dBm. The transmit power
-     * setting can be adjusted with the {@link
+     * Transmits a packet at the currently set power level on the currently set channel.
+     * The CC2420 spec defines 8 transmit power settings ranging from 0 dBm to -25 dBm.
+     * The transmit power can be adjusted with the {@link #setTransmitPowerLevel(int)} method.
      */
     @Override
     public void transmit(byte[] data) {
-        getPropagationModel().transmit(this, data, (float)txPower);
+        getPropagationModel().transmit(this, data, txPower, band);
     }
 
 
@@ -47,12 +50,14 @@ public class CC2420 extends AbstractRadio {
      * </ol>
      */
     @Override
-    public void receive(double time, byte[] data, float rxPower) {
+    public void receive(double time, byte[] data, double rxPower, double frequency) {
 
         // check if it is within the range of sensitivity of the radio
         if (rxPower < minRxPower) {
             return;
         }
+
+        // todo: check the frequency against the current channel
 
         // consult the PRR/SNR curve
         double snr = rxPower - getPropagationModel().getNoiseFloor();
@@ -65,6 +70,13 @@ public class CC2420 extends AbstractRadio {
         if (rand.nextDouble() <= prr) {
             notifyListeners(time, data, rxPower);
         }
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public Band getOperatingBand() {
+        return operating;
     }
 
 
@@ -123,6 +135,25 @@ public class CC2420 extends AbstractRadio {
             default:
                 logger.warn("Unrecognized TX power level, using default level.");
         }
+    }
+
+
+    /**
+     * Sets the channel on which the radio is operating.
+     *
+     * @param channel The operating channel. It must be an integer in the range (11,26).
+     */
+    @Inject(optional = true)
+    public final void setChannel(@Named(value = "channel") final int channel) {
+
+        if ((channel < 11) || (channel > 26)) {
+
+            logger.warn("Unrecognized channel, using default channel.");
+
+            band = new Band(2405, 5);
+        }
+
+        band= new Band(2405 + (5 * (channel - 11)), 5);
     }
 
 

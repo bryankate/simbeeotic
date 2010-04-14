@@ -27,8 +27,9 @@ public interface Radio {
      * @param time The simulation time when the message was received.
      * @param data The data received.
      * @param rxPower The strength of the received signal (in dBm).
+     * @param frequency The frequency of the received signal (in MHz).
      */
-    public void receive(double time, byte[] data, float rxPower);
+    public void receive(double time, byte[] data, double rxPower, double frequency);
 
 
     /**
@@ -54,4 +55,14 @@ public interface Radio {
      * @return The antenna pattern in use.
      */
     public AntennaPattern getAntennaPattern();
+
+
+    /**
+     * Gets the RF band in which this radio operates. This method must return the full
+     * range of possible frequencies, not just the channel in which it is currently
+     * operating. The return from this methid is expected to be static over time.
+     * 
+     * @return The full operating range of the radio.
+     */
+    public Band getOperatingBand();
 }

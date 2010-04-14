@@ -23,5 +23,5 @@ public interface AntennaPattern {
      *
      * @return The power radiated/received by the antenna (in dBi).
      */
-    public float getPower(float azimuth, float elevation);
+    public double getPower(double azimuth, double elevation);
 }

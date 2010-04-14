@@ -15,7 +15,7 @@ public class IsotropicAntenna implements AntennaPattern {
      * This antenna will always return {@code 0 dBi} for any orientation.
      */
     @Override
-    public float getPower(float azimuth, float elevation) {
+    public double getPower(double azimuth, double elevation) {
         return 0;
     }
 }
