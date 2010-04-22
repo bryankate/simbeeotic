@@ -66,6 +66,11 @@ public class Gnuplotter {
     }
 
 
+    public void setTextProperty(String property, String arguments) {
+        inject("set " + property + " \"" + arguments + "\"");
+    }
+
+
     public void unsetProperty(String property) {
         inject("unset " + property);
     }
