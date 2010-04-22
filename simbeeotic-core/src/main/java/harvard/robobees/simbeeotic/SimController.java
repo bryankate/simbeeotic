@@ -76,12 +76,31 @@ public class SimController {
 
     
     /**
-     * Runs all simulation variations of a given scenario.
+     * Runs all simulation variations of a given scenario. Each variation
+     * will be executed as fast as possible, meaning that virtual time may
+     * progress faster than real time.
      *
      * @param scenario The scenario, describing the models to execute.
      * @param world The world in which the models operate.
      */
     public void runSim(final Scenario scenario, final World world) {
+        runSim(scenario, world, 0);
+    }
+
+
+    /**
+     * Behaves identically to {@link #runSim(Scenario, World)} with the exception that
+     * an attempt is made to constrain virtual time to real time, meaning that the
+     * simulation will not run as fast as possible.
+     *
+     * @param realTimeScale The scale factor for constraining real time. A scale less
+     *                      than or equal to zero indicates that no constraint should be made,
+     *                      and values greater than zero will scale the virtual time accordingly.
+     *                      For example, a value of 2 will allow the simulation to progress,
+     *                      at most, twice the rate of real time.
+     *
+     */
+    public void runSim(final Scenario scenario, final World world, double realTimeScale) {
 
         final double step = scenario.getSimulation().getStep();
 
@@ -103,7 +122,7 @@ public class SimController {
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
             // make a new clock
-            final SimClockImpl clock = new SimClockImpl(step);
+            final SimClockImpl clock = new SimClockImpl(step, realTimeScale);
 
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
@@ -831,13 +850,18 @@ public class SimController {
     static final class SimClockImpl implements SimClock {
 
         private long time = 0;
-        private long step;
+        private long step;          // seconds * precision
+        private long waitTime;      // seconds * precision
+        private long lastTick = 0;
 
         private static final long PRECISION = 1000000;
+        private static final long WAIT_PRECISION = 1000;
 
 
-        public SimClockImpl(double step) {
+        public SimClockImpl(double step, double scale) {
+
             this.step = (long)(step * PRECISION);
+            this.waitTime = (long)(step * scale * PRECISION);
         }
 
         @Override
@@ -851,6 +875,29 @@ public class SimController {
         }
 
         public void incrementTime() {
+
+            // if we are constrining the sim to real time, see if
+            // we need to wait in real time for the next virtual time tick
+            if (waitTime > 0) {
+
+                long now = System.currentTimeMillis();
+                long diff = now - lastTick;
+
+                if (diff < waitTime) {
+
+                    try {
+
+                        // wait precision is different because the units for sleep are milliseconds
+                        Thread.sleep((waitTime - diff) / WAIT_PRECISION);
+                    }
+                    catch(InterruptedException ie) {
+                        throw new RuntimeException("SimClock interrupted.");
+                    }
+                }
+
+                lastTick = now;
+            }
+
             time += step;
         }
     }

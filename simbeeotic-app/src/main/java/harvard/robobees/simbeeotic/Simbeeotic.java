@@ -29,6 +29,7 @@ public class Simbeeotic {
 
     private static final String OPTION_SCENARIO = "scenario";
     private static final String OPTION_WORLD = "world";
+    private static final String OPTION_SCALE = "real-time-scale";
     private static final String OPTION_LOG = "log";
     private static final String OPTION_HELP = "help";
 
@@ -45,6 +46,10 @@ public class Simbeeotic {
         parser.accepts(OPTION_WORLD, "World XML file.")
                 .withRequiredArg()
                 .ofType(File.class);
+
+        parser.accepts(OPTION_SCALE, "Constrained real time scaling factor.")
+                .withRequiredArg()
+                .ofType(Double.class);
 
         parser.accepts(OPTION_LOG, "Log4j properties file (optional).")
                 .withRequiredArg()
@@ -154,9 +159,15 @@ public class Simbeeotic {
             throw new RuntimeException("Could not parse the given scenario or world file.", je);
         }
 
+        double scale = 0;
+
+        if (opts.has(OPTION_SCALE)) {
+            scale = (Double)opts.valueOf(OPTION_SCALE);
+        }
+
         // start up the simulation
         SimController sim = new SimController();
 
-        sim.runSim(scenario, world);
+        sim.runSim(scenario, world, scale);
     }
 }
