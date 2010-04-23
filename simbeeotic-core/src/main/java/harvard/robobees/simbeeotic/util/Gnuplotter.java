@@ -6,8 +6,11 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 
 /**
@@ -25,7 +28,9 @@ public class Gnuplotter {
     private Writer out;
 
     private Map<String, String> plotParams = new HashMap<String, String>();
-    private Map<String, StringBuffer> plotData = new HashMap<String, StringBuffer>();
+    private Map<String, StringBuffer> plotData = new TreeMap<String, StringBuffer>();
+    private StringBuffer commandLog = new StringBuffer();
+    private String lastPlotCommand = "";
 
     private static Gnuplotter instance;
 
@@ -125,8 +130,9 @@ public class Gnuplotter {
             firstPlot = false;
         }
 
-        plotCmd.append("\n").append(allData);
-        inject(plotCmd.toString());
+        lastPlotCommand = plotCmd.append("\n").append(allData).toString();
+
+        inject(lastPlotCommand, true);
     }
 
 
@@ -174,9 +180,36 @@ public class Gnuplotter {
     }
 
 
-    private void inject(String cmd) {
+    public void writeLog(String outFile) {
 
         try {
+
+            FileWriter writer = new FileWriter(outFile);
+
+            writer.write(commandLog.toString());
+            writer.write(lastPlotCommand);
+            writer.flush();
+            writer.close();
+        }
+        catch(IOException ioe) {
+            logger.error("Error writing Gnuplotter log.", ioe);
+        }
+    }
+
+
+    private void inject(String cmd) {
+        inject(cmd, false);
+    }
+
+
+    private void inject(String cmd, boolean isData) {
+
+        try {
+
+            if (!isData) {
+                commandLog.append(cmd.trim()).append("\n");
+            }
+
             out.write(cmd.trim() + "\n");
             out.flush();
         }
