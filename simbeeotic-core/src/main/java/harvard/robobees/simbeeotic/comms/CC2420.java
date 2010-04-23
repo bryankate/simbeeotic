@@ -4,6 +4,8 @@ package harvard.robobees.simbeeotic.comms;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
+import org.apache.commons.math.special.Erf;
+import org.apache.commons.math.MathException;
 
 import java.util.Random;
 
@@ -13,15 +15,12 @@ import java.util.Random;
  *
  * @author bkate
  */
-public class CC2420 extends AbstractRadio {
+public class CC2420 extends ZigbeeRadio {
 
     private Random rand;
 
-    private Band band = new Band(2405, 5);  // channel 11
-    private double txPower = 0;             // dBm
-    private double minRxPower = -90;        // dBm
-
-    private static Band operating = new Band(2442.5, 85);  // zigbee spectrum
+    private double txPower = 0;       // dBm
+    private double minRxPower = -90;  // dBm
 
     private static Logger logger = Logger.getLogger(CC2420.class);
 
@@ -35,7 +34,7 @@ public class CC2420 extends AbstractRadio {
      */
     @Override
     public void transmit(byte[] data) {
-        getPropagationModel().transmit(this, data, txPower, band);
+        getPropagationModel().transmit(this, data, txPower, getChannel());
     }
 
 
@@ -61,22 +60,29 @@ public class CC2420 extends AbstractRadio {
 
         // consult the PRR/SNR curve
         double snr = rxPower - getPropagationModel().getNoiseFloor();
+        double prr = 0;
 
-        // todo: find a more reliable source?
-        // this function approximates the SNR curve from the paper
+        // this function approximates the PRR/SNR curve from the paper
         // "Improving Wireless Simulation Through Noise Modeling" by Lee, Cerpa, and Levis
-        double prr = 1 / (1 + Math.exp(-((1.5 * snr) - 8.25)));
+//        prr = 1 / (1 + Math.exp(-((1.5 * snr) - 8.25)));
+
+        // this calculation was pulled from TOSSIM (CpmModelC.nc), which is based on
+        // CC2420 measurements for the paper "RSSI is Under Appreciated" by Srinivasan and Levis
+        try {
+
+            double beta1 = 0.9794;
+            double beta2 = 2.3851;
+            double pse = 0.5 * (1 - Erf.erf(beta1 * (snr - beta2) / Math.sqrt(2)));
+
+            prr = Math.pow(1 - pse, 46);
+        }
+        catch(MathException me) {
+            return;
+        }
 
         if (rand.nextDouble() <= prr) {
             notifyListeners(time, data, rxPower);
         }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public Band getOperatingBand() {
-        return operating;
     }
 
 
@@ -135,25 +141,6 @@ public class CC2420 extends AbstractRadio {
             default:
                 logger.warn("Unrecognized TX power level, using default level.");
         }
-    }
-
-
-    /**
-     * Sets the channel on which the radio is operating.
-     *
-     * @param channel The operating channel. It must be an integer in the range (11,26).
-     */
-    @Inject(optional = true)
-    public final void setChannel(@Named(value = "channel") final int channel) {
-
-        if ((channel < 11) || (channel > 26)) {
-
-            logger.warn("Unrecognized channel, using default channel.");
-
-            band = new Band(2405, 5);
-        }
-
-        band= new Band(2405 + (5 * (channel - 11)), 5);
     }
 
 
