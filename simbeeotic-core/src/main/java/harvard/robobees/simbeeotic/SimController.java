@@ -58,6 +58,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.List;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -332,7 +334,7 @@ public class SimController {
 
 
             // create bees
-            final Set<PhysicalModel> bees = new HashSet<PhysicalModel>();
+            final List<PhysicalModel> bees = new LinkedList<PhysicalModel>();
 
             for (Colony.BeeGroup group : scenario.getColony().getBeeGroup()) {
 
@@ -416,7 +418,7 @@ public class SimController {
 
 
             // create misc models, if any exist
-            final Set<Model> miscModels = new HashSet<Model>();
+            final List<Model> miscModels = new LinkedList<Model>();
 
             if (scenario.getMiscModels() != null) {
                 
