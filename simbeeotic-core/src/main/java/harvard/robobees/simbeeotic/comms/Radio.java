@@ -2,7 +2,6 @@ package harvard.robobees.simbeeotic.comms;
 
 
 import javax.vecmath.Vector3f;
-import java.util.Queue;
 
 
 /**
@@ -25,9 +24,12 @@ public interface Radio {
      * Called by the {@link PropagationModel} when a transmission is received by this
      * radio.
      *
+     * @param time The simulation time when the message was received.
      * @param data The data received.
+     * @param rxPower The strength of the received signal (in dBm).
+     * @param frequency The frequency of the received signal (in MHz).
      */
-    public void receive(byte[] data);
+    public void receive(double time, byte[] data, double rxPower, double frequency);
 
 
     /**
@@ -36,4 +38,31 @@ public interface Radio {
      * @return The position of the radio's antenna, in the world reference frame.
      */
     public Vector3f getPosition();
+
+
+    /**
+     * Gets the pointing vector of the antenna. This is a vector that points
+     * along the major antenna axis.
+     *
+     * @return The pointing vector of the antenna, in the world reference frame.
+     */
+    public Vector3f getPointing();
+
+
+    /**
+     * Gets the radiation pattern of the antenna attached to the radio.
+     *
+     * @return The antenna pattern in use.
+     */
+    public AntennaPattern getAntennaPattern();
+
+
+    /**
+     * Gets the RF band in which this radio operates. This method must return the full
+     * range of possible frequencies, not just the channel in which it is currently
+     * operating. The return from this methid is expected to be static over time.
+     * 
+     * @return The full operating range of the radio.
+     */
+    public Band getOperatingBand();
 }

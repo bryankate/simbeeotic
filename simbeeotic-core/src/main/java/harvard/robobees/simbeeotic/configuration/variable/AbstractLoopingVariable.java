@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic.configuration.variable;
 
 
-import harvard.robobees.simbeeotic.util.DocUtils;
+import harvard.robobees.simbeeotic.util.DocUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,8 +177,8 @@ public abstract class AbstractLoopingVariable {
      */
     protected void addDepIfNeeded(String paramValue) {
 
-        if ((paramValue != null) && DocUtils.isPlaceholder(paramValue)) {
-            addDependency(DocUtils.extractPlaceholderName(paramValue));
+        if ((paramValue != null) && DocUtil.isPlaceholder(paramValue)) {
+            addDependency(DocUtil.extractPlaceholderName(paramValue));
         }
     }
 
@@ -217,8 +217,8 @@ public abstract class AbstractLoopingVariable {
         }
 
         try {
-            if (DocUtils.isPlaceholder(value)) {
-                return Integer.parseInt(getDependencyValue(DocUtils.extractPlaceholderName(value)));
+            if (DocUtil.isPlaceholder(value)) {
+                return Integer.parseInt(getDependencyValue(DocUtil.extractPlaceholderName(value)));
             }
             else {
                 return Integer.parseInt(value);
@@ -265,8 +265,8 @@ public abstract class AbstractLoopingVariable {
         }
 
         try {
-            if (DocUtils.isPlaceholder(value)) {
-                return Long.parseLong(getDependencyValue(DocUtils.extractPlaceholderName(value)));
+            if (DocUtil.isPlaceholder(value)) {
+                return Long.parseLong(getDependencyValue(DocUtil.extractPlaceholderName(value)));
             }
             else {
                 return Long.parseLong(value);
@@ -313,8 +313,8 @@ public abstract class AbstractLoopingVariable {
         }
 
         try {
-            if (DocUtils.isPlaceholder(value)) {
-                return Double.parseDouble(getDependencyValue(DocUtils.extractPlaceholderName(value)));
+            if (DocUtil.isPlaceholder(value)) {
+                return Double.parseDouble(getDependencyValue(DocUtil.extractPlaceholderName(value)));
             }
             else {
                 return Double.parseDouble(value);
@@ -360,8 +360,8 @@ public abstract class AbstractLoopingVariable {
         }
 
 
-        if (DocUtils.isPlaceholder(value)) {
-            return getDependencyValue(DocUtils.extractPlaceholderName(value));
+        if (DocUtil.isPlaceholder(value)) {
+            return getDependencyValue(DocUtil.extractPlaceholderName(value));
         }
         else {
             return value;

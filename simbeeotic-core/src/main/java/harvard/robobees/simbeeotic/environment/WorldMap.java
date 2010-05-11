@@ -1,41 +1,44 @@
 package harvard.robobees.simbeeotic.environment;
 
-import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_TERRAIN;
-import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_BEE;
-import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_FLOWER;
-import harvard.robobees.simbeeotic.model.EntityInfo;
-import harvard.robobees.simbeeotic.configuration.world.World;
-import harvard.robobees.simbeeotic.configuration.world.Obstacle;
-import harvard.robobees.simbeeotic.configuration.world.Meta;
-import harvard.robobees.simbeeotic.configuration.world.Box;
-import harvard.robobees.simbeeotic.configuration.world.Cylinder;
-import harvard.robobees.simbeeotic.configuration.world.Sphere;
-import harvard.robobees.simbeeotic.configuration.world.Cone;
-import harvard.robobees.simbeeotic.configuration.world.Patch;
 
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.collision.shapes.BoxShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.ConeShape;
 import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.bulletphysics.collision.shapes.ConeShape;
-import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.collision.shapes.StaticPlaneShape;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
+import com.bulletphysics.linearmath.Transform;
+import harvard.robobees.simbeeotic.configuration.world.Box;
+import harvard.robobees.simbeeotic.configuration.world.Cone;
+import harvard.robobees.simbeeotic.configuration.world.Cylinder;
+import harvard.robobees.simbeeotic.configuration.world.Meta;
+import harvard.robobees.simbeeotic.configuration.world.Obstacle;
+import harvard.robobees.simbeeotic.configuration.world.Patch;
+import harvard.robobees.simbeeotic.configuration.world.Sphere;
+import harvard.robobees.simbeeotic.configuration.world.World;
+import harvard.robobees.simbeeotic.model.EntityInfo;
+import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_BEE;
+import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_FLOWER;
+import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_TERRAIN;
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.Quat4f;
 import javax.vecmath.Matrix3f;
-import java.util.Set;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
+ * A class that establishes the physical layout of the world. The world contains a ground plane,
+ * obstacles, and flowers. All objects created in the world are static.
+ *
  * @author bkate
  */
 public class WorldMap {
@@ -247,12 +250,25 @@ public class WorldMap {
     }
 
 
+    /**
+     * Gets the radius of a bounding half-sphere that defines the "edge" of the physical world. Physical
+     * entities are permitted to exceed these bounds but they may not be subject to collision detection.
+     *
+     * @return The world bounds, as a radius (in meters).
+     */
+    public float getBounds() {
+        return world.getRadius();
+    }
+
+
     private Properties loadProperties(Meta meta) {
 
         Properties props = new Properties();
 
         if (meta != null) {
 
+            // todo: resolve scenario variable placeholders?
+            
             for (Meta.Prop p : meta.getProp()) {
                 props.setProperty(p.getName(), p.getValue());
             }

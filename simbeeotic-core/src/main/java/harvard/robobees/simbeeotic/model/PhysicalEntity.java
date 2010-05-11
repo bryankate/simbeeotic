@@ -3,8 +3,8 @@ package harvard.robobees.simbeeotic.model;
 
 import harvard.robobees.simbeeotic.util.BoundingSphere;
 
-import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 import java.util.Set;
 
 
@@ -47,7 +47,7 @@ public interface PhysicalEntity {
 
 
     /**
-     * Applies a force to the body (to take effect at the next physics simulation step). The
+     * Applies a force to the body (to take effect at the next simulation step). The
      * force is applied to the given offset position and is in effect (constant) for the
      * duration of the time step, after which it is cleared (removed).
      *
@@ -139,7 +139,7 @@ public interface PhysicalEntity {
      *
      * @param timeStep The amount of time that has elapsed since the last sample.
      */
-    public void sampleKinematics(final float timeStep);
+    public void sampleKinematics(final double timeStep);
 
 
     /**

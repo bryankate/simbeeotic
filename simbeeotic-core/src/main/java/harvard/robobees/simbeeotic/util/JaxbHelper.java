@@ -3,12 +3,12 @@ package harvard.robobees.simbeeotic.util;
 
 import org.w3c.dom.Node;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.ValidationEventHandler;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
 
 
 /**

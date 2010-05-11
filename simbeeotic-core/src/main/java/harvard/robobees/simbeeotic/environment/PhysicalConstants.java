@@ -8,5 +8,7 @@ package harvard.robobees.simbeeotic.environment;
  */
 public interface PhysicalConstants {
 
-    public static float EARTH_GRAVITY = -9.81f;   // m/s^2
+    public static double SPEED_OF_LIGHT = 2.99792458e8;  // m/s
+
+    public static double EARTH_GRAVITY = -9.81;         // m/s^2
 }

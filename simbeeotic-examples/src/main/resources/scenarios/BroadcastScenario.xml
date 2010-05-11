@@ -5,7 +5,7 @@
           xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
 
     <master-seed>
-        <constant value="112181"/>
+        <constant value="111982"/>
     </master-seed>
 
     <simulation>
@@ -15,25 +15,37 @@
 
     <comms>
         <propagation-model>
-            <java-class>harvard.robobees.simbeeotic.comms.DefaultPropagationModel</java-class>
+            <java-class>harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel</java-class>
             <properties>
-                <prop name="snr-margin" value="7"/>
-                <prop name="noise-floor-mean" value="0.012"/>
-                <prop name="noise-floor-sigma" value="0.007"/>
+                <prop name="noise-floor-mean" value="-50"/>
+                <prop name="noise-floor-sigma" value="10"/>
+                <prop name="range-thresh" value="30"/>
             </properties>
         </propagation-model>
     </comms>
 
     <colony>
         <hive>
-            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
-            <position x="0" y="0"/>
+            <generic-hive>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
+                </logic>
+            </generic-hive>
+            <position x="0" y="0" z="0" />
         </hive>
         <bee-group>
-            <java-class>harvard.robobees.simbeeotic.example.BroadcastBee</java-class>
-            <properties>
-                <prop name="radio-power-max" value="60"/>
-            </properties>
+            <generic-bee>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.example.BroadcastBee</java-class>
+                </logic>
+                <radio>
+                    <java-class>harvard.robobees.simbeeotic.comms.DefaultRadio</java-class>
+                    <properties>
+                        <prop name="max-power" value="15"/>
+                        <prop name="snr-margin" value="7"/>
+                    </properties>
+                </radio>
+            </generic-bee>
             <count>3</count>
         </bee-group>
     </colony>

@@ -1,13 +1,13 @@
 package harvard.robobees.simbeeotic.configuration.variable;
 
 
-import harvard.robobees.simbeeotic.configuration.scenario.Variable;
 import harvard.robobees.simbeeotic.configuration.scenario.ConstantLoopingVariable;
-import harvard.robobees.simbeeotic.configuration.scenario.UniformRandomLoopingVariable;
-import harvard.robobees.simbeeotic.configuration.scenario.NormalRandomLoopingVariable;
 import harvard.robobees.simbeeotic.configuration.scenario.EachLoopingVariable;
 import harvard.robobees.simbeeotic.configuration.scenario.ForLoopingVariable;
 import harvard.robobees.simbeeotic.configuration.scenario.MasterSeed;
+import harvard.robobees.simbeeotic.configuration.scenario.NormalRandomLoopingVariable;
+import harvard.robobees.simbeeotic.configuration.scenario.UniformRandomLoopingVariable;
+import harvard.robobees.simbeeotic.configuration.scenario.Variable;
 
 
 /**

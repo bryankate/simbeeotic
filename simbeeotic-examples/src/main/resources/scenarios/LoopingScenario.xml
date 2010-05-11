@@ -27,16 +27,23 @@
 
     <colony>
         <hive>
-            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
-            <position x="0" y="0"/>
+            <generic-hive>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
+                </logic>
+            </generic-hive>
+            <position x="0" y="0" z="0" />
         </hive>
         <bee-group>
-            <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
+            <generic-bee>
+                <logic>
+                    <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
+                </logic>
+            </generic-bee>
 
             <!-- variable placeholders can be used in property values for the hive and bees. -->
             <properties>
                 <prop name="length" value="${bee.len}"/>
-                <prop name="range-sensor-sigma" value="${bee.range-sigma}"/>
 
                 <!-- the mass variable has a default value -->
                 <prop name="mass" value="${bee.mass}:0.1"/>

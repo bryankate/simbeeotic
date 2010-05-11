@@ -1,10 +1,10 @@
 package harvard.robobees.simbeeotic.configuration.variable;
 
 
-import harvard.robobees.simbeeotic.util.DocUtils;
+import harvard.robobees.simbeeotic.util.DocUtil;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -34,17 +34,9 @@ public class ForVariable extends AbstractLoopingVariable {
         this.step = step;
 
         // check for references
-        if ((lower != null) && DocUtils.isPlaceholder(lower)) {
-            addDependency(DocUtils.extractPlaceholderName(lower));
-        }
-
-        if ((upper != null) && DocUtils.isPlaceholder(upper)) {
-            addDependency(DocUtils.extractPlaceholderName(upper));
-        }
-
-        if ((step != null) && DocUtils.isPlaceholder(step)) {
-            addDependency(DocUtils.extractPlaceholderName(step));
-        }
+        addDepIfNeeded(lower);
+        addDepIfNeeded(upper);
+        addDepIfNeeded(step);
     }
 
 
@@ -71,24 +63,24 @@ public class ForVariable extends AbstractLoopingVariable {
         try {
 
             // get the lower bound
-            if (DocUtils.isPlaceholder(lower)) {
-                lowerVal = Double.parseDouble(getDependencyValue(DocUtils.extractPlaceholderName(lower)));
+            if (DocUtil.isPlaceholder(lower)) {
+                lowerVal = Double.parseDouble(getDependencyValue(DocUtil.extractPlaceholderName(lower)));
             }
             else {
                 lowerVal = Double.parseDouble(lower);
             }
 
             // get the upper bound
-            if (DocUtils.isPlaceholder(upper)) {
-                upperVal = Double.parseDouble(getDependencyValue(DocUtils.extractPlaceholderName(upper)));
+            if (DocUtil.isPlaceholder(upper)) {
+                upperVal = Double.parseDouble(getDependencyValue(DocUtil.extractPlaceholderName(upper)));
             }
             else {
                 upperVal = Double.parseDouble(upper);
             }
 
             // get the step size
-            if (DocUtils.isPlaceholder(step)) {
-                stepVal = Double.parseDouble(getDependencyValue(DocUtils.extractPlaceholderName(step)));
+            if (DocUtil.isPlaceholder(step)) {
+                stepVal = Double.parseDouble(getDependencyValue(DocUtil.extractPlaceholderName(step)));
             }
             else {
                 stepVal = Double.parseDouble(step);

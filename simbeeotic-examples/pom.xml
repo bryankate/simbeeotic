@@ -11,17 +11,13 @@
     <parent>
         <groupId>harvard.robobees</groupId>
         <artifactId>simbeeotic</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>2.2.0-SNAPSHOT</version>
     </parent>
     
     <dependencies>
         <dependency>
             <groupId>harvard.robobees.simbeeotic</groupId>
             <artifactId>simbeeotic-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>harvard.robobees.simbeeotic</groupId>
-            <artifactId>simbeeotic-models</artifactId>
         </dependency>
     </dependencies>
 

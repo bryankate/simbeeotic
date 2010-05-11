@@ -1,12 +1,11 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.SimpleBee;
-import harvard.robobees.simbeeotic.model.SimTime;
+import harvard.robobees.simbeeotic.model.GenericBee;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
-
-import org.apache.log4j.Logger;
 
 
 /**
@@ -15,43 +14,56 @@ import org.apache.log4j.Logger;
  * 
  * @author bkate
  */
-public class BroadcastBee extends SimpleBee {
+public class BroadcastBee implements GenericBeeLogic {
 
-    private boolean started = false;
+    private GenericBee host;
+    private double lastTx = Double.NEGATIVE_INFINITY;
 
     private static Logger logger = Logger.getLogger(BroadcastBee.class);
 
 
     @Override
-    protected void applyLogic(final SimTime currTime) {
+    public void initialize(GenericBee bee) {
 
-        // when we start the sim, move in a fixed direction
-        if (!started) {
+        host = bee;
 
-            setHovering(true);
-            setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
-                                                  (float)getRandom().nextGaussian(),
-                                                  (float)getRandom().nextGaussian()));
+        // set some initial direction
+        host.setHovering(true);
+        host.setDesiredLinearVelocity(new Vector3f((float)host.getRandom().nextGaussian(),
+                                                   (float)host.getRandom().nextGaussian(),
+                                                   (float)host.getRandom().nextGaussian()));
+    }
 
-            started = true;
+
+    @Override
+    public void update(double time) {
+
+        // send a message every second
+        if ((time - lastTx) >= 1.0) {
+
+            host.getRadio().transmit(("" + host.getModelId()).getBytes());
+            lastTx = time;
         }
 
-        // send a message
-        radio.transmit(("" + getModelId()).getBytes());
+        Vector3f pos = host.getTruthPosition();
 
-        Vector3f pos = getTruthPosition();
-
-        logger.info("ID: " + getModelId() + "  " + 
-                    "time: " + currTime + "  " +
+        logger.info("ID: " + host.getModelId() + "  " +
+                    "time: " + time + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z);
     }
 
 
     @Override
-    protected void handleMessage(SimTime currTime, byte[] message) {
+    public void messageReceived(double time, byte[] data, double rxPower) {
 
-        logger.info("ID: " + getModelId() + "  " +
-                    "time: " + currTime + "  " +
-                    "recv from: " + new String(message));
+        logger.info("ID: " + host.getModelId() + "  " +
+                    "time: " + time + "  " +
+                    "power: " + rxPower + "  (dBm) " +
+                    "recv from: " + new String(data));
+    }
+
+
+    @Override
+    public void finish() {
     }
 }

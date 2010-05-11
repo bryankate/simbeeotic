@@ -13,24 +13,27 @@ public interface Model {
     /**
      * Initializes the model before the simulation starts. This method
      * will be called exactly once by the simulation executive prior to
-     * any events being executed.
+     * any call to {@link #update(double)}.
      */
     public void initialize();
 
 
     /**
-     * This is the workhorse method of the model. When invoked by the sim executive
-     * the model is to process the given event. It is up to the model to determine
-     * the action to be taken based on the subtype of the event.
+     * This method is called by the simulation executive when a model is
+     * to be updated for a time step. It will be called exactly once
+     * per time step (after initialization) for the duration of the simulation.
      *
-     * Events are said to be executed instantaneously in time, meaning that no virtual
-     * time passes while processing the event. Time is moved forward by processing
-     * events in causal order.
-     *
-     * @param time The time at which the event is executed.
-     * @param event The event to be executed.
+     * @param currTime The time at the beginning of the time step being simulated (in seconds).
      */
-    public void processEvent(final SimTime time, final Event event);
+    public void update(final double currTime);
+
+
+    /**
+     * Finalizes the model after the simulation has completed. This method will be
+     * called exactly once, and no call to {@link #update(double)} will be made after this
+     * method is invoked.
+     */
+    public void finish();
 
 
     /**

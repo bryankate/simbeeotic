@@ -1,12 +1,19 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.SimpleBee;
-import harvard.robobees.simbeeotic.model.SimTime;
+import harvard.robobees.simbeeotic.model.GenericBee;
+import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
+import harvard.robobees.simbeeotic.model.sensor.Compass;
+import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
+import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
+import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
+import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
 
-import org.apache.log4j.Logger;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 
 /**
@@ -14,7 +21,15 @@ import org.apache.log4j.Logger;
  *
  * @author bkate
  */
-public class RandomWalkBee extends SimpleBee {
+public class RandomWalkBee implements GenericBeeLogic {
+
+    private GenericBee host;
+
+    private Accelerometer accelerometer;
+    private Gyroscope gyro;
+    private Compass compass;
+    private RangeSensor rangeBottom;
+    private ContactSensor contactBottom;
 
     private float maxVelocity = 2.0f;                  // m/s
     private float velocitySigma = 0.2f;                // m/s
@@ -24,21 +39,32 @@ public class RandomWalkBee extends SimpleBee {
 
 
     @Override
-    protected void applyLogic(final SimTime currTime) {
+    public void initialize(GenericBee bee) {
 
-        if (!isHovering()) {
-            setHovering(true);
-        }
+        host = bee;
+
+        host.setHovering(true);
+
+        accelerometer = host.getSensor("accelerometer", Accelerometer.class);
+        gyro = host.getSensor("gyro", Gyroscope.class);
+        compass = host.getSensor("compass", Compass.class);
+        rangeBottom = host.getSensor("rangeBottom", RangeSensor.class);
+        contactBottom = host.getSensor("contactBottom", ContactSensor.class);
+    }
+
+
+    @Override
+    public void update(double time) {
 
         // randomly vary the heading (rotation about the Z axis)
-        turn((float)getRandom().nextGaussian() * headingSigma);
+        host.turn((float)host.getRandom().nextGaussian() * headingSigma);
 
         // randomly vary the velocity in the X and Z directions
-        Vector3f newVel = getDesiredLinearVelocity();
+        Vector3f newVel = host.getDesiredLinearVelocity();
 
-        newVel.add(new Vector3f((float)getRandom().nextGaussian() * velocitySigma,
+        newVel.add(new Vector3f((float)host.getRandom().nextGaussian() * velocitySigma,
                                 0,
-                                (float)getRandom().nextGaussian() * velocitySigma));
+                                (float)host.getRandom().nextGaussian() * velocitySigma));
 
         // cap the velocity
         if (newVel.length() > maxVelocity) {
@@ -47,19 +73,42 @@ public class RandomWalkBee extends SimpleBee {
             newVel.scale(maxVelocity);
         }
 
-        setDesiredLinearVelocity(newVel);
+        host.setDesiredLinearVelocity(newVel);
 
-        Vector3f pos = getTruthPosition();
-        Vector3f vel = getTruthLinearVelocity();
+        Vector3f pos = host.getTruthPosition();
+        Vector3f vel = host.getTruthLinearVelocity();
 
-        logger.info("ID: " + getModelId() + "  " + 
-                    "time: " + currTime + "  " +
+        logger.info("ID: " + host.getModelId() + "  " +
+                    "time: " + time + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
                     "vel: " + vel.x + " " + vel.y + " " + vel.z + " ");
     }
 
 
     @Override
-    protected void handleMessage(SimTime currTime, byte[] message) {
+    public void messageReceived(double time, byte[] data, double rxPower) {
+    }
+
+
+    @Override
+    public void finish() {
+    }
+
+
+    @Inject(optional = true)
+    public final void setMaxVelocity(@Named(value = "max-vel") final float vel) {
+        this.maxVelocity = vel;
+    }
+
+
+    @Inject(optional = true)
+    public final void setVelocitySigma(@Named(value = "vel-sigma") final float sigma) {
+        this.velocitySigma = sigma;
+    }
+
+
+    @Inject(optional = true)
+    public final void setHeadingSigma(@Named(value = "heading-sigma") final float sigma) {
+        this.headingSigma = sigma;
     }
 }
