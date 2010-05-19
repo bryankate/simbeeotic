@@ -1,0 +1,48 @@
+package harvard.robobees.simbeeotic.comms;
+
+
+import static harvard.robobees.simbeeotic.environment.PhysicalConstants.SPEED_OF_LIGHT;
+
+
+/**
+ * An RF propagation model that assumes line-of-sight and
+ * uses the free space model for path loss:
+ *
+ * <ul>
+ *   <li>http://en.wikipedia.org/wiki/Free-space_path_loss</li>
+ *   <li>http://people.seas.harvard.edu/~jones/es151/prop_models/propagation.html#fsl</li>
+ * </ul>
+ *
+ * @author bkate
+ */
+public class FreeSpacePropagationModel extends AbstractPropagationModel {
+
+    private static final double MIN_DISTANCE = 0.01;
+
+
+    /**
+     * {@inheritDoc}
+     *
+     * @note Uses a free space model to calculate the path loss between the two radios.
+     */
+    @Override
+    protected double calculatePathLoss(Radio tx, Radio rx, double txPower, Band band, double distance) {
+
+        double lambda = SPEED_OF_LIGHT / (band.getCenterFrequency() * 10e6);  // m
+
+        double rxPower = getReceivedPower(tx, rx, txPower);
+        double loss;
+
+        // degradation with free space model
+        if (distance > MIN_DISTANCE) {
+            loss = Math.pow(lambda / (4 * Math.PI * distance), 2);
+        }
+        else {
+
+            // for very short distances, use simpler form
+            loss = Math.pow(distance + 1, 2);
+        }
+
+        return rxPower + 10 * Math.log10(loss);
+    }
+}
