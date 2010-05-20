@@ -1,6 +1,9 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import harvard.robobees.simbeeotic.SimTime;
+
+
 /**
  * An interface that is used to identify listener objects that wish to be notified
  * when a message is received by a radio.
@@ -16,5 +19,5 @@ public interface MessageListener {
      * @param data The data received.
      * @param rxPower The strength of the received signal (in dBm).
      */
-    public void messageReceived(double time, byte[] data, double rxPower);
+    public void messageReceived(SimTime time, byte[] data, double rxPower);
 }

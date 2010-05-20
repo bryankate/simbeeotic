@@ -1,19 +1,18 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.GenericBee;
-import harvard.robobees.simbeeotic.model.GenericBeeLogic;
+import harvard.robobees.simbeeotic.model.SimpleBee;
 import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
-import harvard.robobees.simbeeotic.model.sensor.Compass;
-import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
 import harvard.robobees.simbeeotic.model.sensor.Gyroscope;
+import harvard.robobees.simbeeotic.model.sensor.Compass;
 import harvard.robobees.simbeeotic.model.sensor.RangeSensor;
+import harvard.robobees.simbeeotic.model.sensor.ContactSensor;
+import harvard.robobees.simbeeotic.SimTime;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 
 /**
@@ -21,9 +20,7 @@ import com.google.inject.name.Named;
  *
  * @author bkate
  */
-public class RandomWalkBee implements GenericBeeLogic {
-
-    private GenericBee host;
+public class RandomWalkBee extends SimpleBee {
 
     private Accelerometer accelerometer;
     private Gyroscope gyro;
@@ -39,32 +36,32 @@ public class RandomWalkBee implements GenericBeeLogic {
 
 
     @Override
-    public void initialize(GenericBee bee) {
+    public void initialize() {
 
-        host = bee;
+        super.initialize();
 
-        host.setHovering(true);
+        setHovering(true);
 
-        accelerometer = host.getSensor("accelerometer", Accelerometer.class);
-        gyro = host.getSensor("gyro", Gyroscope.class);
-        compass = host.getSensor("compass", Compass.class);
-        rangeBottom = host.getSensor("rangeBottom", RangeSensor.class);
-        contactBottom = host.getSensor("contactBottom", ContactSensor.class);
+        accelerometer = getSensor("accelerometer", Accelerometer.class);
+        gyro = getSensor("gyro", Gyroscope.class);
+        compass = getSensor("compass", Compass.class);
+        rangeBottom = getSensor("rangeBottom", RangeSensor.class);
+        contactBottom = getSensor("contactBottom", ContactSensor.class);
     }
 
 
     @Override
-    public void update(double time) {
+    protected void updateKinematics(SimTime time) {
 
         // randomly vary the heading (rotation about the Z axis)
-        host.turn((float)host.getRandom().nextGaussian() * headingSigma);
+        turn((float)getRandom().nextGaussian() * headingSigma);
 
         // randomly vary the velocity in the X and Z directions
-        Vector3f newVel = host.getDesiredLinearVelocity();
+        Vector3f newVel = getDesiredLinearVelocity();
 
-        newVel.add(new Vector3f((float)host.getRandom().nextGaussian() * velocitySigma,
+        newVel.add(new Vector3f((float)getRandom().nextGaussian() * velocitySigma,
                                 0,
-                                (float)host.getRandom().nextGaussian() * velocitySigma));
+                                (float)getRandom().nextGaussian() * velocitySigma));
 
         // cap the velocity
         if (newVel.length() > maxVelocity) {
@@ -73,20 +70,15 @@ public class RandomWalkBee implements GenericBeeLogic {
             newVel.scale(maxVelocity);
         }
 
-        host.setDesiredLinearVelocity(newVel);
+        setDesiredLinearVelocity(newVel);
 
-        Vector3f pos = host.getTruthPosition();
-        Vector3f vel = host.getTruthLinearVelocity();
+        Vector3f pos = getTruthPosition();
+        Vector3f vel = getTruthLinearVelocity();
 
-        logger.info("ID: " + host.getModelId() + "  " +
-                    "time: " + time + "  " +
+        logger.info("ID: " + getModelId() + "  " +
+                    "time: " + time.getImpreciseTime() + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
                     "vel: " + vel.x + " " + vel.y + " " + vel.z + " ");
-    }
-
-
-    @Override
-    public void messageReceived(double time, byte[] data, double rxPower) {
     }
 
 

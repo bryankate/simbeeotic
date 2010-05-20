@@ -149,4 +149,14 @@ public interface PhysicalEntity {
      */
     public Set<Contact> getContactPoints();
 
+
+    /**
+     * Indicates that a model is intersted in collisions involving this entity. When
+     * a collision is detected, a {@link CollisionEvent} will be generated on the
+     * given model.
+     *
+     * @param modelId The ID of the interested model.
+     */
+    public void addCollisionListener(int modelId);
+
 }

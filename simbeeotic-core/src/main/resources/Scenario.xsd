@@ -23,10 +23,7 @@
             <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
             <xs:element name="master-seed" type="scenario:MasterSeed" minOccurs="0" maxOccurs="1"/>
             <xs:element name="simulation" type="scenario:Simulation" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="environment" type="scenario:Environment" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="comms" type="scenario:Comms" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="colony" type="scenario:Colony" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="misc-models" type="scenario:MiscModels" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="models" type="scenario:Models" minOccurs="1" maxOccurs="1"/>
             <xs:element name="looping" type="scenario:Looping" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
@@ -71,142 +68,63 @@
 
     <xs:complexType name="Simulation">
         <xs:sequence>
-            <xs:element name="step" type="xs:double" minOccurs="1" maxOccurs="1" default="1.0"/>
             <xs:element name="end-time" type="xs:double" minOccurs="1" maxOccurs="1" default="1200.0"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="Environment">
+    <xs:complexType name="Models">
         <xs:sequence>
-            <xs:element name="weather" minOccurs="0" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
+            <xs:element name="model" type="scenario:ModelConfig" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="Comms">
-        <xs:sequence>
-            <xs:element name="propagation-model" minOccurs="1" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
+    <xs:complexType name="ModelConfig">
+        <xs:complexContent>
+            <xs:extension base="scenario:CustomClass">
+                <xs:sequence>
+                    <xs:element name="model" type="scenario:ModelConfig" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="sensor" type="scenario:SensorConfig" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="radio" type="scenario:RadioConfig" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="start-position" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+                <xs:attribute name="count" type="xs:int" use="optional" default="1"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="Colony">
-        <xs:sequence>
-            <xs:element name="hive" minOccurs="1" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:choice minOccurs="1" maxOccurs="1">
-                            <xs:element name="generic-hive" type="scenario:GenericModelConfig"/>
-                            <xs:element name="custom-hive">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:choice>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                        <xs:element name="position" type="scenario:Vector" minOccurs="1" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="bee-group" minOccurs="1" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:choice minOccurs="1" maxOccurs="1">
-                            <xs:element name="generic-bee" type="scenario:GenericModelConfig"/>
-                            <xs:element name="custom-bee">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:choice>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                        <xs:element name="start-position" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
-                        <xs:element name="count" type="xs:int" minOccurs="1" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
+    <xs:complexType name="SensorConfig">
+        <xs:complexContent>
+            <xs:extension base="scenario:CustomClass">
+                <xs:sequence>
+                    <xs:element name="offset" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="pointing" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="MiscModels">
-        <xs:sequence>
-            <xs:element name="model" minOccurs="1" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="GenericModelConfig">
-        <xs:sequence>
-            <xs:element name="logic" minOccurs="1" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="sensors" minOccurs="0" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="sensor" type="scenario:Sensor" minOccurs="1" maxOccurs="unbounded"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="radio" type="scenario:Radio" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="Sensor">
-        <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="offset" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="pointing" type="scenario:Vector" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="Radio">
-        <xs:sequence>
-            <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="antenna-pattern" minOccurs="0" maxOccurs="1">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
-                        <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
-        </xs:sequence>
+    <xs:complexType name="RadioConfig">
+        <xs:complexContent>
+            <xs:extension base="scenario:CustomClass">
+                <xs:sequence>
+                    <xs:element name="antenna-pattern" type="scenario:CustomClass" minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="Vector">
         <xs:attribute name="x" type="xs:float" use="required"/>
         <xs:attribute name="y" type="xs:float" use="required"/>
         <xs:attribute name="z" type="xs:float" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="CustomClass">
+        <xs:sequence>
+            <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="optional" default=""/>
     </xs:complexType>
 
     <xs:complexType name="ConfigProps">
@@ -227,7 +145,6 @@
         <xs:sequence>
             <xs:element name="variables" type="scenario:Variables" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="repetitions" type="xs:int" use="optional" default="1"/>
     </xs:complexType>
 
     <xs:complexType name="Variables">

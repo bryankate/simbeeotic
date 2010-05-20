@@ -45,7 +45,7 @@ public class DefaultCompass extends AbstractSensor implements Compass {
 
 
     @Inject(optional = true)
-    public final void setSigma(@Named(value = "sigma") final float sigma) {
+    public final void setSigma(@Named("sigma") final float sigma) {
         this.sigma = sigma;
     }
 }

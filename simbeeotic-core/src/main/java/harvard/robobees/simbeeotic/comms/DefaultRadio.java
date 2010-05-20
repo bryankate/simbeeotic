@@ -3,6 +3,7 @@ package harvard.robobees.simbeeotic.comms;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.SimTime;
 
 
 /**
@@ -37,7 +38,7 @@ public class DefaultRadio extends AbstractRadio {
      * registered with this radio to receive notifications when a message is received.
      */
     @Override
-    public void receive(double time, byte[] data, double rxPower, double frequency) {
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
 
         double snr = rxPower - getPropagationModel().getNoiseFloor();
 
@@ -56,25 +57,25 @@ public class DefaultRadio extends AbstractRadio {
 
 
     @Inject(optional = true)
-    public final void setCenterFrequency(@Named(value = "center-frequency") final double freq) {
+    public final void setCenterFrequency(@Named("center-frequency") final double freq) {
         this.band = new Band(freq, this.band.getBandwidth());
     }
 
 
     @Inject(optional = true)
-    public final void setBandwidth(@Named(value = "bandwidth") final double bandwidth) {
+    public final void setBandwidth(@Named("bandwidth") final double bandwidth) {
         this.band = new Band(this.band.getCenterFrequency(), bandwidth);
     }
 
 
     @Inject(optional = true)
-    public final void setMaxPower(@Named(value = "max-power") final double power) {
+    public final void setMaxPower(@Named("max-power") final double power) {
         this.maxPower = power;
     }
 
 
     @Inject(optional = true)
-    public final void setSnrMargin(@Named(value = "snr-margin") final double margin) {
+    public final void setSnrMargin(@Named("snr-margin") final double margin) {
         this.snrMargin = margin;
     }
 }

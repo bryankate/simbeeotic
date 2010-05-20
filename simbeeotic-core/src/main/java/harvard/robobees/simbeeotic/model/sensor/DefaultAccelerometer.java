@@ -19,6 +19,7 @@ public class DefaultAccelerometer extends AbstractSensor implements Acceleromete
     /** {@inheritDoc} */
     public Vector3f getLinearAcceleration() {
 
+        // todo: fix this
         Vector3f accel = getHost().getTruthLinearAcceleration();
         Transform trans = new Transform();
 
@@ -38,7 +39,7 @@ public class DefaultAccelerometer extends AbstractSensor implements Acceleromete
 
 
     @Inject(optional = true)
-    public final void setSigma(@Named(value = "sigma") final float sigma) {
+    public final void setSigma(@Named("sigma") final float sigma) {
         this.sigma = sigma;
     }
 }

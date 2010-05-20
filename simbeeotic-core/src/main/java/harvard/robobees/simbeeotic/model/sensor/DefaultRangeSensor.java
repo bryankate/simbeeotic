@@ -92,19 +92,19 @@ public class DefaultRangeSensor extends AbstractSensor implements RangeSensor {
 
 
     @Inject(optional = true)
-    public final void setSigma(@Named(value = "sigma") final float sigma) {
+    public final void setSigma(@Named("sigma") final float sigma) {
         this.sigma = sigma;
     }
 
 
     @Inject(optional = true)
-    public final void setMinRange(@Named(value = "min-range") final float minRange) {
+    public final void setMinRange(@Named("min-range") final float minRange) {
         this.minRange = minRange;
     }
 
 
     @Inject(optional = true)
-    public final void setMaxRange(@Named(value = "max-range") final float maxRange) {
+    public final void setMaxRange(@Named("max-range") final float maxRange) {
         this.maxRange = maxRange;
     }
 

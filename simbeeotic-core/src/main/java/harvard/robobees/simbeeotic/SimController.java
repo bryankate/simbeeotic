@@ -2,8 +2,6 @@ package harvard.robobees.simbeeotic;
 
 
 import com.bulletphysics.collision.broadphase.AxisSweep3;
-import com.bulletphysics.collision.broadphase.BroadphaseProxy;
-import com.bulletphysics.collision.broadphase.OverlapFilterCallback;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
 import com.bulletphysics.collision.dispatch.CollisionObject;
@@ -13,7 +11,6 @@ import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
-import com.bulletphysics.linearmath.Transform;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -21,36 +18,30 @@ import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import harvard.robobees.simbeeotic.comms.AbstractRadio;
-import harvard.robobees.simbeeotic.comms.AntennaPattern;
-import harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel;
-import harvard.robobees.simbeeotic.comms.IsotropicAntenna;
-import harvard.robobees.simbeeotic.comms.PropagationModel;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.configuration.Variation;
 import harvard.robobees.simbeeotic.configuration.VariationIterator;
-import harvard.robobees.simbeeotic.configuration.scenario.Colony;
+import harvard.robobees.simbeeotic.configuration.InvalidScenarioException;
 import harvard.robobees.simbeeotic.configuration.scenario.ConfigProps;
-import harvard.robobees.simbeeotic.configuration.scenario.GenericModelConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.Scenario;
-import harvard.robobees.simbeeotic.configuration.scenario.Sensor;
-import harvard.robobees.simbeeotic.configuration.scenario.MiscModels;
+import harvard.robobees.simbeeotic.configuration.scenario.ModelConfig;
+import harvard.robobees.simbeeotic.configuration.scenario.SensorConfig;
+import harvard.robobees.simbeeotic.configuration.scenario.RadioConfig;
+import harvard.robobees.simbeeotic.configuration.scenario.Vector;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
 import harvard.robobees.simbeeotic.environment.WorldMap;
 import harvard.robobees.simbeeotic.model.Contact;
 import harvard.robobees.simbeeotic.model.EntityInfo;
-import harvard.robobees.simbeeotic.model.GenericBee;
-import harvard.robobees.simbeeotic.model.GenericBeeLogic;
-import harvard.robobees.simbeeotic.model.GenericHive;
-import harvard.robobees.simbeeotic.model.GenericHiveLogic;
-import harvard.robobees.simbeeotic.model.GenericModel;
-import harvard.robobees.simbeeotic.model.PhysicalEntity;
-import harvard.robobees.simbeeotic.model.PhysicalModel;
 import harvard.robobees.simbeeotic.model.Model;
+import harvard.robobees.simbeeotic.model.Event;
+import harvard.robobees.simbeeotic.model.PhysicalEntity;
+import harvard.robobees.simbeeotic.model.CollisionEvent;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
-import harvard.robobees.simbeeotic.util.BoundingSphere;
 import harvard.robobees.simbeeotic.util.DocUtil;
+import harvard.robobees.simbeeotic.comms.AntennaPattern;
+import harvard.robobees.simbeeotic.comms.IsotropicAntenna;
+import harvard.robobees.simbeeotic.comms.AbstractRadio;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
@@ -60,7 +51,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Queue;
+import java.util.PriorityQueue;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -71,8 +67,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SimController {
 
-    private static final double DEFAULT_SUBSTEP = 1.0f / 240.0f;
-    private static final int DEFAULT_MAX_SUBSTEPS = 100;
+    private static final double DEFAULT_STEP = 0.1;               // s
+    private static final double DEFAULT_SUBSTEP = 1.0 / 240.0;    // s
 
     private static Logger logger = Logger.getLogger(SimController.class);
 
@@ -104,8 +100,6 @@ public class SimController {
      */
     public void runSim(final Scenario scenario, final World world, double realTimeScale) {
 
-        final double step = scenario.getSimulation().getStep();
-
         int currVariation = 0;
         VariationIterator variations = new VariationIterator(scenario);
 
@@ -124,7 +118,7 @@ public class SimController {
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
             // make a new clock
-            final SimClockImpl clock = new SimClockImpl(step, realTimeScale);
+            final SimEngineImpl simEngine = new SimEngineImpl();
 
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
@@ -154,8 +148,8 @@ public class SimController {
                     // the variation number of this scenario variation
                     bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
 
-                    // the global access to timing information
-                    bind(SimClock.class).annotatedWith(GlobalScope.class).toInstance(clock);
+                    // the global access to sim engine executive
+                    bind(SimEngine.class).annotatedWith(GlobalScope.class).toInstance(simEngine);
 
                     // dynamics world
                     bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
@@ -174,359 +168,128 @@ public class SimController {
 
             Injector baseInjector = Guice.createInjector(baseModule);
 
-
-            // setup the RF environment
-            final PropagationModel commModel;
-            final Properties commModelProps;
-            final Class commModelClass;
-
-            if (scenario.getComms() != null) {
-
-                commModelProps = loadConfigProps(scenario.getComms().getPropagationModel().getProperties(), variation);
-
-                try {
-
-                    // locate the propagation model implementation
-                    commModelClass = Class.forName(scenario.getComms().getPropagationModel().getJavaClass());
-
-                    // make sure it implements PropagationModel
-                    if (!PropagationModel.class.isAssignableFrom(commModelClass)) {
-                        throw new RuntimeException("The propagation model implementation must extend from PropagationModel.");
-                    }
-                }
-                catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the propagation model class: " +
-                                               scenario.getComms().getPropagationModel().getJavaClass(), cnf);
-                }
-            }
-            else {
-
-                commModelProps = new Properties();
-                commModelClass = FreeSpacePropagationModel.class;
-            }
-
-            Injector propModelInjector = baseInjector.createChildInjector(new AbstractModule() {
-
-                protected void configure() {
-
-                    Names.bindProperties(binder(), commModelProps);
-
-                    // comm model class
-                    bind(PropagationModel.class).to(commModelClass);
-
-                    // a workaround for guice issue 282
-                    bind(commModelClass);
-                }
-            });
-
-            commModel = propModelInjector.getInstance(PropagationModel.class);
-
-            // update the main injector to contain the global comm model
-            baseInjector = baseInjector.createChildInjector(new AbstractModule() {
-
-                protected void configure() {
-
-                    // established simulated world instance
-                    bind(PropagationModel.class).annotatedWith(GlobalScope.class).toInstance(commModel);
-                }
-            });
-
-            
-            // todo: setup weather
-
-
-            // create hive
-            final PhysicalModel hive;
-
-            // todo: get z loc from world map (terrain)?
-            final float hiveStartX = scenario.getColony().getHive().getPosition().getX();
-            final float hiveStartY = scenario.getColony().getHive().getPosition().getY();
-
-            final Class hiveClass;
-            final Properties hiveProps = loadConfigProps(scenario.getColony().getHive().getProperties(), variation);
-
-            if (scenario.getColony().getHive().getCustomHive() != null) {
-
-                try {
-
-                    // locate the hive implementation
-                    hiveClass = Class.forName(scenario.getColony().getHive().getCustomHive().getJavaClass());
-
-                    // make sure it implements PhysicalModel
-                    if (!PhysicalModel.class.isAssignableFrom(hiveClass)) {
-                        throw new RuntimeException("The custom hive implementation must extend from PhysicalModel.");
-                    }
-                }
-                catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the hive class: " +
-                                               scenario.getColony().getHive().getCustomHive().getJavaClass(), cnf);
-                }
-            }
-            else {
-                hiveClass = GenericHive.class;
-            }
-
-            Injector hiveInjector = baseInjector.createChildInjector(new AbstractModule() {
-
-                protected void configure() {
-
-                    Names.bindProperties(binder(), hiveProps);
-
-                    bindConstant().annotatedWith(Names.named("start-x")).to(hiveStartX + "");
-                    bindConstant().annotatedWith(Names.named("start-y")).to(hiveStartY + "");
-
-                    // hive class
-                    bind(PhysicalModel.class).to(hiveClass);
-
-                    // a workaround for guice issue 282
-                    bind(hiveClass);
-                }
-
-                @Provides @Named("model-id")
-                public int generateModelId() {
-                    return nextId.incrementAndGet();
-                }
-            });
-
-            hive = hiveInjector.getInstance(PhysicalModel.class);
-
-            // if a generic hive, instantiate components
-            if (scenario.getColony().getHive().getGenericHive() != null) {
-                loadGenericModelComponents(baseInjector, scenario.getColony().getHive().getGenericHive(), variation, hive, false);
-            }
-
-            hive.initialize();
-
-            
+            // todo: fix this
             // this callback is used to filter out collisions between bees when they are inside the hive
-            dynamicsWorld.getBroadphase().getOverlappingPairCache().setOverlapFilterCallback(new OverlapFilterCallback() {
+//            dynamicsWorld.getBroadphase().getOverlappingPairCache().setOverlapFilterCallback(new OverlapFilterCallback() {
+//
+//                public boolean needBroadphaseCollision(BroadphaseProxy objA, BroadphaseProxy objB) {
+//
+//                    // check if both are bees by their collision group
+//                    if ((objA.collisionFilterGroup == PhysicalEntity.COLLISION_BEE) &&
+//                        (objB.collisionFilterGroup == PhysicalEntity.COLLISION_BEE)) {
+//
+//                        // if either bee's center is inside the hive, do not allow a collision
+//                        BoundingSphere hiveBounds = hive.getTruthBoundingSphere();
+//                        Vector3f diff = new Vector3f();
+//
+//                        diff.sub(hiveBounds.getCenter(),
+//                                 ((CollisionObject)objA.clientObject).getWorldTransform(new Transform()).origin);
+//
+//                        if (diff.length() <= hiveBounds.getRadius()) {
+//                            return false;
+//                        }
+//
+//                        diff.sub(hiveBounds.getCenter(),
+//                                 ((CollisionObject)objB.clientObject).getWorldTransform(new Transform()).origin);
+//
+//                        if (diff.length() <= hiveBounds.getRadius()) {
+//                            return false;
+//                        }
+//                    }
+//
+//                    // return the default collision filtering, which uses the collision group and mask
+//                    return ((objA.collisionFilterGroup & objB.collisionFilterMask) != 0) &&
+//                           ((objB.collisionFilterGroup & objA.collisionFilterMask) != 0);
+//                }
+//            });
 
-                public boolean needBroadphaseCollision(BroadphaseProxy objA, BroadphaseProxy objB) {
 
-                    // check if both are bees by their collision group
-                    if ((objA.collisionFilterGroup == PhysicalEntity.COLLISION_BEE) &&
-                        (objB.collisionFilterGroup == PhysicalEntity.COLLISION_BEE)) {
+            // parse model definitions
+            final List<Model> models = new LinkedList<Model>();
 
-                        // if either bee's center is inside the hive, do not allow a collision
-                        BoundingSphere hiveBounds = hive.getTruthBoundingSphere();
-                        Vector3f diff = new Vector3f();
-
-                        diff.sub(hiveBounds.getCenter(),
-                                 ((CollisionObject)objA.clientObject).getWorldTransform(new Transform()).origin);
-
-                        if (diff.length() <= hiveBounds.getRadius()) {
-                            return false;
-                        }
-
-                        diff.sub(hiveBounds.getCenter(),
-                                 ((CollisionObject)objB.clientObject).getWorldTransform(new Transform()).origin);
-
-                        if (diff.length() <= hiveBounds.getRadius()) {
-                            return false;
-                        }
-                    }
-
-                    // return the default collision filtering, which uses the collision group and mask
-                    return ((objA.collisionFilterGroup & objB.collisionFilterMask) != 0) &&
-                           ((objB.collisionFilterGroup & objA.collisionFilterMask) != 0);
-                }
-            });
-
-
-            // create bees
-            final List<PhysicalModel> bees = new LinkedList<PhysicalModel>();
-
-            for (Colony.BeeGroup group : scenario.getColony().getBeeGroup()) {
-
-                if (group.getCount() <= 0) {
-                    throw new RuntimeException("Cannot create a bee swarm of non-positive size.");
-                }
-
-                final Class beeClass;
-                final Properties beeProps = loadConfigProps(group.getProperties(), variation);
-
-                final float beeStartX;
-                final float beeStartY;
-
-                // default to starting in the hive unless otherwise given
-                if (group.getStartPosition() != null) {
-
-                    beeStartX = group.getStartPosition().getX();
-                    beeStartY = group.getStartPosition().getY();
-                }
-                else {
-
-                    beeStartX = hiveStartX;
-                    beeStartY = hiveStartY;
-                }
-
-                if (group.getCustomBee() != null) {
-
-                    try {
-
-                        // locate the bee implementation
-                        beeClass = Class.forName(group.getCustomBee().getJavaClass());
-
-                        // make sure it implements PhysicalModel
-                        if (!PhysicalModel.class.isAssignableFrom(beeClass)) {
-                            throw new RuntimeException("The bee implementation must extend from PhysicalModel.");
-                        }
-                    }
-                    catch(ClassNotFoundException cnf) {
-                        throw new RuntimeException("Could not locate the bee class: " +
-                                                   group.getCustomBee().getJavaClass(), cnf);
-                    }
-                }
-                else {
-                    beeClass = GenericBee.class;
-                }
-
-                Injector beeInjector = baseInjector.createChildInjector(new AbstractModule() {
-
-                    protected void configure() {
-
-                        Names.bindProperties(binder(), beeProps);
-
-                        bindConstant().annotatedWith(Names.named("start-x")).to(beeStartX + "");
-                        bindConstant().annotatedWith(Names.named("start-y")).to(beeStartY + "");
-
-                        // bee class
-                        bind(PhysicalModel.class).to(beeClass);
-
-                        // a workaround for guice issue 282
-                        bind(beeClass);
-                    }
-
-                    @Provides @Named("model-id")
-                    public int generateModelId() {
-                        return nextId.incrementAndGet();
-                    }
-                });
-
-                for (int i = 0; i < group.getCount(); i++) {
-
-                    PhysicalModel b = beeInjector.getInstance(PhysicalModel.class);
-
-                    if (group.getGenericBee() != null) {
-                        loadGenericModelComponents(baseInjector, group.getGenericBee(), variation, b, true);
-                    }
-
-                    b.initialize();
-                    bees.add(b);
+            if (scenario.getModels() != null) {
+                
+                for (ModelConfig config : scenario.getModels().getModel()) {
+                    parseModelConfig(config, null, null, models, variation, baseInjector, nextId);
                 }
             }
 
+            for (Model model : models) {
+                simEngine.addModel(model);
+            }
 
-            // create misc models, if any exist
-            final List<Model> miscModels = new LinkedList<Model>();
-
-            if (scenario.getMiscModels() != null) {
-                
-                for (MiscModels.Model model : scenario.getMiscModels().getModel()) {
-
-                    final Class modelClass;
-                    final Properties modelProps = loadConfigProps(model.getProperties(), variation);
-
-                    try {
-
-                        // locate the bee implementation
-                        modelClass = Class.forName(model.getJavaClass());
-
-                        // make sure it implements PhysicalModel
-                        if (!Model.class.isAssignableFrom(modelClass)) {
-                            throw new RuntimeException("The model implementation must extend from Model.");
-                        }
-                    }
-                    catch(ClassNotFoundException cnf) {
-                        throw new RuntimeException("Could not locate the model class: " +
-                                                   model.getJavaClass(), cnf);
-                    }
-
-                    Injector modelInjector = baseInjector.createChildInjector(new AbstractModule() {
-
-                        protected void configure() {
-
-                            Names.bindProperties(binder(), modelProps);
-
-                            // model class
-                            bind(PhysicalModel.class).to(modelClass);
-
-                            // a workaround for guice issue 282
-                            bind(modelClass);
-                        }
-
-                        @Provides @Named("model-id")
-                        public int generateModelId() {
-                            return nextId.incrementAndGet();
-                        }
-                    });
-
-                    Model m = modelInjector.getInstance(Model.class);
-
-                    miscModels.add(m);
-                    m.initialize();
-                }
+            // initialize all models
+            for (Model model : models) {
+                model.initialize();
             }
 
 
             // setup a handler for dealing with contacts and informing objects
             // of when they collide
-            ContactHandler contactHandler = new ContactHandler(dynamicsWorld);
-
-
-            long variationStartTime = System.currentTimeMillis();
+            ContactHandler contactHandler = new ContactHandler(dynamicsWorld, simEngine);
 
             // run it
+            long variationStartTime = System.currentTimeMillis();
+
+            SimTime lastSimTime = new SimTime(0);
+            SimTime nextSimTime = simEngine.getNextEventTime();
             double endTime = scenario.getSimulation().getEndTime();
 
-            // todo: turn this into a DES
-            while(clock.getCurrentTime() < endTime) {
+            while((nextSimTime != null) && (nextSimTime.getImpreciseTime() < endTime)) {
 
-                // update positions in physical world
-                dynamicsWorld.stepSimulation((float)step, DEFAULT_MAX_SUBSTEPS, (float)DEFAULT_SUBSTEP);
-
-                clock.incrementTime();
-
-                // todo: put this inside an internal tick callback
-                // update collisions
-                contactHandler.update();
-
-                hive.sampleKinematics(step);
-                hive.update(clock.getCurrentTime());
-
-                for (PhysicalModel b : bees) {
-
-                    // todo: put this inside an internal tick callback
-                    // sample kinematic state to produce a truth
-                    // measurement of accelerations
-                    b.sampleKinematics(step);
-
-                    // update model behaviors
-                    b.update(clock.getCurrentTime());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Executing event at time: " + nextSimTime);
                 }
 
-                for (Model m : miscModels) {
-                    m.update(clock.getCurrentTime());
+                // update positions in physical world so that all
+                // objects are up to date with the event time
+                if (nextSimTime.getTime() > lastSimTime.getTime()) {
+
+                    double diff = nextSimTime.getImpreciseTime() - lastSimTime.getImpreciseTime();
+                    long updatedTime = 0;
+
+                    while(diff > 0) {
+
+                        double step = Math.min(DEFAULT_STEP, diff);
+
+                        dynamicsWorld.stepSimulation((float)step,
+                                                     (int)Math.ceil(step / DEFAULT_SUBSTEP),
+                                                     (float)DEFAULT_SUBSTEP);
+
+                        // keep track of how far ahead the physics engine is getting from the last processed event time
+                        updatedTime += (long)(step * TimeUnit.SECONDS.toNanos(1));
+
+                        // update collisions
+                        if (contactHandler.update(lastSimTime, updatedTime)) {
+
+                            // since at least one collision event was scheduled, stop
+                            // updating the physical world and process the new events
+                            nextSimTime = new SimTime(lastSimTime, updatedTime, TimeUnit.NANOSECONDS);
+                            break;
+                        }
+
+                        diff -= DEFAULT_STEP;
+                    }
+
+                    lastSimTime = nextSimTime;
                 }
+
+                nextSimTime = simEngine.processNextEvent();
             }
-
-            double runTime = (double)(System.currentTimeMillis() - variationStartTime) / 1000.0;
 
             // cleanup
             map.destroy();
 
-            hive.finish();
-            hive.destroy();
+            for (Model m : models) {
 
-            for (PhysicalModel b : bees) {
-
-                b.finish();
-                b.destroy();
-            }
-
-            for (Model m : miscModels) {
                 m.finish();
+
+                if (m instanceof PhysicalEntity) {
+                    ((PhysicalEntity)m).destroy();
+                }
             }
+
+            double runTime = (double)(System.currentTimeMillis() - variationStartTime) / TimeUnit.SECONDS.toMillis(1);
 
             logger.info("");
             logger.info("--------------------------------------------");
@@ -536,127 +299,162 @@ public class SimController {
     }
 
 
-    private void loadGenericModelComponents(Injector injector, GenericModelConfig model, Variation variation,
-                                            final PhysicalModel host, final boolean isBee) {
+    /**
+     * Parses model definitions and returns the corresponding models. This is a
+     * recursive call, allowing nested models to be instantiated. The entire model
+     * tree is returned as a flattened list of models.
+     *
+     * @param config The model config to parse.
+     * @param parent The parent model, or {@code null} if the model config is a root.
+     * @param startPos The starting position in the world. May be {@code null} if it is not set by an ancestor.
+     * @param models The list of configured models.
+     * @param variation The current scenario variation.
+     * @param injector The Guice injector to use as a parent injector.
+     * @param nextId The next ID for a model.
+     */
+    private void parseModelConfig(final ModelConfig config, Model parent, Vector startPos, List<Model> models,
+                                  Variation variation, Injector injector, final AtomicInteger nextId) {
 
-        GenericModel genModel = (GenericModel)host;
+        if (config == null) {
+            return;
+        }
 
-        // radio
-        if (model.getRadio() != null) {
+        final Class modelClass;
 
-            final AntennaPattern pattern;
+        try {
 
-            if (model.getRadio().getAntennaPattern() != null) {
+            // locate the model implementation
+            modelClass = Class.forName(config.getJavaClass());
 
-                final Class patternClass;
-                final Properties patternProps = loadConfigProps(model.getRadio().getAntennaPattern().getProperties(),
-                                                                variation);
+            // make sure it implements Model
+            if (!Model.class.isAssignableFrom(modelClass)) {
+                throw new RuntimeException("The model implementation must extend from Model.");
+            }
+        }
+        catch(ClassNotFoundException cnf) {
+            throw new RuntimeException("Could not locate the model class: " +
+                                       config.getJavaClass(), cnf);
+        }
 
-                try {
+        // custom properties
+        final Properties modelProps = loadConfigProps(config.getProperties(), variation);
 
-                    patternClass = Class.forName(model.getRadio().getAntennaPattern().getJavaClass());
+        final Vector starting = new Vector();
 
-                    if (!AntennaPattern.class.isAssignableFrom(patternClass)) {
-                        throw new RuntimeException("The antenna pattern implementation must implement AntennaPattern.");
-                    }
-                }
-                catch(ClassNotFoundException cnf) {
-                    throw new RuntimeException("Could not locate the antenna pattern class: " +
-                                               model.getRadio().getAntennaPattern().getJavaClass(), cnf);
-                }
+        if (startPos != null) {
 
-                Injector patternInjector = injector.createChildInjector(new AbstractModule() {
+            starting.setX(startPos.getX());
+            starting.setY(startPos.getY());
+            starting.setZ(startPos.getZ());
 
-                    protected void configure() {
+            Vector pos = config.getStartPosition();
 
-                        Names.bindProperties(binder(), patternProps);
+            if ((pos != null) && 
+                ((starting.getX() != pos.getX()) || (starting.getY() != pos.getY()) || (starting.getZ() != pos.getZ()))) {
 
-                        bind(AntennaPattern.class).to(patternClass);
+                logger.warn("A child model has specified a starting position different from its parent, using parent position.");
+            }
+        }
+        else {
 
-                        // a workaround for guice issue 282
-                        bind(patternClass);
-                    }
-                });
+            if (config.getStartPosition() != null) {
 
-                pattern = patternInjector.getInstance(AntennaPattern.class);
+                starting.setX(config.getStartPosition().getX());
+                starting.setY(config.getStartPosition().getY());
+                starting.setZ(config.getStartPosition().getZ());
             }
             else {
-                pattern = new IsotropicAntenna();
+
+                starting.setX(0);
+                starting.setY(0);
+                starting.setZ(0);
             }
-
-            final Class radioClass;
-            final Properties radioProps = loadConfigProps(model.getRadio().getProperties(),
-                                                          variation);
-
-            try {
-
-                radioClass = Class.forName(model.getRadio().getJavaClass());
-
-                if (!AbstractRadio.class.isAssignableFrom(radioClass)) {
-                    throw new RuntimeException("The radio implementation must implement AbstractRadio.");
-                }
-            }
-            catch(ClassNotFoundException cnf) {
-                throw new RuntimeException("Could not locate the radio class: " +
-                                           model.getRadio().getJavaClass(), cnf);
-            }
-
-            Injector radioInjector = injector.createChildInjector(new AbstractModule() {
-
-                protected void configure() {
-
-                    Names.bindProperties(binder(), radioProps);
-
-                    bind(AntennaPattern.class).toInstance(pattern);
-
-                    bind(PhysicalModel.class).toInstance(host);
-                    bind(AbstractRadio.class).to(radioClass);
-
-                    // a workaround for guice issue 282
-                    bind(radioClass);
-                }
-            });
-
-            genModel.setRadio(radioInjector.getInstance(AbstractRadio.class));
         }
 
 
-        // sensors
-        if (model.getSensors() != null) {
+        // model injection config
+        for (int i = 0; i < config.getCount(); i++) {
 
-            for (Sensor sensor : model.getSensors().getSensor()) {
+            Injector modelInjector = injector.createChildInjector(new AbstractModule() {
+
+                protected void configure() {
+
+                    bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                    bindConstant().annotatedWith(Names.named("model-name")).to(config.getName());
+
+                    bindConstant().annotatedWith(Names.named("start-x")).to(starting.getX());
+                    bindConstant().annotatedWith(Names.named("start-y")).to(starting.getY());
+                    bindConstant().annotatedWith(Names.named("start-z")).to(starting.getZ());
+
+                    Names.bindProperties(binder(), modelProps);
+
+                    // model class
+                    bind(Model.class).to(modelClass);
+
+                    // a workaround for guice issue 282
+                    bind(modelClass);
+                }
+            });
+
+            // instantiate the model
+            final Model m = modelInjector.getInstance(Model.class);
+
+            if (parent != null) {
+
+                m.setParentModel(parent);
+                parent.addChildModel(m);
+            }
+
+            models.add(m);
+
+            // go through child models
+            for (ModelConfig childConfig : config.getModel()) {
+                parseModelConfig(childConfig, m, starting, models, variation, injector, nextId);
+            }
+
+            // sensors
+            for (final SensorConfig sensorConfig : config.getSensor()) {
+
+                // sensors must be attached to physical entities because they rely on
+                // their position and orientation information
+                if (!(m instanceof PhysicalEntity)) {
+                    throw new InvalidScenarioException("Sensor being attached to a model that is not a PhysicalEntity.");
+                }
 
                 final Class sensorClass;
-                final Properties sensorProps = loadConfigProps(sensor.getProperties(), variation);
 
                 try {
 
-                    sensorClass = Class.forName(sensor.getJavaClass());
+                    sensorClass = Class.forName(sensorConfig.getJavaClass());
 
-                    if (!AbstractSensor.class.isAssignableFrom(sensorClass)) {
-                        throw new RuntimeException("The sensor implementation must implement AbstractSensor.");
+                    if (!Model.class.isAssignableFrom(sensorClass)) {
+                        throw new RuntimeException("The sensor implementation must implement Model.");
+                    }
+                    else if (!AbstractSensor.class.isAssignableFrom(sensorClass)) {
+                        throw new RuntimeException("The sensor implementation must extend from AbstractSensor.");
                     }
                 }
                 catch(ClassNotFoundException cnf) {
                     throw new RuntimeException("Could not locate the sensor class: " +
-                                               sensor.getJavaClass(), cnf);
+                                               config.getJavaClass(), cnf);
                 }
 
+                final Properties sensorProps = loadConfigProps(sensorConfig.getProperties(), variation);
                 final Vector3f offset = new Vector3f();
                 final Vector3f pointing = new Vector3f();
 
-                if (sensor.getOffset() != null) {
+                if (sensorConfig.getOffset() != null) {
 
-                    offset.set(sensor.getOffset().getX(),
-                               sensor.getOffset().getY(),
-                               sensor.getOffset().getZ());
+                    offset.set(sensorConfig.getOffset().getX(),
+                               sensorConfig.getOffset().getY(),
+                               sensorConfig.getOffset().getZ());
                 }
 
-                if (sensor.getPointing() != null) {
+                if (sensorConfig.getPointing() != null) {
 
-                    pointing.set(sensor.getPointing().getX(),
-                                 sensor.getPointing().getY(),
-                                 sensor.getPointing().getZ());
+                    pointing.set(sensorConfig.getPointing().getX(),
+                                 sensorConfig.getPointing().getY(),
+                                 sensorConfig.getPointing().getZ());
                 }
 
                 Injector sensorInjector = injector.createChildInjector(new AbstractModule() {
@@ -665,72 +463,125 @@ public class SimController {
 
                         Names.bindProperties(binder(), sensorProps);
 
-                        bind(PhysicalModel.class).toInstance(host);
-                        bind(Vector3f.class).annotatedWith(Names.named("offset")).toInstance(offset);
-                        bind(Vector3f.class).annotatedWith(Names.named("pointing")).toInstance(offset);
+                        bind(PhysicalEntity.class).toInstance((PhysicalEntity)m);
 
-                        bind(AbstractSensor.class).to(sensorClass);
+                        bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                        bindConstant().annotatedWith(Names.named("model-name")).to(sensorConfig.getName());
+
+                        bind(Vector3f.class).annotatedWith(Names.named("offset")).toInstance(offset);
+                        bind(Vector3f.class).annotatedWith(Names.named("pointing")).toInstance(pointing);
+
+                        bind(Model.class).to(sensorClass);
 
                         // a workaround for guice issue 282
                         bind(sensorClass);
                     }
                 });
 
-                genModel.addSensor(sensor.getName(), sensorInjector.getInstance(AbstractSensor.class));
+                Model sensor = sensorInjector.getInstance(Model.class);
+
+                models.add(sensor);
+
+                sensor.setParentModel(m);
+                m.addChildModel(sensor);
             }
-        }
 
-        // logic
-        final Class logicClass;
-        final Properties logicProps = loadConfigProps(model.getLogic().getProperties(), variation);
+            // radio
+            if (config.getRadio() != null) {
 
-        try {
-
-            logicClass = Class.forName(model.getLogic().getJavaClass());
-
-            if (isBee) {
-
-                if (!GenericBeeLogic.class.isAssignableFrom(logicClass)) {
-                    throw new RuntimeException("The logic implementation must implement GenericBeeLogic.");
+                // radios must be attached to physical entities because they rely on
+                // their position and orientation information
+                if (!(m instanceof PhysicalEntity)) {
+                    throw new InvalidScenarioException("Radio being attached to a model that is not a PhysicalEntity.");
                 }
-            }
-            else {
 
-                if (!GenericHiveLogic.class.isAssignableFrom(logicClass)) {
-                    throw new RuntimeException("The logic implementation must implement GenericHiveLogic.");
+                final RadioConfig radioConfig = config.getRadio();
+                final Class radioClass;
+                final AntennaPattern pattern;
+
+                final Properties radioProps = loadConfigProps(radioConfig.getProperties(), variation);
+
+                try {
+
+                    radioClass = Class.forName(radioConfig.getJavaClass());
+
+                    if (!Model.class.isAssignableFrom(radioClass)) {
+                        throw new RuntimeException("The radio implementation must implement Model.");                        
+                    }
+                    else if (!AbstractRadio.class.isAssignableFrom(radioClass)) {
+                        throw new RuntimeException("The radio implementation must implement AbstractRadio.");
+                    }
                 }
-            }
-        }
-        catch(ClassNotFoundException cnf) {
-            throw new RuntimeException("Could not locate the logic class: " +
-                                       model.getLogic().getJavaClass(), cnf);
-        }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the radio class: " +
+                                               radioConfig.getJavaClass(), cnf);
+                }
 
-        Injector logicInjector = injector.createChildInjector(new AbstractModule() {
+                if (config.getRadio().getAntennaPattern() != null) {
 
-            protected void configure() {
+                    final Class patternClass;
+                    final Properties patternProps = loadConfigProps(radioConfig.getAntennaPattern().getProperties(),
+                                                                    variation);
 
-                Names.bindProperties(binder(), logicProps);
+                    try {
 
-                bind(PhysicalModel.class).toInstance(host);
+                        patternClass = Class.forName(radioConfig.getAntennaPattern().getJavaClass());
 
-                if (isBee) {
-                    bind(GenericBeeLogic.class).to(logicClass);
+                        if (!AntennaPattern.class.isAssignableFrom(patternClass)) {
+                            throw new RuntimeException("The antenna pattern implementation must implement AntennaPattern.");
+                        }
+                    }
+                    catch(ClassNotFoundException cnf) {
+                        throw new RuntimeException("Could not locate the antenna pattern class: " +
+                                                   radioConfig.getAntennaPattern().getJavaClass(), cnf);
+                    }
+
+                    Injector patternInjector = injector.createChildInjector(new AbstractModule() {
+
+                        protected void configure() {
+
+                            Names.bindProperties(binder(), patternProps);
+
+                            bind(AntennaPattern.class).to(patternClass);
+
+                            // a workaround for guice issue 282
+                            bind(patternClass);
+                        }
+                    });
+
+                    pattern = patternInjector.getInstance(AntennaPattern.class);
                 }
                 else {
-                    bind(GenericHiveLogic.class).to(logicClass);
+                    pattern = new IsotropicAntenna();
                 }
 
-                // a workaround for guice issue 282
-                bind(logicClass);
-            }
-        });
+                Injector radioInjector = injector.createChildInjector(new AbstractModule() {
 
-        if (isBee) {
-            ((GenericBee)genModel).setLogic(logicInjector.getInstance(GenericBeeLogic.class));
-        }
-        else {
-            ((GenericHive)genModel).setLogic(logicInjector.getInstance(GenericHiveLogic.class));
+                    protected void configure() {
+
+                        Names.bindProperties(binder(), radioProps);
+
+                        if (Model.class.isAssignableFrom(radioClass)) {
+
+                            bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                            bindConstant().annotatedWith(Names.named("model-name")).to(radioConfig.getName());
+                        }
+
+                        bind(AntennaPattern.class).toInstance(pattern);
+                        bind(Model.class).to(radioClass);
+
+                        // a workaround for guice issue 282
+                        bind(radioClass);
+                    }
+                });
+
+                Model radio = radioInjector.getInstance(Model.class);
+
+                models.add(radio);
+
+                radio.setParentModel(m);
+                m.addChildModel(radio);
+            }
         }
     }
 
@@ -791,23 +642,36 @@ public class SimController {
     private static final class ContactHandler {
 
         private CollisionWorld world;
-        private Set<CollisionObject> touching = new HashSet<CollisionObject>();
+        private SimEngine simEngine;
+
+        private Map<CollisionObject, Set<CollisionObject>> contactMap = new HashMap<CollisionObject, Set<CollisionObject>>();
 
 
-        public ContactHandler(CollisionWorld world) {
+        public ContactHandler(CollisionWorld world, SimEngine engine) {
+
             this.world = world;
+            this.simEngine = engine;
         }
 
 
-        public void update() {
+        /**
+         * Looks for contacts between objects at the given time.
+         *
+         * @param lastSimTime The last officially processed evnet time.
+         * @param updatedTime The amount of time that the physics engine has moved forward since the last event was executed (nanoseconds).
+         *
+         * @return True if a collision event was scheduled, false otherwise.
+         */
+        public boolean update(SimTime lastSimTime, long updatedTime) {
 
             // remove old contacts
-            for (CollisionObject obj : touching) {
+            for (CollisionObject obj : contactMap.keySet()) {
                 ((EntityInfo)obj.getUserPointer()).getContactPoints().clear();
             }
 
-            touching.clear();
+            Map<CollisionObject, Set<CollisionObject>> newContacts = new HashMap<CollisionObject, Set<CollisionObject>>();
 
+            boolean scheduledEvent = false;
             int numManifolds = world.getDispatcher().getNumManifolds();
 
             for (int i = 0; i < numManifolds; i++) {
@@ -815,6 +679,8 @@ public class SimController {
                 PersistentManifold manifold = world.getDispatcher().getManifoldByIndexInternal(i);
                 CollisionObject objectA = (CollisionObject)manifold.getBody0();
                 CollisionObject objectB = (CollisionObject)manifold.getBody1();
+                EntityInfo infoA = (EntityInfo)objectA.getUserPointer();
+                EntityInfo infoB = (EntityInfo)objectB.getUserPointer();
 
                 int numPoints = manifold.getNumContacts();
 
@@ -831,76 +697,284 @@ public class SimController {
                                                    ((EntityInfo)objectA.getUserPointer()).getProperties());
 
                     // add the contact points to the objects
-                    ((EntityInfo)objectA.getUserPointer()).getContactPoints().add(contactA);
-                    ((EntityInfo)objectB.getUserPointer()).getContactPoints().add(contactB);
+                    infoA.getContactPoints().add(contactA);
+                    infoB.getContactPoints().add(contactB);
                 }
 
+                // record that the two objects are touching
                 if (numPoints > 0) {
 
-                    touching.add(objectA);
-                    touching.add(objectB);
+                    if (!newContacts.containsKey(objectA)) {
+                        newContacts.put(objectA, new HashSet<CollisionObject>());
+                    }
+
+                    if (!newContacts.containsKey(objectB)) {
+                        newContacts.put(objectB, new HashSet<CollisionObject>());
+                    }
+
+                    newContacts.get(objectA).add(objectB);
+                    newContacts.get(objectB).add(objectA);
+
+                    // if it wasn't in the old map, it is a new contact (i.e. collision)
+                    if (!contactMap.containsKey(objectA) ||
+                        (contactMap.containsKey(objectA) && !contactMap.get(objectA).contains(objectB))) {
+
+                        // schedule an event to signify the collision on the object(s) that
+                        // are expecting such an event. it is better to do it this way (despite the
+                        // hackiness) than broadcasting an event to all models and having them check
+                        // if they are involved in the collision.
+
+                        SimTime time = new SimTime(lastSimTime, updatedTime, TimeUnit.NANOSECONDS);
+                        CollisionEvent event = new CollisionEvent();
+
+                        for (int id : infoA.getCollisionListeners()) {
+
+                            simEngine.scheduleEvent(id, time, event);
+                            scheduledEvent = true;
+                        }
+
+                        for (int id : infoB.getCollisionListeners()) {
+
+                            simEngine.scheduleEvent(id, time, event);
+                            scheduledEvent = true;
+                        }
+                    }
                 }
             }
+
+            contactMap = newContacts;
+
+            return scheduledEvent;
         }
     }
 
 
     /**
-     * An implementation of {@link SimClock} that is used as the main time
-     * reference for each scenario variation.
+     * An implementation of {@link SimEngine} that is used as a container
+     * and coordinator for events in each scenario variation.
+     *
+     * @note This class is not thread safe, so it would need to be updated if
+     *       multiple models are allowed to execute in parallel in the future.
      */
-    static final class SimClockImpl implements SimClock {
+    static final class SimEngineImpl implements SimEngine {
 
-        private long time = 0;
-        private long step;          // seconds * precision
-        private long waitTime;      // seconds * precision
-        private long lastTick = 0;
+        private Queue<ScheduledEvent> eventQ = new PriorityQueue<ScheduledEvent>();
+        private Map<Integer, Model> modelMap = new HashMap<Integer, Model>();
+        private Map<String, Set<Model>> modelNameMap = new HashMap<String, Set<Model>>();
+        private Map<Class, Set<Model>> modelTypeMap = new HashMap<Class, Set<Model>>();
 
-        private static final long PRECISION = 1000000;
-        private static final long WAIT_PRECISION = 1000;
+        private SimTime processing = null;
+        private long nextEventId = 1;
 
 
-        public SimClockImpl(double step, double scale) {
-
-            this.step = (long)(step * PRECISION);
-            this.waitTime = (long)(step * scale * PRECISION);
+        /** {@inheritDoc} */
+        public SimTime getCurrentTime() {
+            return processing;
         }
 
-        @Override
-        public double getCurrentTime() {
-            return (double)time / PRECISION;
+
+        /** {@inheritDoc} */
+        public long scheduleEvent(final int modelId, final SimTime time, final Event event) {
+
+            SimTime minTime = processing;
+
+            if ((minTime == null) && (eventQ.peek() != null)) {
+                minTime = eventQ.peek().time;
+            }
+
+            // the user is trying to schedule an event for a time in the past
+            if ((minTime != null) && (time.compareTo(minTime) < 0)) {
+
+                throw new CausalityViolationException("The time of the event (" + time +
+                                                      ") is prior to GVT (" + minTime + ").");
+            }
+
+            Model model = modelMap.get(modelId);
+
+            if (model == null) {
+                throw new ModelNotFoundException();
+            }
+
+            long eventId = nextEventId++;
+
+            // add it to the queue
+            eventQ.add(new ScheduledEvent(eventId, time, event, model));
+
+            return eventId;
         }
 
-        @Override
-        public double getTimeStep() {
-            return (double)step / PRECISION;
+
+        /** {@inheritDoc} */
+        public void cancelEvent(long eventId) {
+
+            // todo: do this better
+            ScheduledEvent toRemove = null;
+
+            for (ScheduledEvent e : eventQ) {
+
+                if (e.getId() == eventId) {
+
+                    toRemove = e;
+                    break;
+                }
+            }
+
+            if (toRemove != null) {
+                eventQ.remove(toRemove);
+            }
         }
 
-        public void incrementTime() {
 
-            // if we are constrining the sim to real time, see if
-            // we need to wait in real time for the next virtual time tick
-            if (waitTime > 0) {
+        /** {@inheritDoc} */
+        public Model findModelById(int ID) {
+            return modelMap.get(ID);
+        }
 
-                long now = System.currentTimeMillis();
-                long diff = now - lastTick;
 
-                if (diff < waitTime) {
+        /** {@inheritDoc} */
+        public Set<Model> findModelsByName(String name) {
+            return modelNameMap.get(name);
+        }
 
-                    try {
 
-                        // wait precision is different because the units for sleep are milliseconds
-                        Thread.sleep((waitTime - diff) / WAIT_PRECISION);
-                    }
-                    catch(InterruptedException ie) {
-                        throw new RuntimeException("SimClock interrupted.");
+        /** {@inheritDoc} */
+        public Set<Model> findModelsByType(Class type) {
+
+            if (!modelTypeMap.containsKey(type)) {
+
+                Set<Model> results = new HashSet<Model>();
+
+                // search all models and cache the results
+                for (Model m : modelMap.values()) {
+
+                    if (type.isAssignableFrom(m.getClass())) {
+                        results.add(m);
                     }
                 }
 
-                lastTick = now;
+                modelTypeMap.put(type, results);
+
+                return results;
             }
 
-            time += step;
+            return modelTypeMap.get(type);
+        }
+
+
+        /**
+         * Gets the time of the event that is at the head of the queue.
+         *
+         * @return The {@link SimTime} of the next {@link Event} to be processed,
+         *         or {@code null} if there are no events scheduled.
+         */
+        public SimTime getNextEventTime() {
+
+            ScheduledEvent next = eventQ.peek();
+
+            if (next != null) {
+                return next.time;
+            }
+
+            return null;
+        }
+
+
+        /**
+         * Processes the next event in the queue. This method will block while the
+         * event is being processed.
+         *
+         * @return The time of the event <i>following</i> the event that was just
+         *         processed, which is the head of the event queue. This is equivalent
+         *         to calling {@link #getNextEventTime()} immediately after this call.
+         */
+        public SimTime processNextEvent() {
+
+            ScheduledEvent next = eventQ.poll();
+
+            if (next != null) {
+
+                processing = next.time;
+
+                next.model.processEvent(next.time, next.event);
+            }
+
+            processing = null;
+
+            return getNextEventTime();
+        }
+
+
+        /**
+         * Adds a model to the simulation. Only models that have been added can have events
+         * scheduled on them.
+         *
+         * @param model The model that is capable of event execution.
+         */
+        public void addModel(final Model model) {
+
+            modelMap.put(model.getModelId(), model);
+
+            if (!modelNameMap.containsKey(model.getName())) {
+                modelNameMap.put(model.getName(), new HashSet<Model>());
+            }
+
+            modelNameMap.get(model.getName()).add(model);
+        }
+
+
+        /**
+         * A container that holds the details of an event to be processed in the future.
+         */
+        private static class ScheduledEvent implements Comparable<ScheduledEvent> {
+
+            public long id;
+            public SimTime time;
+            public Event event;
+            public Model model;
+
+
+            public ScheduledEvent(long id, SimTime time, Event event, Model model) {
+
+                this.id = id;
+                this.time = time;
+                this.event = event;
+                this.model = model;
+            }
+
+
+            /**
+             * We need an absolute (deterministic) sorting of scheduled events, so we use the
+             * time, model ID, and event ID as tiebreakers.
+             *
+             * @param o The other event.
+             *
+             * @return An integer less than 0 if this event should come before the other, greater
+             *         than zero if it should come after the other, and 0 if there is no difference
+             *         in the order of processing.
+             */
+            @Override
+            public int compareTo(ScheduledEvent o) {
+
+                int timeComp = time.compareTo(o.time);
+
+                if (timeComp == 0) {
+
+                    int modelComp = Integer.valueOf(model.getModelId()).compareTo(o.model.getModelId());
+
+                    if (modelComp == 0) {
+                        return Long.valueOf(id).compareTo(o.id);
+                    }
+
+                    return modelComp;
+                }
+
+                return timeComp;
+            }
+
+
+            public long getId() {
+                return id;
+            }
         }
     }
 }

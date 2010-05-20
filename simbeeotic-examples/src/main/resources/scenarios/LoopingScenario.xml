@@ -21,25 +21,16 @@
     </master-seed>
 
     <simulation>
-        <step>0.1</step>
         <end-time>5.0</end-time>
     </simulation>
 
-    <colony>
-        <hive>
-            <generic-hive>
-                <logic>
-                    <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
-                </logic>
-            </generic-hive>
-            <position x="0" y="0" z="0" />
-        </hive>
-        <bee-group>
-            <generic-bee>
-                <logic>
-                    <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
-                </logic>
-            </generic-bee>
+    <models>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
+            <start-position x="0" y="0" z="0" />
+        </model>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
 
             <!-- variable placeholders can be used in property values for the hive and bees. -->
             <properties>
@@ -48,11 +39,10 @@
                 <!-- the mass variable has a default value -->
                 <prop name="mass" value="${bee.mass}:0.1"/>
             </properties>
-            <count>1</count>
-        </bee-group>
-    </colony>
+        </model>
+    </models>
 
-    <looping repetitions="1">
+    <looping>
         <variables>
 
             <!-- will step evenly through a range of values -->

@@ -6,6 +6,9 @@ import java.util.Properties;
 
 
 /**
+ * A container class for information related to a contact between two
+ * physical objects in the virtual world.
+ * 
  * @author bkate
  */
 public class Contact {

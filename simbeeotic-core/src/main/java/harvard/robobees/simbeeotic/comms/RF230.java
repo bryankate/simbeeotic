@@ -7,6 +7,7 @@ import java.util.Random;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.SimTime;
 
 
 /**
@@ -48,7 +49,7 @@ public class RF230 extends ZigbeeRadio {
      * </ol>
      */
     @Override
-    public void receive(double time, byte[] data, double rxPower, double frequency) {
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
 
         // check if it is within the range of sensitivity of the radio
         if (rxPower < minRxPower) {
@@ -76,7 +77,7 @@ public class RF230 extends ZigbeeRadio {
      * @param level The transmit power level. It must be an integer in the range (0,15).
      */
     @Inject(optional = true)
-    public final void setTransmitPowerLevel(@Named(value = "tx-power-level") final int level) {
+    public final void setTransmitPowerLevel(@Named("tx-power-level") final int level) {
 
         switch(level) {
 
@@ -167,7 +168,7 @@ public class RF230 extends ZigbeeRadio {
 
 
     @Inject
-    public final void setRandomSeed(@Named(value = "random-seed") final long seed) {
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
         this.rand = new Random(seed);
     }
 

@@ -14,10 +14,11 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
 import harvard.robobees.simbeeotic.util.MathUtil;
-import org.apache.log4j.Logger;
+import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -29,13 +30,14 @@ import javax.vecmath.Vector3f;
  *
  * @author bkate
  */
-public class GenericBee extends GenericModel {
-
-    private GenericBeeLogic logic;
+public abstract class SimpleBee extends GenericModel {
 
     // parameters
     private float length = 0.2f;   // m
     private float mass = 0.128f;   // g
+    private long kinematicUpdateRate = 100;  // ms
+
+    protected Timer kinematicTimer;
 
     // physical state
     private RigidBody body;
@@ -43,8 +45,52 @@ public class GenericBee extends GenericModel {
     private Vector3f hoverForce;
     private boolean hovering = false;
 
-    
-    private static Logger logger = Logger.getLogger(GenericBee.class);
+
+    /** {@inheritDoc} */
+    @Override
+    public void initialize() {
+
+        super.initialize();
+
+        // setup a timer that handles the details of using the simple flight abstraction
+        if (kinematicUpdateRate > 0) {
+
+            kinematicTimer = createTimer(new TimerCallback() {
+
+                public void fire(SimTime time) {
+
+                    // todo: clear forces
+
+                    updateKinematics(time);
+
+                    if (desiredLinVel.length() > 0) {
+                        body.activate();
+                    }
+
+                    // apply changes to motion for the next timestep
+                    Vector3f impulse = new Vector3f(desiredLinVel);
+                    Transform trans = new Transform();
+
+                    trans.setIdentity();
+                    trans.setRotation(getTruthOrientation());
+
+                    trans.transform(impulse);
+                    impulse.sub(getTruthLinearVelocity());
+                    impulse.scale(getMass());
+
+                    // apply an instantaneous force to get the desired velocity change
+                    body.applyCentralImpulse(impulse);
+
+                    // account for gravity (or not)
+                    if (hovering) {
+
+                        body.activate();
+                        applyForce(hoverForce);
+                    }
+                }
+            }, 0, TimeUnit.MILLISECONDS, kinematicUpdateRate, TimeUnit.MILLISECONDS);
+        }
+    }
 
 
     /** {@inheritDoc} */
@@ -78,7 +124,7 @@ public class GenericBee extends GenericModel {
         // todo: put the bee's properties into the entity info?
         body.setUserPointer(new EntityInfo());
 
-//        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_BEE | COLLISION_FLOWER));
+        // bees do not collide with each other or the hive
         world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
 
         hoverForce = new Vector3f(0, 0, mass * (float)-PhysicalConstants.EARTH_GRAVITY);
@@ -89,48 +135,19 @@ public class GenericBee extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void initializeBehavior() {
-        logic.initialize(this);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
     public void finish() {
-        logic.finish();
     }
 
 
-    /** {@inheritDoc} */
-    @Override
-    public final void update(double currTime) {
+    /**
+     * A method that is called by the kinematic timer. Derived classes are expected to implement
+     * movemement functionality with this callback.
+     *
+     * @param time The current time.
+     */
+    protected void updateKinematics(SimTime time) {
 
-        logic.update(currTime);
-
-        if (desiredLinVel.length() > 0) {
-            body.activate();
-        }
-
-        // apply changes to motion for the next timestep
-        Vector3f impulse = new Vector3f(desiredLinVel);
-        Transform trans = new Transform();
-
-        trans.setIdentity();
-        trans.setRotation(getTruthOrientation());
-
-        trans.transform(impulse);
-        impulse.sub(getTruthLinearVelocity());
-        impulse.scale(getMass());
-
-        // apply an instantaneous force to get the desired velocity change
-        body.applyCentralImpulse(impulse);
-
-        // account for gravity (or not)
-        if (hovering) {
-
-            body.activate();
-            applyForce(hoverForce);
-        }
+        // default implementation does nothing, override to suit your needs
     }
 
 
@@ -221,21 +238,8 @@ public class GenericBee extends GenericModel {
     }
 
 
-    public final void setLogic(final GenericBeeLogic logic) {
-
-        if (!isInitialized()) {
-
-            this.logic = logic;
-
-            if (getRadio() != null) {
-                getRadio().addMessageListener(logic);
-            }
-        }
-    }
-
-
     @Inject(optional = true)
-    public final void setLength(@Named(value = "length") final float length) {
+    public final void setLength(@Named("length") final float length) {
 
         if (!isInitialized()) {
             this.length = length;
@@ -244,10 +248,19 @@ public class GenericBee extends GenericModel {
 
 
     @Inject(optional = true)
-    public final void setMass(@Named(value = "mass") final float mass) {
+    public final void setMass(@Named("mass") final float mass) {
 
         if (!isInitialized()) {
             this.mass = mass;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setKinematicUpdateRate(@Named("kinematic-update-rate") final long rate) {
+
+        if (!isInitialized()) {
+            this.kinematicUpdateRate = rate;
         }
     }
 }

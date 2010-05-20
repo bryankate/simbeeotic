@@ -4,12 +4,16 @@ package harvard.robobees.simbeeotic.comms;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
-import harvard.robobees.simbeeotic.model.PhysicalModel;
+import harvard.robobees.simbeeotic.model.PhysicalEntity;
+import harvard.robobees.simbeeotic.model.AbstractModel;
+import harvard.robobees.simbeeotic.model.Model;
+import harvard.robobees.simbeeotic.model.EventHandler;
+import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
 
 
 /**
@@ -18,9 +22,9 @@ import java.util.Set;
  *
  * @author bkate
  */
-public abstract class AbstractRadio implements Radio {
+public abstract class AbstractRadio extends AbstractModel implements Radio {
 
-    private PhysicalModel host;
+    private PhysicalEntity host;
     private PropagationModel propModel;
 
     private Vector3f offset = new Vector3f();
@@ -28,6 +32,41 @@ public abstract class AbstractRadio implements Radio {
     private AntennaPattern pattern;
 
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
+
+
+    /** {@inheritDoc} */
+    public void initialize() {
+
+        // find the propagation model and register with it
+        Set<Model> propModels = getSimEngine().findModelsByType(PropagationModel.class);
+
+        if (propModels.size() > 1) {
+            throw new RuntimeException("There is more than one PropagationModel in the scenario.");
+        }
+
+        // there may be no propagation model, in which case comms won't work but we shouldn't throw an exception
+        // until someone tries to use them. it is possible that someone attached a radio for no reason...
+        if (!propModels.isEmpty()) {
+            propModel = (PropagationModel)new ArrayList<Model>(propModels).get(0);
+        }
+    }
+
+
+    /** {@inheritDoc} */
+    public void finish() {
+    }
+
+
+    /**
+     * Handles the reception of an RF transmission.
+     *
+     * @param time The time of the transmission.
+     * @param event The details of the transmission.
+     */
+    @EventHandler
+    public final void handleReceptionEvent(SimTime time, ReceptionEvent event) {
+        receive(time, event.getData(), event.getRxPower(), event.getBand().getCenterFrequency());
+    }
 
 
     /** {@inheritDoc} */
@@ -88,7 +127,7 @@ public abstract class AbstractRadio implements Radio {
      * @param data The data received.
      * @param rxPower The strength of the received signal (in dBm).
      */
-    protected final void notifyListeners(double time, byte[] data, double rxPower) {
+    protected final void notifyListeners(SimTime time, byte[] data, double rxPower) {
 
         for (MessageListener l : listeners) {
             l.messageReceived(time, data, rxPower);
@@ -117,28 +156,41 @@ public abstract class AbstractRadio implements Radio {
     }
 
 
-    protected final PhysicalModel getHost() {
+    protected final PhysicalEntity getHost() {
         return host;
     }
     
 
     protected final PropagationModel getPropagationModel() {
+
+        if (propModel == null) {
+            throw new RuntimeException("The propagation model could not be found in the scenario!");
+        }
+
         return propModel;
     }
 
 
-    @Inject
-    public final void setHost(final PhysicalModel host) {
-        this.host = host;
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation ensures that the host model is a {@link PhysicalEntity}.
+     */
+    @Override
+    public void setParentModel(Model parent) {
+
+        super.setParentModel(parent);
+
+        if (parent instanceof PhysicalEntity) {
+            setHost((PhysicalEntity)parent);
+        }
     }
 
 
-    @Inject
-    public final void setPropagationModel(@GlobalScope PropagationModel propModel) {
-
-        this.propModel = propModel;
-
-        propModel.addRadio(this);
+    // this is only optional when wired up by the standard way (parent is a model that implements PhysicalEntity)
+    @Inject(optional = true)
+    public final void setHost(final PhysicalEntity host) {
+        this.host = host;
     }
 
 
@@ -152,7 +204,7 @@ public abstract class AbstractRadio implements Radio {
      * @param offset The offset of the antenna base (in the body frame).
      */
     @Inject(optional = true)
-    public final void setOffset(@Named(value = "offset") final Vector3f offset) {
+    public final void setOffset(@Named("offset") final Vector3f offset) {
         this.offset = offset;
     }
 
@@ -168,7 +220,7 @@ public abstract class AbstractRadio implements Radio {
      * @param pointing The antenna pointing vector (in the body frame).
      */
     @Inject(optional = true)
-    public final void setPointing(@Named(value = "pointing") final Vector3f pointing) {
+    public final void setPointing(@Named("pointing") final Vector3f pointing) {
         this.pointing = pointing;
     }
 

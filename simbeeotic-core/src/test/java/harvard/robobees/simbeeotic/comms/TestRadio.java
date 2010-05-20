@@ -2,6 +2,7 @@ package harvard.robobees.simbeeotic.comms;
 
 
 import harvard.robobees.simbeeotic.util.MathUtil;
+import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Vector3f;
 
@@ -23,7 +24,7 @@ public class TestRadio implements Radio {
 
     private List<Double> points = new LinkedList<Double>();
 
-    private static Logger logger = Logger.getLogger(PropagationModelTest.class);
+    private static Logger logger = Logger.getLogger(TestRadio.class);
 
 
     public TestRadio(Vector3f pos, PropagationModel prop) {
@@ -57,7 +58,7 @@ public class TestRadio implements Radio {
 
 
     @Override
-    public void receive(double time, byte[] data, double rxPower, double frequency) {
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
 
         points.add(rxPower);
 

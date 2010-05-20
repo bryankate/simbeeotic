@@ -105,7 +105,7 @@ public class FlowerSensor extends AbstractSensor {
 
 
     @Inject(optional = true)
-    public final void setMaxRange(@Named(value = "max-range") final float maxRange) {
+    public final void setMaxRange(@Named("max-range") final float maxRange) {
         this.maxRange = maxRange;
     }
 

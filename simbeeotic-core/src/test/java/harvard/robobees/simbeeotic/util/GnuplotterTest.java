@@ -2,6 +2,7 @@ package harvard.robobees.simbeeotic.util;
 
 
 import junit.framework.TestCase;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -15,10 +16,23 @@ public class GnuplotterTest extends TestCase {
                               "4 4 \n" +
                               "5 5";
 
+    private static Logger logger = Logger.getLogger(GnuplotterTest.class);
+
     
     public void testPlotting() {
 
-        Gnuplotter plot = new Gnuplotter();
+
+        Gnuplotter plot;
+
+        try {
+            plot = new Gnuplotter();
+        }
+        catch(Exception e) {
+
+            // an exception is thrown if gnuplot cannot be found on the path
+            logger.warn("Exception thrown when trying to setup plotter.", e);
+            return;
+        }
 
         plot.setProperty("term", "x11");
         plot.unsetProperty("key");

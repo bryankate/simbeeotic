@@ -23,14 +23,17 @@ import javax.vecmath.Vector3f;
  *
  * @author bkate
  */
-public class GenericHive extends GenericModel {
-
-    private GenericHiveLogic logic;
+public class SimpleHive extends GenericModel {
 
     // parameters
     private float size = 1.0f;  // m
 
-    private static Logger logger = Logger.getLogger(GenericHive.class);
+
+    /** {@inheritDoc} */
+    @Override
+    public void initialize() {
+        super.initialize();
+    }
 
 
     /** {@inheritDoc} */
@@ -62,22 +65,7 @@ public class GenericHive extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void initializeBehavior() {
-        logic.initialize(this);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
     public void finish() {
-        logic.finish();
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(double currTime) {
-        logic.update(currTime);
     }
 
 
@@ -86,21 +74,8 @@ public class GenericHive extends GenericModel {
     }
 
 
-    public final void setLogic(final GenericHiveLogic logic) {
-
-        if (!isInitialized()) {
-
-            this.logic = logic;
-
-            if (getRadio() != null) {
-                getRadio().addMessageListener(logic);
-            }
-        }
-    }
-
-
     @Inject(optional = true)
-    public final void setSize(@Named(value = "size") final float size) {
+    public final void setSize(@Named("size") final float size) {
 
         if (!isInitialized()) {
             this.size = size;

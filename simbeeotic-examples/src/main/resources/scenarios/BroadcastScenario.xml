@@ -9,46 +9,29 @@
     </master-seed>
 
     <simulation>
-        <step>0.1</step>
         <end-time>200.0</end-time>
     </simulation>
 
-    <comms>
-        <propagation-model>
+    <models>
+        <model>
             <java-class>harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel</java-class>
             <properties>
                 <prop name="noise-floor-mean" value="-50"/>
                 <prop name="noise-floor-sigma" value="10"/>
                 <prop name="range-thresh" value="30"/>
             </properties>
-        </propagation-model>
-    </comms>
-
-    <colony>
-        <hive>
-            <generic-hive>
-                <logic>
-                    <java-class>harvard.robobees.simbeeotic.model.InertHive</java-class>
-                </logic>
-            </generic-hive>
-            <position x="0" y="0" z="0" />
-        </hive>
-        <bee-group>
-            <generic-bee>
-                <logic>
-                    <java-class>harvard.robobees.simbeeotic.example.BroadcastBee</java-class>
-                </logic>
-                <radio>
-                    <java-class>harvard.robobees.simbeeotic.comms.DefaultRadio</java-class>
-                    <properties>
-                        <prop name="max-power" value="15"/>
-                        <prop name="snr-margin" value="7"/>
-                    </properties>
-                </radio>
-            </generic-bee>
-            <count>3</count>
-        </bee-group>
-    </colony>
-
-    <looping repetitions="1"/>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model count="3">
+            <java-class>harvard.robobees.simbeeotic.example.BroadcastBee</java-class>
+            <radio>
+                <java-class>harvard.robobees.simbeeotic.comms.DefaultRadio</java-class>
+                <properties>
+                    <prop name="max-power" value="15"/>
+                    <prop name="snr-margin" value="7"/>
+                </properties>
+            </radio>
+        </model>
+    </models>
+    
 </scenario>

@@ -4,6 +4,8 @@ package harvard.robobees.simbeeotic.comms;
 import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -13,8 +15,9 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.util.MathUtil;
-import harvard.robobees.simbeeotic.SimClock;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.model.AbstractModel;
+import harvard.robobees.simbeeotic.model.Model;
 
 
 /**
@@ -22,11 +25,11 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
  *
  * @author bkate
  */
-public abstract class AbstractPropagationModel implements PropagationModel {
+public abstract class AbstractPropagationModel extends AbstractModel implements PropagationModel {
 
     protected Random rand = new Random(112181);
-    private Set<Radio> radios = new HashSet<Radio>();
-    private SimClock clock;
+    private Map<Integer, Radio> radios = new HashMap<Integer, Radio>();
+
 
     // parameters
     private double rangeThresh = 10;      // m
@@ -49,13 +52,32 @@ public abstract class AbstractPropagationModel implements PropagationModel {
 
 
     /** {@inheritDoc} */
+    public void initialize() {
+
+        // todo: make it work with all radios?
+        Set<Model> radioModels = getSimEngine().findModelsByType(AbstractRadio.class);
+
+        for (Model m : radioModels) {
+            radios.put(m.getModelId(), (Radio)m);
+        }
+    }
+
+
+    /** {@inheritDoc} */
+    public void finish() {
+    }
+
+
+    /** {@inheritDoc} */
     @Override
     public void transmit(Radio tx, byte[] data, double txPower, Band band) {
 
         Vector3f diff = new Vector3f();
 
         // determine the received signal strength at each radio
-        for (Radio rx : radios) {
+        for (Map.Entry<Integer, Radio> entry : radios.entrySet()) {
+
+            Radio rx = entry.getValue();
 
             // do not overhear your own transmission
             if (rx.equals(tx)) {
@@ -80,23 +102,13 @@ public abstract class AbstractPropagationModel implements PropagationModel {
 
             // todo: random degradation of signal?
 
+            // todo: offset reception time?
+
             // todo: copy the data?
-            rx.receive(clock.getCurrentTime(), data, rxPower, band.getCenterFrequency());
+
+            getSimEngine().scheduleEvent(entry.getKey(), getSimEngine().getCurrentTime(),
+                                         new ReceptionEvent(data, rxPower, band));
         }
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void addRadio(Radio radio) {
-        radios.add(radio);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeRadio(Radio radio) {
-        radios.remove(radio);
     }
 
 
@@ -168,31 +180,25 @@ public abstract class AbstractPropagationModel implements PropagationModel {
 
 
     @Inject
-    public final void setRandomSeed(@Named(value = "random-seed") final long seed) {
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
         this.rand = new Random(seed);
     }
 
 
-    @Inject
-    public final void setSimClock(@GlobalScope final SimClock clock) {
-        this.clock = clock;
-    }
-
-
     @Inject(optional = true)
-    public final void setNoiseFloorMean(@Named(value = "noise-floor-mean") final float noiseFloorMean) {
+    public final void setNoiseFloorMean(@Named("noise-floor-mean") final float noiseFloorMean) {
         this.noiseFloorMean = noiseFloorMean;
     }
 
 
     @Inject(optional = true)
-    public final void setNoiseFloorSigma(@Named(value = "noise-floor-sigma") final float noiseFloorSigma) {
+    public final void setNoiseFloorSigma(@Named("noise-floor-sigma") final float noiseFloorSigma) {
         this.noiseFloorSigma = noiseFloorSigma;
     }
 
     
     @Inject(optional = true)
-    public final void setReceiveRadiusThreshold(@Named(value = "range-thresh") final double thresh) {
+    public final void setReceiveRadiusThreshold(@Named("range-thresh") final double thresh) {
         this.rangeThresh = thresh;
     }
 }

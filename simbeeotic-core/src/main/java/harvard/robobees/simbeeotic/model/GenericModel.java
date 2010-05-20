@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author bkate
  */
-public abstract class GenericModel extends AbstractPhysicalModel {
+public abstract class GenericModel extends AbstractPhysicalEntity {
 
     private Map<String, AbstractSensor> sensors = new HashMap<String, AbstractSensor>();
     private AbstractRadio radio;
@@ -36,7 +36,7 @@ public abstract class GenericModel extends AbstractPhysicalModel {
 
     /**
      * Gets the sensor with the given name. An attempt will be made to cast
-     * the sensor to the givne type.
+     * the sensor to the given type.
      *
      * @param name The name of the sensor to retrieve.
      * @param type The type to which the sensor is cast prior to returning.
@@ -56,12 +56,44 @@ public abstract class GenericModel extends AbstractPhysicalModel {
 
 
     /**
+     * Gets the sensor(s) of a given type attached to this model.
+     *
+     * @param type The type of sensor to search for.
+     *
+     * @return The sensor(s), or an empty set if none exists for the given type.
+     */
+    public final <T> Set<T> getSensors(Class<T> type) {
+
+        Set<T> found = new HashSet<T>();
+
+        for (AbstractSensor s : sensors.values()) {
+
+            if (type.isAssignableFrom(s.getClass())) {
+                found.add(type.cast(s));
+            }
+        }
+
+        return found;
+    }
+
+
+    /**
      * Gets all the sensors attached to this model.
      *
      * @return The set of sensors.
      */
     public final Set<AbstractSensor> getSensors() {
         return new HashSet<AbstractSensor>(sensors.values());
+    }
+
+
+    /**
+     * Adds a sensor to the model.
+     *
+     * @param sensor The sensor to add.
+     */
+    public final void addSensor(AbstractSensor sensor) {
+        addSensor(sensor.getName(), sensor);
     }
 
 
@@ -78,10 +110,30 @@ public abstract class GenericModel extends AbstractPhysicalModel {
         }
 
         if (sensors.containsKey(name)) {
-            throw new RuntimeException("Duplicate sensor definition: " + name);
+            throw new RuntimeException("Duplicate sensor name: " + name);
         }
 
         sensors.put(name, sensor);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation checks if the child is a sensor or radio and handles it appropriately.
+     */
+    @Override
+    public void addChildModel(Model child) {
+
+        super.addChildModel(child);
+
+        if (child instanceof AbstractSensor) {
+            addSensor((AbstractSensor)child);
+        }
+
+        if (child instanceof AbstractRadio) {
+            setRadio((AbstractRadio)child);
+        }
     }
 
 

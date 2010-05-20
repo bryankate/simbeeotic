@@ -13,20 +13,22 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.Random;
 import java.util.Set;
+import java.util.HashSet;
 
 
 /**
  * A convenience class that implements some of the base functionality that is
- * common to all {@link PhysicalEntity} implementations. This class encapsulates
+ * common to all {@link Model} {@link PhysicalEntity} implementations. This class encapsulates
  * a JBullet {@link RigidBody} and gives access to it via the {@link PhysicalEntity}
  * facade (with some extra functionality introduced in this class).
  *
  * @author bkate
  */
-public abstract class AbstractPhysicalEntity implements PhysicalEntity {
+public abstract class AbstractPhysicalEntity extends AbstractModel implements PhysicalEntity {
 
     private DiscreteDynamicsWorld dynWorld;
     private RigidBody body;
+    private Set<Integer> collisionListeners = new HashSet<Integer>();
 
     private Random rand;
 
@@ -59,6 +61,8 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
         initialized = true;
 
         body = initializeBody(dynWorld);
+        
+        ((EntityInfo)body.getUserPointer()).getCollisionListeners().addAll(collisionListeners);
 
         linearAccel = new Vector3f(0, 0, 0);
         angularAccel = new Vector3f(0, 0, 0);
@@ -234,6 +238,18 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
     }
 
 
+    /** {@inheritDoc} */
+    public void addCollisionListener(int modelId) {
+
+        if (initialized) {
+            ((EntityInfo)body.getUserPointer()).getCollisionListeners().add(modelId);
+        }
+        else {
+            collisionListeners.add(modelId);
+        }
+    }
+
+
     /**
      * Determines if this object is active in the physics simulation.
      *
@@ -278,7 +294,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     @Inject(optional = true)
-    public final void setStartX(@Named(value = "start-x") final float x) {
+    public final void setStartX(@Named("start-x") final float x) {
 
         if (!initialized) {
             this.startX = x;
@@ -287,7 +303,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     @Inject(optional = true)
-    public final void setStartY(@Named(value = "start-y") final float y) {
+    public final void setStartY(@Named("start-y") final float y) {
 
         if (!initialized) {
             this.startY = y;
@@ -296,7 +312,7 @@ public abstract class AbstractPhysicalEntity implements PhysicalEntity {
 
 
     @Inject(optional = true)
-    public final void setStartZ(@Named(value = "start-z") final float z) {
+    public final void setStartZ(@Named("start-z") final float z) {
 
         if (!initialized) {
             this.startZ = z;

@@ -42,7 +42,11 @@ public class VariationIterator implements Iterator<Variation>, Iterable<Variatio
         LoopingVariableFactory varFact = new LoopingVariableFactory();
         AbstractLoopingVariable masterSeed = varFact.newMasterSeedVariable(rawScenario.getMasterSeed());
 
-        Variables loopingVars = rawScenario.getLooping().getVariables();
+        Variables loopingVars = null;
+
+        if (rawScenario.getLooping() != null) {
+            loopingVars = rawScenario.getLooping().getVariables();
+        }
 
         if (loopingVars != null) {
 

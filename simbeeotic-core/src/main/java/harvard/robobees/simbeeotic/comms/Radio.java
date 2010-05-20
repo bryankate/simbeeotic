@@ -1,6 +1,8 @@
 package harvard.robobees.simbeeotic.comms;
 
 
+import harvard.robobees.simbeeotic.SimTime;
+
 import javax.vecmath.Vector3f;
 
 
@@ -29,7 +31,7 @@ public interface Radio {
      * @param rxPower The strength of the received signal (in dBm).
      * @param frequency The frequency of the received signal (in MHz).
      */
-    public void receive(double time, byte[] data, double rxPower, double frequency);
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency);
 
 
     /**

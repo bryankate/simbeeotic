@@ -3,7 +3,9 @@ package harvard.robobees.simbeeotic.model.sensor;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import harvard.robobees.simbeeotic.model.PhysicalModel;
+import harvard.robobees.simbeeotic.model.PhysicalEntity;
+import harvard.robobees.simbeeotic.model.AbstractModel;
+import harvard.robobees.simbeeotic.model.Model;
 
 import javax.vecmath.Vector3f;
 import java.util.Random;
@@ -15,12 +17,23 @@ import java.util.Random;
  *
  * @author bkate
  */
-public abstract class AbstractSensor {
+public abstract class AbstractSensor extends AbstractModel {
 
-    private PhysicalModel host;
+    private PhysicalEntity host;
+
     private Vector3f offset;
     private Vector3f pointing;
     private Random rand;
+
+
+    /** {@inheritDoc} */
+    public void initialize() {
+    }
+
+
+    /** {@inheritDoc} */
+    public void finish() {
+    }
 
 
     /**
@@ -29,6 +42,7 @@ public abstract class AbstractSensor {
      * properly seeded random number generator in this class.
      *
      * @param reading The reading to be noised.
+     * @param sigma The variance of the Gaussian noise.
      *
      * @return The reading, with gaussian noise added.
      */
@@ -37,7 +51,7 @@ public abstract class AbstractSensor {
     }
 
 
-    protected final PhysicalModel getHost() {
+    protected final PhysicalEntity getHost() {
         return host;
     }
 
@@ -52,26 +66,43 @@ public abstract class AbstractSensor {
     }
 
 
-    @Inject
-    public final void setHost(final PhysicalModel host) {
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation ensures that the host model is a {@link PhysicalEntity}.
+     */
+    @Override
+    public void setParentModel(Model parent) {
+
+        super.setParentModel(parent);
+
+        if (parent instanceof PhysicalEntity) {
+            setHost((PhysicalEntity)parent);
+        }
+    }
+
+
+    // this is only optional when wired up by the standard way (parent is a model that implements PhysicalEntity)
+    @Inject(optional = true)
+    public final void setHost(final PhysicalEntity host) {
         this.host = host;
     }
 
 
     @Inject
-    public final void setRandomSeed(@Named(value = "random-seed") final long seed) {
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
         this.rand = new Random(seed);
     }
 
 
     @Inject
-    public final void setPffset(@Named(value = "offset") final Vector3f offset) {
+    public final void setOffset(@Named("offset") final Vector3f offset) {
         this.offset = offset;
     }
 
 
     @Inject
-    public final void setPointing(@Named(value = "pointing") final Vector3f pointing) {
+    public final void setPointing(@Named("pointing") final Vector3f pointing) {
         this.pointing = pointing;
     }
 }

@@ -1,11 +1,15 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.GenericBee;
-import harvard.robobees.simbeeotic.model.GenericBeeLogic;
 import org.apache.log4j.Logger;
+import harvard.robobees.simbeeotic.model.SimpleBee;
+import harvard.robobees.simbeeotic.model.Timer;
+import harvard.robobees.simbeeotic.model.TimerCallback;
+import harvard.robobees.simbeeotic.comms.MessageListener;
+import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Vector3f;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -14,50 +18,49 @@ import javax.vecmath.Vector3f;
  * 
  * @author bkate
  */
-public class BroadcastBee implements GenericBeeLogic {
-
-    private GenericBee host;
-    private double lastTx = Double.NEGATIVE_INFINITY;
+public class BroadcastBee extends SimpleBee implements MessageListener {
 
     private static Logger logger = Logger.getLogger(BroadcastBee.class);
 
 
     @Override
-    public void initialize(GenericBee bee) {
+    public void initialize() {
 
-        host = bee;
+        super.initialize();
 
         // set some initial direction
-        host.setHovering(true);
-        host.setDesiredLinearVelocity(new Vector3f((float)host.getRandom().nextGaussian(),
-                                                   (float)host.getRandom().nextGaussian(),
-                                                   (float)host.getRandom().nextGaussian()));
+        setHovering(true);
+        setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
+                                              (float)getRandom().nextGaussian(),
+                                              (float)getRandom().nextGaussian()));
+
+        getRadio().addMessageListener(this);
+
+        // send a message every second
+        Timer msgTimer = createTimer(new TimerCallback() {
+
+            public void fire(SimTime time) {
+                getRadio().transmit(("" + getModelId()).getBytes());
+            }
+        }, 0, TimeUnit.MILLISECONDS, 1, TimeUnit.SECONDS);
     }
 
 
     @Override
-    public void update(double time) {
+    protected void updateKinematics(SimTime time) {
 
-        // send a message every second
-        if ((time - lastTx) >= 1.0) {
+        Vector3f pos = getTruthPosition();
 
-            host.getRadio().transmit(("" + host.getModelId()).getBytes());
-            lastTx = time;
-        }
-
-        Vector3f pos = host.getTruthPosition();
-
-        logger.info("ID: " + host.getModelId() + "  " +
-                    "time: " + time + "  " +
+        logger.info("ID: " + getModelId() + "  " +
+                    "time: " + time.getImpreciseTime() + "  " +
                     "pos: " + pos.x + " " + pos.y + " " + pos.z);
     }
 
 
-    @Override
-    public void messageReceived(double time, byte[] data, double rxPower) {
+    public void messageReceived(SimTime time, byte[] data, double rxPower) {
 
-        logger.info("ID: " + host.getModelId() + "  " +
-                    "time: " + time + "  " +
+        logger.info("ID: " + getModelId() + "  " +
+                    "time: " + time.getImpreciseTime() + "  " +
                     "power: " + rxPower + "  (dBm) " +
                     "recv from: " + new String(data));
     }

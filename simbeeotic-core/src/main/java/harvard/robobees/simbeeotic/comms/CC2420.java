@@ -9,6 +9,8 @@ import org.apache.commons.math.MathException;
 
 import java.util.Random;
 
+import harvard.robobees.simbeeotic.SimTime;
+
 
 /**
  * A functional model of the CC2420 radio.
@@ -49,7 +51,7 @@ public class CC2420 extends ZigbeeRadio {
      * </ol>
      */
     @Override
-    public void receive(double time, byte[] data, double rxPower, double frequency) {
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
 
         // check if it is within the range of sensitivity of the radio
         if (rxPower < minRxPower) {
@@ -94,7 +96,7 @@ public class CC2420 extends ZigbeeRadio {
      *              (3, 7, 11, 15, 19, 23, 27, 31).
      */
     @Inject(optional = true)
-    public final void setTransmitPowerLevel(@Named(value = "tx-power-level") final int level) {
+    public final void setTransmitPowerLevel(@Named("tx-power-level") final int level) {
 
         switch(level) {
 
@@ -145,7 +147,7 @@ public class CC2420 extends ZigbeeRadio {
 
 
     @Inject
-    public final void setRandomSeed(@Named(value = "random-seed") final long seed) {
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
         this.rand = new Random(seed);
     }
 }
