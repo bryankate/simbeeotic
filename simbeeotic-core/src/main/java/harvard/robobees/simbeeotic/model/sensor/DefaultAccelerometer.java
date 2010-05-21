@@ -19,7 +19,6 @@ public class DefaultAccelerometer extends AbstractSensor implements Acceleromete
     /** {@inheritDoc} */
     public Vector3f getLinearAcceleration() {
 
-        // todo: fix this
         Vector3f accel = getHost().getTruthLinearAcceleration();
         Transform trans = new Transform();
 
