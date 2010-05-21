@@ -1,0 +1,184 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>harvard.robobees</groupId>
+    <artifactId>simbeeotic</artifactId>
+    <version>2.1.0</version>
+
+    <name>RobobBees Colony Simulator</name>
+    <description>A simulation environment for the RoboBees Colony group.</description>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>harvard.robobees</groupId>
+        <artifactId>robobees-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <modules>
+        <module>simbeeotic-core</module>
+        <module>simbeeotic-examples</module>
+        <module>simbeeotic-app</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- submodules -->
+            <dependency>
+                <groupId>harvard.robobees.simbeeotic</groupId>
+                <artifactId>simbeeotic-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>harvard.robobees.simbeeotic</groupId>
+                <artifactId>simbeeotic-examples</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- external dependencies -->
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.jopt-simple</groupId>
+                <artifactId>jopt-simple</artifactId>
+                <version>3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>java3d</groupId>
+                <artifactId>vecmath</artifactId>
+                <version>1.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>cz.advel.jbullet</groupId>
+                <artifactId>jbullet</artifactId>
+                <version>20090628</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb2-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <schemaIncludes>
+                            <schemaInclude>**/*.xsd</schemaInclude>
+                        </schemaIncludes>
+                        <bindingIncludes>
+                            <bindingInclude>**/*.xjb</bindingInclude>
+                        </bindingIncludes>
+                        <removeOldOutput>true</removeOldOutput>
+                        <!--<verbose>true</verbose>-->
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.6.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-3</version>
+                <configuration>
+                    <archiverConfig>
+                        <duplicateBehavior>skip</duplicateBehavior>
+                    </archiverConfig>
+                    <descriptors>
+                        <descriptor>src/assembly/descriptors/dev.xml</descriptor>
+                        <!--<descriptor>src/assembly/descriptors/dist.xml</descriptor>-->
+                    </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- todo: fix this once we get a real maven repo -->
+    <repositories>
+        <repository>
+            <id>hive</id>
+            <name>RoboBees Maven Repository</name>
+            <url>http://hive.seas.harvard.edu/svn/main/mavenrepo</url>
+        </repository>
+        <repository>
+            <id>hive-snapshots</id>
+            <name>RoboBees Maven Snapshot Repository</name>
+            <url>http://hive.seas.harvard.edu/svn/main/mavenrepo-snapshots</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>java.net</id>
+            <name>java.net Maven Repository</name>
+            <url>http://download.java.net/maven/2</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>onejar-maven-plugin.googlecode.com</id>
+            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <mailingLists>
+        <mailingList>
+            <name>RobobBees Colony List</name>
+            <post>robobees-colony@seas.harvard.edu</post>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:svn:http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</connection>
+        <developerConnection>scm:svn:http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</developerConnection>
+        <url>http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</url>
+    </scm>
+
+</project>

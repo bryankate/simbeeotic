@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>harvard.robobees.simbeeotic</groupId>
+    <artifactId>simbeeotic-examples</artifactId>
+    <name>Colony Simulator Example Models</name>
+    <description>Examples of using the Simbeeotic modeling API.</description>
+
+    <parent>
+        <groupId>harvard.robobees</groupId>
+        <artifactId>simbeeotic</artifactId>
+        <version>2.1.0</version>
+    </parent>
+    
+    <dependencies>
+        <dependency>
+            <groupId>harvard.robobees.simbeeotic</groupId>
+            <artifactId>simbeeotic-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- todo: remove this when we get a real repo -->
+    <distributionManagement>
+        <repository>
+            <id>hive</id>
+            <name>RoboBees Maven Repository</name>
+            <!-- release from a tagged version -->
+            <url>file://${basedir}/../../../../../mavenrepo</url>
+        </repository>
+        <snapshotRepository>
+            <id>hive-snapshot</id>
+            <name>RoboBees Maven Snapshot Repository</name>
+            <!-- release from the trunk -->
+            <url>file://${basedir}/../../../../mavenrepo-snapshots</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+</project>

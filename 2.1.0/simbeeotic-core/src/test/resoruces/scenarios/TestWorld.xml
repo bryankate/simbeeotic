@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<world xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://harvard/robobees/simbeeotic/configuration/world"
+       xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/world http://some/path/to/schema.xsd">
+
+    <radius>2000</radius>
+
+    <obstacles>
+        <obstacle>
+            <box height="4">
+                <position x="0" y="0"/>
+            </box>
+        </obstacle>
+    </obstacles>
+
+    <flowers>
+        <patch>
+            <center x="3" y="-2"/>
+            <radius>12</radius>
+            <density>0.1</density>
+            <meta>
+                <prop name="pollen" value="2"/>
+            </meta>
+        </patch>
+    </flowers>
+</world>
