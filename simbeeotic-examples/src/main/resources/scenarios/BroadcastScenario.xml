@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>200.0</end-time>
+    </simulation>
+
+    <models>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel</java-class>
+            <properties>
+                <prop name="noise-floor-mean" value="-100"/>    
+                <prop name="noise-floor-sigma" value="10"/>
+                <prop name="range-thresh" value="30"/>
+            </properties>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model count="3">
+            <java-class>harvard.robobees.simbeeotic.example.BroadcastBee</java-class>
+            <radio>
+                <java-class>harvard.robobees.simbeeotic.comms.DefaultRadio</java-class>
+                <properties>
+                    <prop name="max-power" value="15"/>
+                    <prop name="snr-margin" value="7"/>
+                </properties>
+            </radio>
+        </model>
+    </models>
+    
+</scenario>

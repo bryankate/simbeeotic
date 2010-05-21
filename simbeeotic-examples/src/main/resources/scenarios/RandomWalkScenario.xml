@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>200.0</end-time>
+    </simulation>
+
+    <models>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model count="1">
+            <java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
+            <properties>
+                <prop name="length" value="0.2"/>
+                <prop name="mass" value="0.12"/>
+            </properties>
+            <sensor name="accelerometer">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultAccelerometer</java-class>
+            </sensor>
+            <sensor name="gyro">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultGyroscope</java-class>
+            </sensor>
+            <sensor name="compass">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultCompass</java-class>
+            </sensor>
+            <sensor name="range-bottom">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultRangeSensor</java-class>
+                <properties>
+                    <prop name="sigma" value="0.075"/>
+                    <prop name="min-range" value="0.2"/>
+                    <prop name="max-range" value="7.0"/>
+                </properties>
+                <offset x="0" y="0" z="-0.1"/>
+                <pointing x="0" y="0" z="-1"/>
+            </sensor>
+            <sensor name="contact-bottom">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultContactSensor</java-class>
+                <properties>
+                    <prop name="radius" value="0.007"/>
+                </properties>
+                <offset x="0" y="0" z="-0.1"/>
+            </sensor>
+        </model>
+    </models>
+
+</scenario>
