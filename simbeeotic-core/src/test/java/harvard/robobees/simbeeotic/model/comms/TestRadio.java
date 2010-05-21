@@ -1,8 +1,13 @@
-package harvard.robobees.simbeeotic.comms;
+package harvard.robobees.simbeeotic.model.comms;
 
 
 import harvard.robobees.simbeeotic.util.MathUtil;
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.model.comms.AntennaPattern;
+import harvard.robobees.simbeeotic.model.comms.PropagationModel;
+import harvard.robobees.simbeeotic.model.comms.Band;
+import harvard.robobees.simbeeotic.model.comms.Radio;
+import harvard.robobees.simbeeotic.model.comms.IsotropicAntenna;
 
 import javax.vecmath.Vector3f;
 

@@ -1,4 +1,4 @@
-package harvard.robobees.simbeeotic.comms;
+package harvard.robobees.simbeeotic.model.comms;
 
 
 import com.google.inject.Inject;
@@ -6,8 +6,6 @@ import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.apache.commons.math.special.Erf;
 import org.apache.commons.math.MathException;
-
-import java.util.Random;
 
 import harvard.robobees.simbeeotic.SimTime;
 

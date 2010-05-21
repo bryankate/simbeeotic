@@ -1,9 +1,7 @@
-package harvard.robobees.simbeeotic.comms;
+package harvard.robobees.simbeeotic.model.comms;
 
 
 import org.apache.log4j.Logger;
-
-import java.util.Random;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

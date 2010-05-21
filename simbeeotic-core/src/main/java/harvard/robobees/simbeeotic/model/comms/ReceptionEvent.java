@@ -1,4 +1,4 @@
-package harvard.robobees.simbeeotic.comms;
+package harvard.robobees.simbeeotic.model.comms;
 
 
 import harvard.robobees.simbeeotic.model.Event;

@@ -1,9 +1,7 @@
-package harvard.robobees.simbeeotic.comms;
+package harvard.robobees.simbeeotic.model.comms;
 
 
-import java.util.Random;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -15,7 +13,6 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.util.MathUtil;
-import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.AbstractModel;
 import harvard.robobees.simbeeotic.model.Model;
 

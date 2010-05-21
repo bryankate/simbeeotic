@@ -39,9 +39,9 @@ import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.CollisionEvent;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.util.DocUtil;
-import harvard.robobees.simbeeotic.comms.AntennaPattern;
-import harvard.robobees.simbeeotic.comms.IsotropicAntenna;
-import harvard.robobees.simbeeotic.comms.AbstractRadio;
+import harvard.robobees.simbeeotic.model.comms.AntennaPattern;
+import harvard.robobees.simbeeotic.model.comms.IsotropicAntenna;
+import harvard.robobees.simbeeotic.model.comms.AbstractRadio;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;

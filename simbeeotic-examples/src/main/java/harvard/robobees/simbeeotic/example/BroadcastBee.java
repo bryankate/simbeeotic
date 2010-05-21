@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import harvard.robobees.simbeeotic.model.SimpleBee;
 import harvard.robobees.simbeeotic.model.Timer;
 import harvard.robobees.simbeeotic.model.TimerCallback;
-import harvard.robobees.simbeeotic.comms.MessageListener;
+import harvard.robobees.simbeeotic.model.comms.MessageListener;
 import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Vector3f;

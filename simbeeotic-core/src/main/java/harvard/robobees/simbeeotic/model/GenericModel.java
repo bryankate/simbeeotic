@@ -1,7 +1,7 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import harvard.robobees.simbeeotic.comms.AbstractRadio;
+import harvard.robobees.simbeeotic.model.comms.AbstractRadio;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 
 import java.util.HashMap;
