@@ -11,7 +11,9 @@ import harvard.robobees.simbeeotic.model.Contact;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 
 import javax.vecmath.Vector3f;
-import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -35,6 +37,23 @@ public class FlowerSensor extends AbstractSensor {
      * @return True if a flower is detected, false otherwise.
      */
     public boolean isFlowerDetected() {
+        return !senseFlowers().isEmpty();
+    }
+
+
+    /**
+     * Determines if there is a flower object within range and field of view of the sensor.
+     *
+     * @return The meta-properties of the flower detected.
+     */
+    public Set<Map<String, Object>> detectFlowers() {
+        return senseFlowers();
+    }
+
+
+    private Set<Map<String, Object>> senseFlowers() {
+
+        Set<Map<String, Object>> flowerProps = new HashSet<Map<String, Object>>();
 
         // check if the sensor is actually in contact with another object.
         // if there is an object contacting the body in the vicinity of the sensor,
@@ -49,10 +68,11 @@ public class FlowerSensor extends AbstractSensor {
             diff.sub(getOffset(), c.getBodyContactPoint());
 
             if (diff.length() <= CONTACT_EPSILON) {
-                return isFlower(c.getContactProperties());
+
+                flowerProps.add(c.getContactMetadata());
+                return flowerProps;
             }
         }
-
 
         // we need to find the sensor's position and pointing vector
         // (in world coordinates) given the body's current orientation
@@ -81,20 +101,24 @@ public class FlowerSensor extends AbstractSensor {
 
         world.rayTest(from, to, callback);
 
-        return isFlower(callback.getClosestObjectProps());
+        if (isFlower(callback.getClosestObjectProps())) {
+            flowerProps.add(callback.getClosestObjectProps());
+        }
+
+        return flowerProps;
     }
 
 
-    public static boolean isFlower(final Properties info) {
+    public static boolean isFlower(final Map<String, Object> info) {
 
         if (info == null) {
             return false;
         }
 
         // todo: do this in a better way?
-        String prop = info.getProperty("isFlower");
+        Object prop = info.get("isFlower");
 
-        return ((prop != null) && Boolean.parseBoolean(prop));
+        return ((prop != null) && (Boolean)prop);
     }
 
 
@@ -138,8 +162,8 @@ public class FlowerSensor extends AbstractSensor {
             return rayResult.hitFraction;
         }
 
-        public Properties getClosestObjectProps() {
-            return minObjectInfo.getProperties();
+        public Map<String, Object> getClosestObjectProps() {
+            return minObjectInfo.getMetadata();
         }
     }
 }
