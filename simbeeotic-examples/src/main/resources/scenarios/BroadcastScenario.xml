@@ -16,7 +16,7 @@
         <model>
             <java-class>harvard.robobees.simbeeotic.comms.FreeSpacePropagationModel</java-class>
             <properties>
-                <prop name="noise-floor-mean" value="-50"/>
+                <prop name="noise-floor-mean" value="-100"/>    
                 <prop name="noise-floor-sigma" value="10"/>
                 <prop name="range-thresh" value="30"/>
             </properties>
