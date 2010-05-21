@@ -681,11 +681,11 @@ public class SimController {
 
                     Contact contactA = new Contact(point.localPointA,
                                                    point.getPositionWorldOnA(new Vector3f()),
-                                                   ((EntityInfo)objectB.getUserPointer()).getProperties());
+                                                   ((EntityInfo)objectB.getUserPointer()).getMetadata());
 
                     Contact contactB = new Contact(point.localPointB,
                                                    point.getPositionWorldOnB(new Vector3f()),
-                                                   ((EntityInfo)objectA.getUserPointer()).getProperties());
+                                                   ((EntityInfo)objectA.getUserPointer()).getMetadata());
 
                     // add the contact points to the objects
                     infoA.getContactPoints().add(contactA);

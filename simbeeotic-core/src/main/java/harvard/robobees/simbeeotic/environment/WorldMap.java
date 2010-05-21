@@ -33,6 +33,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -199,7 +201,7 @@ public class WorldMap {
                     EntityInfo platformInfo = new EntityInfo(loadProperties(patch.getMeta()));
 
                     // todo: make this less brittle
-                    platformInfo.getProperties().setProperty("isFlower", Boolean.TRUE.toString());
+                    platformInfo.getMetadata().put("isFlower", true);
 
                     // todo: use color info
 
@@ -261,16 +263,16 @@ public class WorldMap {
     }
 
 
-    private Properties loadProperties(Meta meta) {
+    private Map<String, Object> loadProperties(Meta meta) {
 
-        Properties props = new Properties();
+        Map<String, Object> props = new HashMap<String, Object>();
 
         if (meta != null) {
 
             // todo: resolve scenario variable placeholders?
             
             for (Meta.Prop p : meta.getProp()) {
-                props.setProperty(p.getName(), p.getValue());
+                props.put(p.getName(), p.getValue());
             }
         }
 

@@ -2,7 +2,7 @@ package harvard.robobees.simbeeotic.model;
 
 
 import javax.vecmath.Vector3f;
-import java.util.Properties;
+import java.util.Map;
 
 
 /**
@@ -17,14 +17,14 @@ public class Contact {
     private Vector3f worldContactPoint;
 
     // the properties of the object we are touching
-    private Properties contactProperties;
+    private Map<String, Object> contactMetadata;
 
 
-    public Contact(final Vector3f body, final Vector3f world, final Properties props) {
+    public Contact(final Vector3f body, final Vector3f world, final Map<String, Object> props) {
 
         this.bodyContactPoint = new Vector3f(body);
         this.worldContactPoint = new Vector3f(world);
-        this.contactProperties = props;
+        this.contactMetadata = props;
     }
 
 
@@ -53,8 +53,8 @@ public class Contact {
      *
      * @return The object's user-defined proeprties.
      */
-    public Properties getContactProperties() {
-        return contactProperties;
+    public Map<String, Object> getContactMetadata() {
+        return contactMetadata;
     }
 
 

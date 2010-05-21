@@ -2,8 +2,9 @@ package harvard.robobees.simbeeotic.model;
 
 
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 public class EntityInfo {
 
-    private Properties properties = new Properties();
+    private Map<String, Object> metadata = new HashMap<String, Object>();
     private Set<Contact> contactPoints = new HashSet<Contact>();
     private Set<Integer> collisionListeners = new HashSet<Integer>();
 
@@ -26,8 +27,8 @@ public class EntityInfo {
     }
 
 
-    public EntityInfo(final Properties props) {
-        properties = props;
+    public EntityInfo(final Map<String, Object> meta) {
+        metadata = meta;
     }
 
 
@@ -60,7 +61,7 @@ public class EntityInfo {
      *
      * @return The metadata for this physical body.
      */
-    public Properties getProperties() {
-        return properties;
+    public Map<String, Object> getMetadata() {
+        return metadata;
     }
 }
