@@ -17,8 +17,6 @@ import harvard.robobees.simbeeotic.SimTime;
  */
 public class RF230 extends ZigbeeRadio {
 
-    private Random rand;
-
     private double txPower = 3;         // dBm
     private double minRxPower = -101;   // dBm
 
@@ -64,7 +62,7 @@ public class RF230 extends ZigbeeRadio {
         // todo: define a PRR/SNR function
         double prr = 1;
 
-        if (rand.nextDouble() <= prr) {
+        if (getRandom().nextDouble() <= prr) {
             notifyListeners(time, data, rxPower);
         }
     }
@@ -164,12 +162,6 @@ public class RF230 extends ZigbeeRadio {
             default:
                 logger.warn("Unrecognized TX power level, using default level.");
         }
-    }
-
-
-    @Inject
-    public final void setRandomSeed(@Named("random-seed") final long seed) {
-        this.rand = new Random(seed);
     }
 
 }

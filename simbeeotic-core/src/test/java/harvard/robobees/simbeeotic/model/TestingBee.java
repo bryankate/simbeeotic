@@ -27,6 +27,8 @@ public class TestingBee extends SimpleBee {
     @Override
     public void initialize() {
 
+        super.initialize();
+
         accelerometer = getSensor("accelerometer", Accelerometer.class);
         gyro = getSensor("gyro", Gyroscope.class);
         compass = getSensor("compass", Compass.class);

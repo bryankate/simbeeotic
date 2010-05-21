@@ -37,9 +37,9 @@ public interface PhysicalEntity {
 
 
     /**
-     * Applies a force to the body (to take effect at the next simulation step). The
-     * force is applied to the body's center of mass and is in effect (constant) for the
-     * duration of the time step, after which it is cleared (removed).
+     * Applies a force to the body (to take effect when time advances in the physical world). The
+     * force is applied to the body's center of mass and is in effect (constant)
+     * until it is cleared.
      *
      * @param F The force to be applied (Newtons, in the world frame).
      */
@@ -47,9 +47,9 @@ public interface PhysicalEntity {
 
 
     /**
-     * Applies a force to the body (to take effect at the next simulation step). The
-     * force is applied to the given offset position and is in effect (constant) for the
-     * duration of the time step, after which it is cleared (removed).
+     * Applies a force to the body (to take effect when time advances in the physical world). The
+     * force is applied to the given offset position and is in effect (constant)
+     * until it is cleared.
      *
      * @param F The force to be applied (Newtons, in the world frame).
      * @param offset The position on the body where the force will be applied (in the body frame).
@@ -58,13 +58,20 @@ public interface PhysicalEntity {
 
 
     /**
-     * Applies a torque (moment) about the body axes (to take effect at the next
-     * simulation step). The torque is constant over the time step and is
-     * cleared at the end of the step.
+     * Applies a torque (moment) about the body axes (to take effect when time advances in
+     * the physical world). The torque is constantly applied until it is cleared.
      *
      * @param T The torque (in Newton-meters) to be applied about the body's center of mass.
      */
     public void applyTorque(final Vector3f T);
+
+
+    /**
+     * Clears all forces and torques that are acting on the body. This call is useful if there
+     * is a kinematic update loop in the model and the user wishes to apply the
+     * necessary forces to move the body at each time step.
+     */
+    public void clearForces();
 
 
     /**
@@ -127,19 +134,6 @@ public interface PhysicalEntity {
      * @return The current bounding sphere.
      */
     public BoundingSphere getTruthBoundingSphere();
-
-
-    /**
-     * Samples the kinematic state and calculates the linear and angular
-     * acceleration of the entity over the last time step. The JBullet physics
-     * engine does not allow direct access to this information, so sampling
-     * is used.
-     *
-     * This should be called at every simulation step.
-     *
-     * @param timeStep The amount of time that has elapsed since the last sample.
-     */
-    public void sampleKinematics(final double timeStep);
 
 
     /**

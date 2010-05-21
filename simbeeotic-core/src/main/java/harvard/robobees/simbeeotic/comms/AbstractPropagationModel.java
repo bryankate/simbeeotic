@@ -27,9 +27,7 @@ import harvard.robobees.simbeeotic.model.Model;
  */
 public abstract class AbstractPropagationModel extends AbstractModel implements PropagationModel {
 
-    protected Random rand = new Random(112181);
     private Map<Integer, Radio> radios = new HashMap<Integer, Radio>();
-
 
     // parameters
     private double rangeThresh = 10;      // m
@@ -53,6 +51,8 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
 
     /** {@inheritDoc} */
     public void initialize() {
+
+        super.initialize();
 
         // todo: make it work with all radios?
         Set<Model> radioModels = getSimEngine().findModelsByType(AbstractRadio.class);
@@ -120,7 +120,7 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
      */
     @Override
     public double getNoiseFloor() {
-        return noiseFloorMean + (rand.nextGaussian() * noiseFloorSigma);
+        return noiseFloorMean + (getRandom().nextGaussian() * noiseFloorSigma);
     }
 
 
@@ -176,12 +176,6 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
         }
 
         return rxPower;
-    }
-
-
-    @Inject
-    public final void setRandomSeed(@Named("random-seed") final long seed) {
-        this.rand = new Random(seed);
     }
 
 

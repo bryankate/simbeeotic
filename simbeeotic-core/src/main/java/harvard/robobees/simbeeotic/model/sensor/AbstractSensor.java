@@ -23,12 +23,6 @@ public abstract class AbstractSensor extends AbstractModel {
 
     private Vector3f offset;
     private Vector3f pointing;
-    private Random rand;
-
-
-    /** {@inheritDoc} */
-    public void initialize() {
-    }
 
 
     /** {@inheritDoc} */
@@ -47,7 +41,7 @@ public abstract class AbstractSensor extends AbstractModel {
      * @return The reading, with gaussian noise added.
      */
     protected final float addNoise(final float reading, final float sigma) {
-        return reading + ((float)rand.nextGaussian() * sigma);
+        return reading + ((float)getRandom().nextGaussian() * sigma);
     }
 
 
@@ -86,12 +80,6 @@ public abstract class AbstractSensor extends AbstractModel {
     @Inject(optional = true)
     public final void setHost(final PhysicalEntity host) {
         this.host = host;
-    }
-
-
-    @Inject
-    public final void setRandomSeed(@Named("random-seed") final long seed) {
-        this.rand = new Random(seed);
     }
 
 

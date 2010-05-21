@@ -31,13 +31,6 @@ public class SimpleHive extends GenericModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initialize() {
-        super.initialize();
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
     protected RigidBody initializeBody(DiscreteDynamicsWorld world) {
 
         // establish the static hive geometry

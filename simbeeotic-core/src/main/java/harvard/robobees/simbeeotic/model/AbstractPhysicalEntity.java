@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
+import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -30,18 +31,12 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     private RigidBody body;
     private Set<Integer> collisionListeners = new HashSet<Integer>();
 
-    private Random rand;
-
     private Vector3f linearAccel;
     private Vector3f angularAccel;
-    private Vector3f lastLinearVel;
-    private Vector3f lastAngularVel;
 
     private float startX = 0.0f;    // m, geom center relative to world origin
     private float startY = 0.0f;    // m, geom center relative to world origin
     private float startZ = 0.0f;    // m, geom center relative to world origin
-
-    private boolean initialized = false;
 
 
     /**
@@ -58,16 +53,14 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     @Override
     public void initialize() {
 
-        initialized = true;
+        super.initialize();
 
         body = initializeBody(dynWorld);
-        
+
         ((EntityInfo)body.getUserPointer()).getCollisionListeners().addAll(collisionListeners);
 
         linearAccel = new Vector3f(0, 0, 0);
         angularAccel = new Vector3f(0, 0, 0);
-        lastLinearVel = body.getLinearVelocity(new Vector3f());
-        lastAngularVel = body.getAngularVelocity(new Vector3f());
     }
 
 
@@ -77,8 +70,19 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
-    protected final boolean isInitialized() {
-        return initialized;
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation saves off the linear and angular acceleration (as derived from
+     * the total force currently acting on the object).
+     */
+    @Override
+    protected void checkpoint() {
+
+        super.checkpoint();
+
+        linearAccel.scale(body.getInvMass(), body.getTotalForce());
+        angularAccel.scale(body.getInvMass(), body.getTotalTorque());
     }
 
 
@@ -103,15 +107,9 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
-    /**
-     * Returns the random number generator associated with this entity. The generator
-     * has been seeded deterministically so that it produces repeatable number streams
-     * if a scenario is executed multiple times.
-     *
-     * @return The seeded random number begerator for this entity.
-     */
-    public Random getRandom() {
-        return rand;
+    /** {@inheritDoc} */
+    public final void clearForces() {
+        body.clearForces();
     }
 
 
@@ -195,37 +193,6 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
-    /** {@inheritDoc} */
-    @Override
-    public final void sampleKinematics(final double timeStep) {
-
-        if (isActive()) {
-
-            Vector3f currLinearVel = getTruthLinearVelocity();
-            Vector3f currAngularVel = getTruthAngularVelocity();
-
-            // delta velocity over the last time step
-            linearAccel.sub(currLinearVel, lastLinearVel);
-            angularAccel.sub(currAngularVel, lastAngularVel);
-
-            // scale by time step to get a reading in m/s^2
-            linearAccel.scale(1.0f / (float)timeStep);
-            angularAccel.scale(1.0f / (float)timeStep);
-
-            lastLinearVel = currLinearVel;
-            lastAngularVel = currAngularVel;
-        }
-        else {
-
-            // not moving, reset sampled acceleration
-            lastLinearVel = new Vector3f();
-            lastAngularVel = new Vector3f();
-            linearAccel = new Vector3f();
-            angularAccel = new Vector3f();
-        }
-    }
-
-
     /**
      * {@inheritDoc}
      *
@@ -241,7 +208,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     /** {@inheritDoc} */
     public void addCollisionListener(int modelId) {
 
-        if (initialized) {
+        if (isInitialized()) {
             ((EntityInfo)body.getUserPointer()).getCollisionListeners().add(modelId);
         }
         else {
@@ -278,17 +245,8 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     @Inject
     public final void setDynamicsWorld(@GlobalScope DiscreteDynamicsWorld world) {
 
-        if (!initialized) {
+        if (!isInitialized()) {
             this.dynWorld = world;
-        }
-    }
-
-
-    @Inject
-    public final void setRandomSeed(@Named("random-seed") final long seed) {
-
-        if (!initialized) {
-            this.rand = new Random(seed);
         }
     }
 
@@ -296,7 +254,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     @Inject(optional = true)
     public final void setStartX(@Named("start-x") final float x) {
 
-        if (!initialized) {
+        if (!isInitialized()) {
             this.startX = x;
         }
     }
@@ -305,7 +263,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     @Inject(optional = true)
     public final void setStartY(@Named("start-y") final float y) {
 
-        if (!initialized) {
+        if (!isInitialized()) {
             this.startY = y;
         }
     }
@@ -314,7 +272,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     @Inject(optional = true)
     public final void setStartZ(@Named("start-z") final float z) {
 
-        if (!initialized) {
+        if (!isInitialized()) {
             this.startZ = z;
         }
     }

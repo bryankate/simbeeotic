@@ -261,17 +261,13 @@ public class SimController {
 
                         // update collisions
                         if (contactHandler.update(lastSimTime, updatedTime)) {
-
-                            // since at least one collision event was scheduled, stop
-                            // updating the physical world and process the new events
-                            nextSimTime = new SimTime(lastSimTime, updatedTime, TimeUnit.NANOSECONDS);
                             break;
                         }
 
                         diff -= DEFAULT_STEP;
                     }
 
-                    lastSimTime = nextSimTime;
+                    lastSimTime = simEngine.getNextEventTime();
                 }
 
                 nextSimTime = simEngine.processNextEvent();
@@ -463,8 +459,6 @@ public class SimController {
 
                         Names.bindProperties(binder(), sensorProps);
 
-                        bind(PhysicalEntity.class).toInstance((PhysicalEntity)m);
-
                         bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
                         bindConstant().annotatedWith(Names.named("model-name")).to(sensorConfig.getName());
 
@@ -561,11 +555,8 @@ public class SimController {
 
                         Names.bindProperties(binder(), radioProps);
 
-                        if (Model.class.isAssignableFrom(radioClass)) {
-
-                            bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
-                            bindConstant().annotatedWith(Names.named("model-name")).to(radioConfig.getName());
-                        }
+                        bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                        bindConstant().annotatedWith(Names.named("model-name")).to(radioConfig.getName());
 
                         bind(AntennaPattern.class).toInstance(pattern);
                         bind(Model.class).to(radioClass);
@@ -764,6 +755,7 @@ public class SimController {
         private Map<Class, Set<Model>> modelTypeMap = new HashMap<Class, Set<Model>>();
 
         private SimTime processing = null;
+        private SimTime lastProcessed = null;
         private long nextEventId = 1;
 
 
@@ -778,8 +770,8 @@ public class SimController {
 
             SimTime minTime = processing;
 
-            if ((minTime == null) && (eventQ.peek() != null)) {
-                minTime = eventQ.peek().time;
+            if ((minTime == null) && (lastProcessed != null)) {
+                minTime = lastProcessed;
             }
 
             // the user is trying to schedule an event for a time in the past
@@ -898,6 +890,7 @@ public class SimController {
                 next.model.processEvent(next.time, next.event);
             }
 
+            lastProcessed = processing;
             processing = null;
 
             return getNextEventTime();

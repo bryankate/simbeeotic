@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -33,6 +34,7 @@ public abstract class AbstractModel implements Model {
     private int modelId;
     private String name = "";
 
+    private Random rand;
     private SimTime currTime = new SimTime(0);
     private SimEngine simEngine;
 
@@ -41,10 +43,10 @@ public abstract class AbstractModel implements Model {
      * handlers for the specific type mapped in order from subclass to the superclass implementations.
      */
     private Map<Class, List<Method>> eventHandlers = new HashMap<Class, List<Method>>();
+    private boolean initialized = false;
 
     private Model parent = null;
     private Set<Model> children = new HashSet<Model>();
-
 
     private static Logger logger = Logger.getLogger(AbstractModel.class);
 
@@ -53,6 +55,12 @@ public abstract class AbstractModel implements Model {
 
         // inspect the class and find any event handlers
         reflectOnEventHandlers();
+    }
+
+
+    /** {@inheritDoc} */
+    public void initialize() {
+        initialized = true;
     }
 
 
@@ -111,7 +119,9 @@ public abstract class AbstractModel implements Model {
      * appropriate event handler for a given {@link Event} type.
      */
     @Override
-    public final void processEvent(final SimTime time, final Event event) {
+    public void processEvent(SimTime time, Event event) {
+
+        checkpoint();
 
         // find the most appropriate handler for this event type (and cache it)
         Method handler = findHandler(event.getClass());
@@ -143,6 +153,13 @@ public abstract class AbstractModel implements Model {
             logger.error("While invoking an event handler, an exception occured", newE);
             throw newE;
         }
+    }
+
+
+    /**
+     * A method that is called prior to executing each event on the model.
+     */
+    protected void checkpoint() {
     }
 
 
@@ -255,13 +272,35 @@ public abstract class AbstractModel implements Model {
     }
 
 
+    /**
+     * Gets the time if the event currently being processed.
+     *
+     * @return The current time.
+     */
     protected final SimTime getCurrTime() {
         return currTime;
     }
 
 
+    /**
+     * Gets the simulation engine that coordinates the events forthis model.
+     *
+     * @return The simulation engine through which events can be scheduled and models can be located.
+     */
     protected final SimEngine getSimEngine() {
         return simEngine;
+    }
+
+
+    /**
+     * Returns the random number generator associated with this model. The generator
+     * has been seeded deterministically so that it produces repeatable number streams
+     * if a scenario is executed multiple times.
+     *
+     * @return The seeded random number begerator for this entity.
+     */
+    public Random getRandom() {
+        return rand;
     }
 
 
@@ -328,9 +367,26 @@ public abstract class AbstractModel implements Model {
     }
 
 
+    protected final boolean isInitialized() {
+        return initialized;
+    }
+
+
     @Inject
     public final void setSimEngine(@GlobalScope final SimEngine engine) {
-        this.simEngine = engine;
+
+        if (!initialized) {
+            this.simEngine = engine;
+        }
+    }
+
+
+    @Inject
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
+
+        if (!initialized) {
+            this.rand = new Random(seed);
+        }
     }
 
 
@@ -338,12 +394,18 @@ public abstract class AbstractModel implements Model {
     // when an instance of this class is used in a Guice child injector module.
     @Inject(optional = true)
     public final void setModelId(@Named("model-id") final int id) {
-        this.modelId = id;
+
+        if (!initialized) {
+            this.modelId = id;
+        }
     }
 
 
     @Inject(optional = true)
     public final void setModelName(@Named("model-name") final String name) {
-        this.name = name;
+
+        if (!initialized) {
+            this.name = name;
+        }
     }
 }

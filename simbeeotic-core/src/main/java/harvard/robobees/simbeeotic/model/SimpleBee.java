@@ -59,7 +59,7 @@ public abstract class SimpleBee extends GenericModel {
 
                 public void fire(SimTime time) {
 
-                    // todo: clear forces
+                    clearForces();
 
                     updateKinematics(time);
 
@@ -182,8 +182,9 @@ public abstract class SimpleBee extends GenericModel {
 
 
     /**
-     * Sets the linear velocity of the bee for the next time step. The results of this
-     * call will not be seen immediately, but applied to future movement.
+     * Sets the linear velocity of the bee. The results of this
+     * call will not be seen immediately, but applied to future movement
+     * and maintained until modified.
      *
      * @note If the linear velocity is set to zero, the bee will fall to the ground due
      *       to the effects of gravity. To counteract this, enable hover mode.
@@ -211,7 +212,7 @@ public abstract class SimpleBee extends GenericModel {
      * flight control will apply a force to counteract gravity. This allows the
      * bee to have zero linear velocity and maintain a position off the ground.
      *
-     * @param hover True if hovering should be enabled for the next time step, false otherwise.
+     * @param hover True if hovering should be enabled for the future, false otherwise.
      */
     public final void setHovering(final boolean hover) {
         hovering = hover;
@@ -221,7 +222,7 @@ public abstract class SimpleBee extends GenericModel {
     /**
      * Indicates if hovering mode is enabled or disabled.
      *
-     * @return True if hover mode is enabled for the next time step, false otherwise.
+     * @return True if hover mode is enabled for the future, false otherwise.
      */
     public final boolean isHovering() {
         return hovering;

@@ -37,6 +37,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     /** {@inheritDoc} */
     public void initialize() {
 
+        super.initialize();
+
         // find the propagation model and register with it
         Set<Model> propModels = getSimEngine().findModelsByType(PropagationModel.class);
 
