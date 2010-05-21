@@ -73,6 +73,18 @@ public final class SimTime implements Comparable<SimTime> {
     }
 
 
+    /**
+     * Determines the difference between this time and another time object.
+     *
+     * @param other The other time to compare against.
+     *
+     * @return The difference in times, obtained by subtracting the {@code other} time from this time.
+     */
+    public SimTime diff(SimTime other) {
+        return new SimTime(time - other.time, TimeUnit.NANOSECONDS);
+    }
+
+
     @Override
     public String toString() {
         return time + "";
@@ -82,5 +94,22 @@ public final class SimTime implements Comparable<SimTime> {
     @Override
     public int compareTo(SimTime o) {
         return Long.valueOf(time).compareTo(o.time);
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof SimTime) {
+            return (time == ((SimTime)obj).time);
+        }
+
+        return false;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Long.valueOf(time).hashCode();
     }
 }
