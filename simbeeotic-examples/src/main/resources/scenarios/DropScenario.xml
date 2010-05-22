@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>100.0</end-time>
+    </simulation>
+
+    <models>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.example.InertBee</java-class>
+            <start-position x="0" y="0" z="20"/>
+        </model>
+    </models>
+
+</scenario>
