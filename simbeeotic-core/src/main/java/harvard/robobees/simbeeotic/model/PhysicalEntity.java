@@ -58,12 +58,40 @@ public interface PhysicalEntity {
 
 
     /**
+     * Applies an impulse (instantaneous force) to the body.
+     * The force, effective immediately, is applied to the body's center of mass.
+     *
+     * @param F The force to be applied (Newtons, in the world frame).
+     */
+    public void applyImpulse(final Vector3f F);
+
+
+    /**
+     * Applies an impulse (instantaneous force) to the body.
+     * The force, effective immediately, is applied to the given offset position.
+     *
+     * @param F The force to be applied (Newtons, in the world frame).
+     * @param offset The position on the body where the force will be applied (in the body frame).
+     */
+    public void applyImpulse(final Vector3f F, final Vector3f offset);
+
+
+    /**
      * Applies a torque (moment) about the body axes (to take effect when time advances in
      * the physical world). The torque is constantly applied until it is cleared.
      *
      * @param T The torque (in Newton-meters) to be applied about the body's center of mass.
      */
     public void applyTorque(final Vector3f T);
+
+
+    /**
+     * Applies a torque impulse (instantaneous moment) about the body axes. The results are
+     * effective immediately.
+     *
+     * @param T The torque (in Newton-meters) to be applied about the body's center of mass.
+     */
+    public void applyTorqueImpulse(final Vector3f T);
 
 
     /**

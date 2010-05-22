@@ -15,6 +15,8 @@ import javax.vecmath.Vector3f;
 import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -33,6 +35,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     private Vector3f linearAccel;
     private Vector3f angularAccel;
+    private Map<String, Vector3f> externalForces = new HashMap<String, Vector3f>();
 
     private float startX = 0.0f;    // m, geom center relative to world origin
     private float startY = 0.0f;    // m, geom center relative to world origin
@@ -86,6 +89,12 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
+    @EventHandler
+    public final void handleExternalForceEvent(SimTime time, ExternalForceEvent event) {
+        externalForces.put(event.getId(), event.getForce());
+    }
+
+
     /** {@inheritDoc} */
     @Override
     public final void applyForce(final Vector3f F) {
@@ -102,14 +111,47 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     /** {@inheritDoc} */
     @Override
+    public final void applyImpulse(final Vector3f F) {
+        body.applyCentralImpulse(F);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public final void applyImpulse(final Vector3f F, final Vector3f offset) {
+        body.applyImpulse(F, offset);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public final void applyTorque(final Vector3f T) {
         body.applyTorque(T);
     }
 
 
     /** {@inheritDoc} */
+    @Override
+    public final void applyTorqueImpulse(final Vector3f T) {
+        body.applyTorqueImpulse(T);
+    }
+
+
+    /** {@inheritDoc} */
     public final void clearForces() {
         body.clearForces();
+    }
+
+
+    /**
+     * Retrieves an external force that was applied to this entity.
+     *
+     * @param name The name of the external force.
+     *
+     * @return The force that corresponds to the given name, or {@code null} if none exists.
+     */
+    public final Vector3f getExternalForce(String name) {
+        return externalForces.get(name);
     }
 
 
