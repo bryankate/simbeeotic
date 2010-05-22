@@ -33,9 +33,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class SimpleBee extends GenericModel {
 
     // parameters
-    private float length = 0.2f;   // m
-    private float mass = 0.128f;   // g
+    private float length = 0.2f;    // m
+    private float mass = 0.128f;    // g
+    private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
+    private boolean useWind = false;
 
     protected Timer kinematicTimer;
 
@@ -64,22 +66,49 @@ public abstract class SimpleBee extends GenericModel {
                     updateKinematics(time);
 
                     if (desiredLinVel.length() > 0) {
+
                         body.activate();
+
+                        // apply changes to motion
+
+                        // desired final direction in body frame
+                        Vector3f impulse = new Vector3f(desiredLinVel);
+                        Transform trans = new Transform();
+
+                        // translate to world frame
+                        trans.setIdentity();
+                        trans.setRotation(getTruthOrientation());
+                        trans.transform(impulse);
+
+                        // find the velocity change and determine the instantaneous acceleration required
+                        impulse.sub(getTruthLinearVelocity());
+
+                        // todo: compensate for wind?
+
+                        // cap the translational force based on the max acceleration ability
+                        if (impulse.length() > maxAccel) {
+
+                            impulse.normalize();
+                            impulse.scale(maxAccel);
+                        }
+
+                        // apply an instantaneous force to get the desired velocity change
+                        impulse.scale(getMass());
+
+                        applyImpulse(impulse);
                     }
 
-                    // apply changes to motion for the next timestep
-                    Vector3f impulse = new Vector3f(desiredLinVel);
-                    Transform trans = new Transform();
+                    // apply wind effects
+                    if (useWind) {
 
-                    trans.setIdentity();
-                    trans.setRotation(getTruthOrientation());
+                        Vector3f windForce = getExternalForce("wind");
 
-                    trans.transform(impulse);
-                    impulse.sub(getTruthLinearVelocity());
-                    impulse.scale(getMass());
+                        if (windForce != null) {
+                            applyForce(windForce);
+                        }
+                    }
 
-                    // apply an instantaneous force to get the desired velocity change
-                    body.applyCentralImpulse(impulse);
+                    // todo: drag?
 
                     // account for gravity (or not)
                     if (hovering) {
@@ -258,10 +287,28 @@ public abstract class SimpleBee extends GenericModel {
 
 
     @Inject(optional = true)
+    public final void setMaxAcceleration(@Named("max-acceleration") final float max) {
+
+        if (!isInitialized()) {
+            this.maxAccel = max;
+        }
+    }
+
+
+    @Inject(optional = true)
     public final void setKinematicUpdateRate(@Named("kinematic-update-rate") final long rate) {
 
         if (!isInitialized()) {
             this.kinematicUpdateRate = rate;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setUseWind(@Named("use-wind") final boolean use) {
+
+        if (!isInitialized()) {
+            this.useWind = use;
         }
     }
 }
