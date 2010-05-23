@@ -119,7 +119,7 @@ public abstract class AbstractModel implements Model {
      * appropriate event handler for a given {@link Event} type.
      */
     @Override
-    public void processEvent(SimTime time, Event event) {
+    public final void processEvent(final SimTime time, final Event event) {
 
         checkpoint();
 
@@ -251,7 +251,7 @@ public abstract class AbstractModel implements Model {
 
                     if ((eventType == null) || badHandler) {
 
-                        throw new RuntimeException("Event handlers must take up 2 arguments, a SimTime and an Event " +
+                        throw new RuntimeException("Event handlers must take 2 arguments, a SimTime and an Event " +
                                                    "to process. The type of Event being handled will " +
                                                    "be infered from the Event parameter type.");
                     }
