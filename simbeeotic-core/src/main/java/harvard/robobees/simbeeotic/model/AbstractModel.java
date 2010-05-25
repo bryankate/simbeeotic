@@ -37,6 +37,7 @@ public abstract class AbstractModel implements Model {
     private Random rand;
     private SimTime currTime = new SimTime(0);
     private SimEngine simEngine;
+    private Aggregator aggregator = new Aggregator();
 
     /**
      * A mapping of reflected methods to use for any given event type.  The list shall contain
@@ -293,6 +294,16 @@ public abstract class AbstractModel implements Model {
 
 
     /**
+     * Gets the aggregator associated with this model instance.
+     *
+     * @return The Aggregator used to sum values.
+     */
+    protected final Aggregator getAggregator() {
+        return aggregator;
+    }
+
+
+    /**
      * Returns the random number generator associated with this model. The generator
      * has been seeded deterministically so that it produces repeatable number streams
      * if a scenario is executed multiple times.
@@ -325,6 +336,10 @@ public abstract class AbstractModel implements Model {
 
         if (this.parent != null) {
             throw new RuntimeException("Parent model already set!");
+        }
+
+        if (parent instanceof AbstractModel) {
+            aggregator.setParentAggregator(((AbstractModel)parent).getAggregator());
         }
 
         this.parent = parent;
