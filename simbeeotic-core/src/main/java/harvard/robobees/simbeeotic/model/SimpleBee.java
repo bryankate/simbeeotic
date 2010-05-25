@@ -66,7 +66,7 @@ public abstract class SimpleBee extends GenericModel {
 
                     updateKinematics(time);
 
-                    if (desiredLinVel.length() > 0) {
+                    if (hovering || (desiredLinVel.length() > 0)) {
 
                         body.activate();
 
@@ -231,10 +231,9 @@ public abstract class SimpleBee extends GenericModel {
         Vector3f axis = new Vector3f();
 
         axis.cross(unitX, diff);
-
-        float angle = (float)Math.acos(axis.length());
-
         axis.normalize();
+
+        float angle = (float)Math.acos(unitX.dot(diff));
 
         Transform trans = new Transform();
         Quat4f rot = new Quat4f();
