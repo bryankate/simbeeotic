@@ -10,6 +10,7 @@ import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
@@ -187,7 +188,7 @@ public abstract class SimpleBee extends GenericModel {
      *
      * @param angle The angle of rotation (rad).
      */
-    public final void turn(final float angle) {
+    protected final void turn(final float angle) {
 
         body.activate();
         
@@ -211,6 +212,43 @@ public abstract class SimpleBee extends GenericModel {
 
 
     /**
+     * Performs an instantaneous rotation of the body to point in the direction of the given point. The results of
+     * this call will be visible immediately through the bee's sensors.
+     *
+     * @param point The point in space toward which this bee will be rotated (in the world frame).
+     */
+    protected final void turnToward(final Vector3f point) {
+
+        body.activate();
+
+        Vector3f currPos = getTruthPosition();
+        Vector3f diff = new Vector3f();
+        Vector3f unitX = new Vector3f(1, 0, 0);
+
+        diff.sub(point, currPos);
+        diff.normalize();
+
+        Vector3f axis = new Vector3f();
+
+        axis.cross(unitX, diff);
+
+        float angle = (float)Math.acos(axis.length());
+
+        axis.normalize();
+
+        Transform trans = new Transform();
+        Quat4f rot = new Quat4f();
+
+        QuaternionUtil.setRotation(rot, axis, angle);
+
+        body.getWorldTransform(trans);
+        trans.setRotation(rot);
+
+        body.setWorldTransform(trans);
+    }
+
+
+    /**
      * Sets the linear velocity of the bee. The results of this
      * call will not be seen immediately, but applied to future movement
      * and maintained until modified.
@@ -220,7 +258,7 @@ public abstract class SimpleBee extends GenericModel {
      *
      * @param vel The desired linear velocity of the bee for the next time step (m/s, in the body frame).
      */
-    public final void setDesiredLinearVelocity(final Vector3f vel) {
+    protected final void setDesiredLinearVelocity(final Vector3f vel) {
         desiredLinVel = vel;
     }
 
@@ -231,7 +269,7 @@ public abstract class SimpleBee extends GenericModel {
      *
      * @return The linear velocity (m/s in the body frame).
      */
-    public final Vector3f getDesiredLinearVelocity() {
+    protected final Vector3f getDesiredLinearVelocity() {
         return new Vector3f(desiredLinVel);
     }
 
@@ -243,7 +281,7 @@ public abstract class SimpleBee extends GenericModel {
      *
      * @param hover True if hovering should be enabled for the future, false otherwise.
      */
-    public final void setHovering(final boolean hover) {
+    protected final void setHovering(final boolean hover) {
         hovering = hover;
     }
 
@@ -253,7 +291,7 @@ public abstract class SimpleBee extends GenericModel {
      *
      * @return True if hover mode is enabled for the future, false otherwise.
      */
-    public final boolean isHovering() {
+    protected final boolean isHovering() {
         return hovering;
     }
 
