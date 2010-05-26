@@ -235,6 +235,10 @@ public abstract class SimpleBee extends GenericModel {
 
         float angle = (float)Math.acos(unitX.dot(diff));
 
+        if (Float.isNaN(angle)) {
+            return;
+        }
+
         Transform trans = new Transform();
         Quat4f rot = new Quat4f();
 
