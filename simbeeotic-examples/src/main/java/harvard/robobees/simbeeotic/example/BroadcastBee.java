@@ -53,7 +53,7 @@ public class BroadcastBee extends SimpleBee implements MessageListener {
 
         logger.info("ID: " + getModelId() + "  " +
                     "time: " + time.getImpreciseTime() + "  " +
-                    "pos: " + pos.x + " " + pos.y + " " + pos.z);
+                    "pos: " + pos);
     }
 
 
