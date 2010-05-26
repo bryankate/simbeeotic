@@ -110,7 +110,7 @@
                         <bindingIncludes>
                             <bindingInclude>**/*.xjb</bindingInclude>
                         </bindingIncludes>
-                        <removeOldOutput>true</removeOldOutput>
+                        <!--<removeOldOutput>true</removeOldOutput>-->
                         <!--<verbose>true</verbose>-->
                     </configuration>
                 </plugin>
