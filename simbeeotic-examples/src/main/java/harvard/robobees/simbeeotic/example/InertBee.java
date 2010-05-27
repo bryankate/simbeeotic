@@ -30,8 +30,8 @@ public class InertBee extends SimpleBee {
 
         logger.info("ID: " + getModelId() + "  " +
                     "time: " + time.getImpreciseTime() + "  " +
-                    "pos: " + pos.x + " " + pos.y + " " + pos.z + "  " +
-                    "vel: " + vel.x + " " + vel.y + " " + vel.z + " ");
+                    "pos: " + pos + "  " +
+                    "vel: " + vel + " ");
     }
 
 
