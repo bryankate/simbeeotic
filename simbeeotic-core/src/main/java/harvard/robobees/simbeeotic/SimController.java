@@ -753,7 +753,7 @@ public class SimController {
         private Queue<ScheduledEvent> eventQ = new PriorityQueue<ScheduledEvent>();
         private Map<Integer, Model> modelMap = new HashMap<Integer, Model>();
         private Map<String, List<Model>> modelNameMap = new HashMap<String, List<Model>>();
-        private Map<Class, List<Model>> modelTypeMap = new HashMap<Class, List<Model>>();
+        private Map<Class, List> modelTypeMap = new HashMap<Class, List>();
 
         private SimTime processing = null;
         private SimTime lastProcessed = null;
@@ -825,23 +825,55 @@ public class SimController {
 
 
         /** {@inheritDoc} */
+        public Model findModelByName(String name) {
+
+            List<Model> models = findModelsByName(name);
+
+            if (models.isEmpty()) {
+                return null;
+            }
+            else if (models.size() > 1) {
+                throw new RuntimeException("There is more than one model with the name: '" + name + "'.");
+            }
+
+            return models.get(0);
+        }
+
+
+        /** {@inheritDoc} */
+        public <T> T findModelByType(Class<T> type) {
+
+            List<T> models = findModelsByType(type);
+
+            if (models.isEmpty()) {
+                return null;
+            }
+            else if (models.size() > 1) {
+                throw new RuntimeException("There is more than one model with the type: '" + type.toString() + "'.");
+            }
+
+            return type.cast(models.get(0));
+        }
+
+
+        /** {@inheritDoc} */
         public List<Model> findModelsByName(String name) {
             return modelNameMap.get(name);
         }
 
 
         /** {@inheritDoc} */
-        public List<Model> findModelsByType(Class type) {
+        public <T> List<T> findModelsByType(Class<T> type) {
 
             if (!modelTypeMap.containsKey(type)) {
 
-                List<Model> results = new LinkedList<Model>();
+                List<T> results = new LinkedList<T>();
 
                 // search all models and cache the results
                 for (Model m : modelMap.values()) {
 
                     if (type.isAssignableFrom(m.getClass())) {
-                        results.add(m);
+                        results.add(type.cast(m));
                     }
                 }
 

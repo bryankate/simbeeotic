@@ -57,8 +57,42 @@ public interface SimEngine {
 
 
     /**
+     * This is a convenience method to find a model by its name. An exception
+     * is thrown if there is more than one model with the given name. This method can
+     * be useful in reducing pointless boilerplate code when a modeler knows that
+     * there is exactly one (or zero) instances of a model in the scenario
+     * (like a weather model). If there is more than one, there is likely an error
+     * in the scenario configuration or the user's expectations.
+     *
+     * @param name The name of the model being sought.
+     *
+     * @return The model that goes by the given name, or {@code null} if none exists.
+     *
+     * @throws RuntimeException If there is more than one model with the given name.
+     */
+    public Model findModelByName(String name);
+
+
+    /**
+     * This is a convenience method to find a model by its type. An exception
+     * is thrown if there is more than one model of the given type. This method can
+     * be useful in reducing pointless boilerplate code when a modeler knows that
+     * there is exactly one (or zero) instances of a mdoel type in the scenario
+     * (like a weather model). If there is more than one, there is likely an error
+     * in the scenario configuration or the user's expectations.
+     *
+     * @param type The type of the model being sought.
+     *
+     * @return The model that implements the given type (cast to that type), or {@code null} if none exists.
+     *
+     * @throws RuntimeException If there is more than one model of the given type.
+     */
+    public <T> T findModelByType(Class<T> type);
+
+
+    /**
      * Find the set of models with a given name. There may be more than one model
-     * returned because we do not require unique model names.
+     * returned because we do not require unique model names (yet).
      *
      * @param name The name of the model to locate.
      *
@@ -74,5 +108,5 @@ public interface SimEngine {
      *
      * @return The set of models that are a givne type, or an empty set if none exist.
      */
-    public List<Model> findModelsByType(Class type);
+    public <T> List<T> findModelsByType(Class<T> type);
 }

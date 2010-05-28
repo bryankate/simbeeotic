@@ -40,18 +40,9 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
 
         super.initialize();
 
-        // find the propagation model and register with it
-        List<Model> propModels = getSimEngine().findModelsByType(PropagationModel.class);
-
-        if (propModels.size() > 1) {
-            throw new RuntimeException("There is more than one PropagationModel in the scenario.");
-        }
-
         // there may be no propagation model, in which case comms won't work but we shouldn't throw an exception
         // until someone tries to use them. it is possible that someone attached a radio for no reason...
-        if (!propModels.isEmpty()) {
-            propModel = (PropagationModel)new ArrayList<Model>(propModels).get(0);
-        }
+        propModel = getSimEngine().findModelByType(PropagationModel.class);
     }
 
 

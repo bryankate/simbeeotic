@@ -52,11 +52,10 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
 
         super.initialize();
 
-        // todo: make it work with all radios?
-        List<Model> radioModels = getSimEngine().findModelsByType(AbstractRadio.class);
+        List<Radio> radioModels = getSimEngine().findModelsByType(Radio.class);
 
-        for (Model m : radioModels) {
-            radios.put(m.getModelId(), (Radio)m);
+        for (Radio radio : radioModels) {
+            radios.put(((Model)radio).getModelId(), radio);
         }
     }
 

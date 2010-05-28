@@ -59,15 +59,7 @@ public abstract class SimpleBee extends GenericModel {
         super.initialize();
 
         // get the weather model, if one exists
-        List<Model> models = getSimEngine().findModelsByType(WeatherModel.class);
-        final WeatherModel weather;
-
-        if (!models.isEmpty()) {
-            weather = (WeatherModel)models.get(0);
-        }
-        else {
-            weather = null;
-        }
+        final WeatherModel weather = (WeatherModel)getSimEngine().findModelByType(WeatherModel.class);
 
         // setup a timer that handles the details of using the simple flight abstraction
         if (kinematicUpdateRate > 0) {
