@@ -14,9 +14,9 @@
 
     <models>
         <model>
-            <java-class>harvard.robobees.simbeeotic.model.weather.ConstantWindModel</java-class>
+            <java-class>harvard.robobees.simbeeotic.model.weather.ConstantWeatherModel</java-class>
             <properties>
-                <prop name="force-x" value="0.01"/>
+                <prop name="wind-x" value="3.0"/>
             </properties>
         </model>
         <model count="1">

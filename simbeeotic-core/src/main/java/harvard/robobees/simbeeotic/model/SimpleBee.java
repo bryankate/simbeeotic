@@ -16,10 +16,13 @@ import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.environment.PhysicalConstants;
 import harvard.robobees.simbeeotic.util.MathUtil;
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.model.weather.WeatherModel;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -54,6 +57,17 @@ public abstract class SimpleBee extends GenericModel {
     public void initialize() {
 
         super.initialize();
+
+        // get the weather model, if one exists
+        List<Model> models = getSimEngine().findModelsByType(WeatherModel.class);
+        final WeatherModel weather;
+
+        if (!models.isEmpty()) {
+            weather = (WeatherModel)models.get(0);
+        }
+        else {
+            weather = null;
+        }
 
         // setup a timer that handles the details of using the simple flight abstraction
         if (kinematicUpdateRate > 0) {
@@ -100,13 +114,24 @@ public abstract class SimpleBee extends GenericModel {
                     }
 
                     // apply wind effects
-                    if (useWind) {
+                    if (useWind && (weather != null)) {
 
-                        Vector3f windForce = getExternalForce("wind");
+                        Vector3f windVel = weather.getWindVelocity(time, getTruthPosition());
+                        Vector3f windForce = new Vector3f(windVel);
 
-                        if (windForce != null) {
-                            applyForce(windForce);
-                        }
+                        windForce.normalize();
+
+                        double speed = windVel.length();
+
+                        double area = length / 2;
+                        area *= area * Math.PI;
+
+                        // calculate wind force
+                        double force = 0.5 * PhysicalConstants.AIR_DENSITY * speed * speed * area;
+
+                        windForce.scale((float)force);
+
+                        applyForce(windForce);
                     }
 
                     // todo: drag?
