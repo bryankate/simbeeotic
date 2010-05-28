@@ -751,8 +751,8 @@ public class SimController {
 
         private Queue<ScheduledEvent> eventQ = new PriorityQueue<ScheduledEvent>();
         private Map<Integer, Model> modelMap = new HashMap<Integer, Model>();
-        private Map<String, Set<Model>> modelNameMap = new HashMap<String, Set<Model>>();
-        private Map<Class, Set<Model>> modelTypeMap = new HashMap<Class, Set<Model>>();
+        private Map<String, List<Model>> modelNameMap = new HashMap<String, List<Model>>();
+        private Map<Class, List<Model>> modelTypeMap = new HashMap<Class, List<Model>>();
 
         private SimTime processing = null;
         private SimTime lastProcessed = null;
@@ -824,17 +824,17 @@ public class SimController {
 
 
         /** {@inheritDoc} */
-        public Set<Model> findModelsByName(String name) {
+        public List<Model> findModelsByName(String name) {
             return modelNameMap.get(name);
         }
 
 
         /** {@inheritDoc} */
-        public Set<Model> findModelsByType(Class type) {
+        public List<Model> findModelsByType(Class type) {
 
             if (!modelTypeMap.containsKey(type)) {
 
-                Set<Model> results = new HashSet<Model>();
+                List<Model> results = new LinkedList<Model>();
 
                 // search all models and cache the results
                 for (Model m : modelMap.values()) {
@@ -905,10 +905,14 @@ public class SimController {
          */
         public void addModel(final Model model) {
 
+            if (modelMap.containsKey(model.getModelId())) {
+                throw new RuntimeException("A model with the ID " + model.getModelId() + " is already registered.");
+            }
+
             modelMap.put(model.getModelId(), model);
 
             if (!modelNameMap.containsKey(model.getName())) {
-                modelNameMap.put(model.getName(), new HashSet<Model>());
+                modelNameMap.put(model.getName(), new LinkedList<Model>());
             }
 
             modelNameMap.get(model.getName()).add(model);

@@ -1,11 +1,10 @@
 package harvard.robobees.simbeeotic;
 
 
-import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.model.Event;
 import harvard.robobees.simbeeotic.model.Model;
 
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -62,10 +61,10 @@ public interface SimEngine {
      * returned because we do not require unique model names.
      *
      * @param name The name of the model to locate.
-     * 
+     *
      * @return The set of models with the given name, or an empty set if none exist.
      */
-    public Set<Model> findModelsByName(String name);
+    public List<Model> findModelsByName(String name);
 
 
     /**
@@ -75,5 +74,5 @@ public interface SimEngine {
      *
      * @return The set of models that are a givne type, or an empty set if none exist.
      */
-    public Set<Model> findModelsByType(Class type);
+    public List<Model> findModelsByType(Class type);
 }

@@ -14,6 +14,7 @@ import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -40,7 +41,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
         super.initialize();
 
         // find the propagation model and register with it
-        Set<Model> propModels = getSimEngine().findModelsByType(PropagationModel.class);
+        List<Model> propModels = getSimEngine().findModelsByType(PropagationModel.class);
 
         if (propModels.size() > 1) {
             throw new RuntimeException("There is more than one PropagationModel in the scenario.");

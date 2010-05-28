@@ -4,6 +4,7 @@ package harvard.robobees.simbeeotic.model.comms;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -52,7 +53,7 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
         super.initialize();
 
         // todo: make it work with all radios?
-        Set<Model> radioModels = getSimEngine().findModelsByType(AbstractRadio.class);
+        List<Model> radioModels = getSimEngine().findModelsByType(AbstractRadio.class);
 
         for (Model m : radioModels) {
             radios.put(m.getModelId(), (Radio)m);
