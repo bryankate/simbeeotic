@@ -30,9 +30,9 @@ public class BroadcastBee extends SimpleBee implements MessageListener {
 
         // set some initial direction
         setHovering(true);
-        setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian(),
-                                              (float)getRandom().nextGaussian(),
-                                              (float)getRandom().nextGaussian()));
+        setDesiredLinearVelocity(new Vector3f((float)getRandom().nextGaussian() * 0.1f,
+                                              (float)getRandom().nextGaussian() * 0.1f,
+                                              (float)getRandom().nextGaussian() * 0.1f));
 
         getRadio().addMessageListener(this);
 
