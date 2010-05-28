@@ -26,7 +26,7 @@ public class TwoRayPropagationModel extends AbstractPropagationModel {
     /**
      * {@inheritDoc}
      *
-     * @note Uses a two ray model to calculate the path loss between the two radios.
+     * Uses a two ray model to calculate the path loss between the two radios.
      */
     @Override
     protected double calculatePathLoss(Radio tx, Radio rx, double txPower, Band band, double distance) {

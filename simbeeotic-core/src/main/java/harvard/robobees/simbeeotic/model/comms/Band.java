@@ -95,7 +95,7 @@ public class Band {
     /**
      * {@inheritDoc}
      *
-     * @note auto-generated
+     * auto-generated
      */
     @Override
     public boolean equals(Object o) {
@@ -125,7 +125,7 @@ public class Band {
     /**
      * {@inheritDoc}
      *
-     * @note auto-generated
+     * auto-generated
      */
     @Override
     public int hashCode() {

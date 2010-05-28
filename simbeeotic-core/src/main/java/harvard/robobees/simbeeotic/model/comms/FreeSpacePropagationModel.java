@@ -23,7 +23,7 @@ public class FreeSpacePropagationModel extends AbstractPropagationModel {
     /**
      * {@inheritDoc}
      *
-     * @note Uses a free space model to calculate the path loss between the two radios.
+     * Uses a free space model to calculate the path loss between the two radios.
      */
     @Override
     protected double calculatePathLoss(Radio tx, Radio rx, double txPower, Band band, double distance) {

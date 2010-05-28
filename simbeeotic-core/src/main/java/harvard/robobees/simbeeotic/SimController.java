@@ -744,8 +744,9 @@ public class SimController {
      * An implementation of {@link SimEngine} that is used as a container
      * and coordinator for events in each scenario variation.
      *
-     * @note This class is not thread safe, so it would need to be updated if
-     *       multiple models are allowed to execute in parallel in the future.
+     * <br/>
+     * This class is not thread safe, so it would need to be updated if
+     * multiple models are allowed to execute in parallel in the future.
      */
     static final class SimEngineImpl implements SimEngine {
 

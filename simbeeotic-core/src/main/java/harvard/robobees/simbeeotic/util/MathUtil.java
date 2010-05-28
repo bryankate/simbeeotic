@@ -53,7 +53,8 @@ public class MathUtil {
      * Converts a quaternion rotation representation into an Euler angle representation
      * that uses the ZXY rotation sequence.
      *
-     * @note There are singular behaviors in the conversion resulting in possible failure when this method is set up
+     * <br/>
+     * There are singular behaviors in the conversion resulting in possible failure when this method is set up
      * with Euler angles with theta (pitch) = pi/2 or -pi/2. In the pi/2 case the difference psi - phi is the only thing
      * that is determined and in the -pi/2 the sum psi + phi is the only thing that is determined. Physically when a body is
      * pointing up (theta == pi/2) then a positive yaw (psi) is equivalent to a negative roll (phi) and when the body is

@@ -281,8 +281,9 @@ public abstract class SimpleBee extends GenericModel {
      * call will not be seen immediately, but applied to future movement
      * and maintained until modified.
      *
-     * @note If the linear velocity is set to zero, the bee will fall to the ground due
-     *       to the effects of gravity. To counteract this, enable hover mode.
+     * <br/>
+     * If the linear velocity is set to zero, the bee will fall to the ground due
+     * to the effects of gravity. To counteract this, enable hover mode.
      *
      * @param vel The desired linear velocity of the bee for the next time step (m/s, in the body frame).
      */

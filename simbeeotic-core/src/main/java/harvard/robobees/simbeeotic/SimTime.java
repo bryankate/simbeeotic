@@ -8,9 +8,10 @@ import java.util.concurrent.TimeUnit;
  * The virtual time representation used to schedule and execute events. The time
  * being represented if the time since the start of the simulation.
  *
- * @note At some point in the future this class may also encapsulate a number
- *       of tiebreaking fields used to deterministically order events. This is
- *       especially important in parallel discrete event simulations.
+ * <br/>
+ * At some point in the future this class may also encapsulate a number
+ * of tiebreaking fields used to deterministically order events. This is
+ * especially important in parallel discrete event simulations.
  *
  * @author bkate
  */

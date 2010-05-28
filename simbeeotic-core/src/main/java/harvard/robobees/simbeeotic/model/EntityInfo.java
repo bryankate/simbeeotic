@@ -46,7 +46,8 @@ public class EntityInfo {
      * Gets the set of {@link Model}s that should receive a {@link CollisionEvent}
      * when a collision is detected between the physical body and another body.
      *
-     * @note This is a bit of a hack, but it is better than broadcasting an event
+     * <br/>
+     * This is a bit of a hack, but it is better than broadcasting an event
      * when a collision occurs and having every model check if it is involved.
      *
      * @return The model identifiers of the interested models.

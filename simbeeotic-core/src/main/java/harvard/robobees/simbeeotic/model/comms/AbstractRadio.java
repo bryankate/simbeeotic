@@ -201,7 +201,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
      * Sets the offset position of the antenna base, essentially where the antenna is
      * attached to the body.
      *
-     * @note This is a point in the body frame. It is added to the absolute position of
+     * <br/>
+     * This is a point in the body frame. It is added to the absolute position of
      * the body at runtime.
      *
      * @param offset The offset of the antenna base (in the body frame).
@@ -216,7 +217,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
      * Sets the pointing vector of the antenna. This is a vector that points along the
      * major axis of the antenna.
      *
-     * @note The input to this method is a vector in the body frame. It will
+     * <br/>
+     * The input to this method is a vector in the body frame. It will
      * be converted to the world frame at runtime according to the body's
      * orientation.
      *
