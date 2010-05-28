@@ -17,7 +17,7 @@ import com.google.inject.name.Named;
  */
 public class ConstantWeatherModel extends AbstractModel implements WeatherModel {
 
-    private Vector3f windVel = new Vector3f();
+    private Vector3f windVel = new Vector3f();   // m/s
 
 
     /** {@inheritDoc} */
