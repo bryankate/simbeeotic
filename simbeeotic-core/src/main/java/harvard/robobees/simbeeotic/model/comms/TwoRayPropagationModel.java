@@ -55,8 +55,6 @@ public class TwoRayPropagationModel extends AbstractPropagationModel {
             loss = Math.pow(ht * hr, 2) / Math.pow(distance, 4);
         }
 
-        // todo: random degradation of signal?
-
         return rxPower + 10 * Math.log10(loss);
     }
 }
