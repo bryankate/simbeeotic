@@ -23,6 +23,7 @@
             <java-class>harvard.robobees.simbeeotic.example.InertBee</java-class>
             <properties>
                 <prop name="use-wind" value="true"/>
+                <prop name="wind-compensation" value="false"/>
             </properties>
             <start-position x="0" y="0" z="20"/>
         </model>

@@ -21,8 +21,6 @@ import harvard.robobees.simbeeotic.model.weather.WeatherModel;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.concurrent.TimeUnit;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -42,6 +40,7 @@ public abstract class SimpleBee extends GenericModel {
     private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
     private boolean useWind = false;
+    private boolean compensateForWind = true;
 
     protected Timer kinematicTimer;
 
@@ -123,7 +122,9 @@ public abstract class SimpleBee extends GenericModel {
 
                         windForce.scale((float)force);
 
-                        applyForce(windForce);
+                        if (!compensateForWind) {
+                            applyForce(windForce);
+                        }
                     }
 
                     // todo: drag?
@@ -368,6 +369,15 @@ public abstract class SimpleBee extends GenericModel {
 
         if (!isInitialized()) {
             this.useWind = use;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setUseWindCompensation(@Named("wind-compensation") final boolean use) {
+
+        if (!isInitialized()) {
+            this.compensateForWind = use;
         }
     }
 }
