@@ -8,11 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
-import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
-import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
@@ -86,12 +84,6 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
         linearAccel.scale(body.getInvMass(), body.getTotalForce());
         angularAccel.scale(body.getInvMass(), body.getTotalTorque());
-    }
-
-
-    @EventHandler
-    public final void handleExternalForceEvent(SimTime time, ExternalForceEvent event) {
-        externalForces.put(event.getId(), event.getForce());
     }
 
 
