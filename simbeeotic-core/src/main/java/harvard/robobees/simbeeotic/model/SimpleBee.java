@@ -156,7 +156,10 @@ public abstract class SimpleBee extends GenericModel {
         Vector3f localInertia = new Vector3f(0, 0, 0);
         colShape.calculateLocalInertia(mass, localInertia);
 
-        startTransform.origin.set(new Vector3f(getStartX(), getStartY(), getStartZ() + halfLength));
+        Vector3f start = getStartPosition();
+        start.z += halfLength;
+
+        startTransform.origin.set(start);
 
         MotionState myMotionState = new DefaultMotionState(startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState,

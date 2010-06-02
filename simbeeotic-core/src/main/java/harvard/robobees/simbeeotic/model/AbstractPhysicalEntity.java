@@ -13,8 +13,6 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
 
 
 /**
@@ -33,11 +31,8 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     private Vector3f linearAccel;
     private Vector3f angularAccel;
-    private Map<String, Vector3f> externalForces = new HashMap<String, Vector3f>();
 
-    private float startX = 0.0f;    // m, geom center relative to world origin
-    private float startY = 0.0f;    // m, geom center relative to world origin
-    private float startZ = 0.0f;    // m, geom center relative to world origin
+    private Vector3f startPos = new Vector3f();    // m, geom center relative to world origin
 
 
     /**
@@ -132,18 +127,6 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     /** {@inheritDoc} */
     public final void clearForces() {
         body.clearForces();
-    }
-
-
-    /**
-     * Retrieves an external force that was applied to this entity.
-     *
-     * @param name The name of the external force.
-     *
-     * @return The force that corresponds to the given name, or {@code null} if none exists.
-     */
-    public final Vector3f getExternalForce(String name) {
-        return externalForces.get(name);
     }
 
 
@@ -261,18 +244,8 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
-    protected final float getStartX() {
-        return startX;
-    }
-
-
-    protected final float getStartY() {
-        return startY;
-    }
-
-
-    protected final float getStartZ() {
-        return startZ;
+    protected final Vector3f getStartPosition() {
+        return startPos;
     }
 
 
@@ -286,28 +259,10 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
 
     @Inject(optional = true)
-    public final void setStartX(@Named("start-x") final float x) {
+    public final void setStartPosition(@Named("start-position") final Vector3f pos) {
 
         if (!isInitialized()) {
-            this.startX = x;
-        }
-    }
-
-
-    @Inject(optional = true)
-    public final void setStartY(@Named("start-y") final float y) {
-
-        if (!isInitialized()) {
-            this.startY = y;
-        }
-    }
-
-
-    @Inject(optional = true)
-    public final void setStartZ(@Named("start-z") final float z) {
-
-        if (!isInitialized()) {
-            this.startZ = z;
+            this.startPos = pos;
         }
     }
 }

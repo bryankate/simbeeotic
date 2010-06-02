@@ -41,7 +41,10 @@ public class SimpleHive extends GenericModel {
         Transform startTransform = new Transform();
         startTransform.setIdentity();
 
-        startTransform.origin.set(new Vector3f(getStartX(), getStartY(), getStartZ() + halfSize));
+        Vector3f start = getStartPosition();
+        start.z += halfSize;
+
+        startTransform.origin.set(start);
 
         MotionState myMotionState = new DefaultMotionState(startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,

@@ -308,7 +308,7 @@ public class SimController {
      * @param injector The Guice injector to use as a parent injector.
      * @param nextId The next ID for a model.
      */
-    private void parseModelConfig(final ModelConfig config, Model parent, Vector startPos, List<Model> models,
+    private void parseModelConfig(final ModelConfig config, Model parent, Vector3f startPos, List<Model> models,
                                   Variation variation, Injector injector, final AtomicInteger nextId) {
 
         if (config == null) {
@@ -335,35 +335,35 @@ public class SimController {
         // custom properties
         final Properties modelProps = loadConfigProps(config.getProperties(), variation);
 
-        final Vector starting = new Vector();
+        final Vector3f starting;
 
         if (startPos != null) {
 
-            starting.setX(startPos.getX());
-            starting.setY(startPos.getY());
-            starting.setZ(startPos.getZ());
+            starting = startPos;
 
             Vector pos = config.getStartPosition();
 
             if ((pos != null) && 
-                ((starting.getX() != pos.getX()) || (starting.getY() != pos.getY()) || (starting.getZ() != pos.getZ()))) {
+                ((starting.x != pos.getX()) || (starting.y != pos.getY()) || (starting.z != pos.getZ()))) {
 
                 logger.warn("A child model has specified a starting position different from its parent, using parent position.");
             }
         }
         else {
 
+            starting = new Vector3f();
+
             if (config.getStartPosition() != null) {
 
-                starting.setX(config.getStartPosition().getX());
-                starting.setY(config.getStartPosition().getY());
-                starting.setZ(config.getStartPosition().getZ());
+                starting.x = config.getStartPosition().getX();
+                starting.y = config.getStartPosition().getY();
+                starting.z = config.getStartPosition().getZ();
             }
             else {
 
-                starting.setX(0);
-                starting.setY(0);
-                starting.setZ(0);
+                starting.x = 0;
+                starting.y = 0;
+                starting.z = 0;
             }
         }
 
@@ -378,9 +378,7 @@ public class SimController {
                     bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
                     bindConstant().annotatedWith(Names.named("model-name")).to(config.getName());
 
-                    bindConstant().annotatedWith(Names.named("start-x")).to(starting.getX());
-                    bindConstant().annotatedWith(Names.named("start-y")).to(starting.getY());
-                    bindConstant().annotatedWith(Names.named("start-z")).to(starting.getZ());
+                    bind(Vector3f.class).annotatedWith(Names.named("start-position")).toInstance(starting);
 
                     Names.bindProperties(binder(), modelProps);
 
