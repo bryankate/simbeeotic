@@ -58,7 +58,7 @@ public abstract class SimpleBee extends GenericModel {
         super.initialize();
 
         // get the weather model, if one exists
-        final WeatherModel weather = (WeatherModel)getSimEngine().findModelByType(WeatherModel.class);
+        final WeatherModel weather = getSimEngine().findModelByType(WeatherModel.class);
 
         // setup a timer that handles the details of using the simple flight abstraction
         if (kinematicUpdateRate > 0) {
@@ -88,8 +88,6 @@ public abstract class SimpleBee extends GenericModel {
 
                         // find the velocity change and determine the instantaneous acceleration required
                         impulse.sub(getTruthLinearVelocity());
-
-                        // todo: compensate for wind?
 
                         // cap the translational force based on the max acceleration ability
                         if (impulse.length() > maxAccel) {

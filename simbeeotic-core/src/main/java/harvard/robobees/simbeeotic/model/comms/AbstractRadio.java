@@ -8,13 +8,13 @@ import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.AbstractModel;
 import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.EventHandler;
+import harvard.robobees.simbeeotic.model.TimerCallback;
 import harvard.robobees.simbeeotic.SimTime;
 
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -27,7 +27,9 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
 
     private PhysicalEntity host;
     private PropagationModel propModel;
+    private double txRxTime = 0;
 
+    // parameters
     private Vector3f offset = new Vector3f();
     private Vector3f pointing = new Vector3f(0, 0, 1);
     private AntennaPattern pattern;
@@ -43,6 +45,27 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
         // there may be no propagation model, in which case comms won't work but we shouldn't throw an exception
         // until someone tries to use them. it is possible that someone attached a radio for no reason...
         propModel = getSimEngine().findModelByType(PropagationModel.class);
+
+        final long idlePollPeriod = 100;   // ms
+
+        // a timer that periodically measures idle energy usage
+        createTimer(new TimerCallback() {
+
+            public void fire(SimTime time) {
+
+                double idleTime = idlePollPeriod - txRxTime;
+
+                if (idleTime < 0) {
+                    txRxTime -= idlePollPeriod;
+                }
+                else {
+
+                    txRxTime = 0;
+                    getAggregator().addValue("energy", "radio-idle", getIdleEnergy() * (idleTime / TimeUnit.SECONDS.toMillis(1)));
+                }
+            }
+
+        }, 0, TimeUnit.MICROSECONDS, idlePollPeriod, TimeUnit.MILLISECONDS);
     }
 
 
@@ -61,6 +84,66 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     public final void handleReceptionEvent(SimTime time, ReceptionEvent event) {
         receive(time, event.getData(), event.getRxPower(), event.getBand().getCenterFrequency());
     }
+
+
+    /** {@inheritDoc} */
+    public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
+
+        double timeToRx = data.length / 125.0 / getBandwidth();
+
+        txRxTime += timeToRx * TimeUnit.SECONDS.toMillis(1);
+
+        getAggregator().addValue("energy", "radio-rx", timeToRx * getRxEnergy());
+    }
+
+
+    /** {@inheritDoc} */
+    public void transmit(byte[] data) {
+
+        double timeToTx = data.length / 125.0 / getBandwidth();
+
+        txRxTime += timeToTx * TimeUnit.SECONDS.toMillis(1);
+
+        getAggregator().addValue("energy", "radio-tx", timeToTx * getTxEnergy());
+    }
+
+
+    /**
+     * Gets the amount of energy used by the radio when it is receiving a
+     * message. The return from this method may be dependent on the current
+     * state of the raio, and thus cannot be considered static.
+     *
+     * @return The amount of energy used to receive data (in mA).
+     */
+    protected abstract double getRxEnergy();
+
+
+    /**
+     * Gets the amount of energy used by the radio when it is transmitting a
+     * message. The return from this method may be dependent on the current
+     * state of the raio, and thus cannot be considered static.
+     *
+     * @return The amount of energy used to transmit data (in mA).
+     */
+    protected abstract double getTxEnergy();
+
+
+    /**
+     * Gets the amount of energy used by this radio when it is idling (not sending or
+     * receiving) for one second. The return from this method may be dependent on the current
+     * state of the raio, and thus cannot be considered static.
+     *
+     * @return The energy consumption in idle mode (in mA).
+     */
+    protected abstract double getIdleEnergy();
+
+
+    /**
+     * Gets the bandwidth of the radio.
+     *
+     * @return The bitrate of the radio (in kbps).
+     */
+    protected abstract double getBandwidth();
 
 
     /** {@inheritDoc} */

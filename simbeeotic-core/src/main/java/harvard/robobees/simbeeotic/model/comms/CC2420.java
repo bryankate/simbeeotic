@@ -19,6 +19,7 @@ public class CC2420 extends ZigbeeRadio {
 
     private double txPower = 0;       // dBm
     private double minRxPower = -90;  // dBm
+    private double txEnergy = 16.5;   // mA
 
     private static Logger logger = Logger.getLogger(CC2420.class);
 
@@ -32,6 +33,9 @@ public class CC2420 extends ZigbeeRadio {
      */
     @Override
     public void transmit(byte[] data) {
+
+        super.transmit(data);
+
         getPropagationModel().transmit(this, data, txPower, getChannel());
     }
 
@@ -48,6 +52,8 @@ public class CC2420 extends ZigbeeRadio {
      */
     @Override
     public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
+
+        super.receive(time, data, rxPower, frequency);
 
         // check if it is within the range of sensitivity of the radio
         if (rxPower < minRxPower) {
@@ -84,9 +90,44 @@ public class CC2420 extends ZigbeeRadio {
     }
 
 
+    /** {@inheritDoc} */
+    @Override
+    protected double getIdleEnergy() {
+
+        // mA (page 13 of the CC2420 data sheet, rev. 1.4.)
+        return 0.426;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected double getRxEnergy() {
+
+        // mA (page 13 of the CC2420 data sheet, rev. 1.4.)
+        return 18.8;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected double getTxEnergy() {
+        return txEnergy;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    protected double getBandwidth() {
+
+        // kbps (page 9 of the CC2420 data sheet, rev. 1.4.)
+        return 250;
+    }
+
+
     /**
      * Sets the output power level. The CC2420 has 8 transmit power settings, detailed on
-     * page 52 of the CC2420 data sheet, rev. 1.4.
+     * page 52 of the CC2420 data sheet, rev. 1.4. The corresponding energy consumption
+     * levels are derived from page 14 of the same spec.
      *
      * @param level The transmit power level. It must be an integer in the set
      *              (3, 7, 11, 15, 19, 23, 27, 31).
@@ -99,41 +140,49 @@ public class CC2420 extends ZigbeeRadio {
             case 31:
                 
                 txPower = 0;
+                txEnergy = 17.4;
                 break;
 
             case 27:
 
                 txPower = -1;
+                txEnergy = 16.5;
                 break;
 
             case 23:
 
                 txPower = -3;
+                txEnergy = 15.1;
                 break;
 
             case 19:
 
                 txPower = -5;
+                txEnergy = 14;
                 break;
 
             case 15:
 
                 txPower = -7;
+                txEnergy = 12.7;
                 break;
 
             case 11:
 
                 txPower = -10;
+                txEnergy = 11;
                 break;
 
             case 7:
 
                 txPower = -15;
+                txEnergy = 9.9;
                 break;
 
             case 3:
 
                 txPower = -25;
+                txEnergy = 8.5;
                 break;
 
             default:
