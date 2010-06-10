@@ -322,6 +322,10 @@ public class SimController {
                 }
             }
 
+            for (VariationComponent comp : varComponents) {
+                comp.shutdown();
+            }
+
             motionRecorder.shutdown();
 
             double runTime = (double)(System.currentTimeMillis() - variationStartTime) / TimeUnit.SECONDS.toMillis(1);
