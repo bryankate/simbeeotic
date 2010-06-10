@@ -13,6 +13,7 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.linearmath.MotionState;
 import harvard.robobees.simbeeotic.configuration.world.Box;
 import harvard.robobees.simbeeotic.configuration.world.Cone;
 import harvard.robobees.simbeeotic.configuration.world.Cylinder;
@@ -22,6 +23,8 @@ import harvard.robobees.simbeeotic.configuration.world.Patch;
 import harvard.robobees.simbeeotic.configuration.world.Sphere;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import harvard.robobees.simbeeotic.model.EntityInfo;
+import harvard.robobees.simbeeotic.model.MotionRecorder;
+import harvard.robobees.simbeeotic.model.RecordedMotionState;
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_BEE;
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_FLOWER;
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_TERRAIN;
@@ -35,6 +38,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -49,6 +53,8 @@ public class WorldMap {
     private Random rand;
 
     private DiscreteDynamicsWorld dynamicsWorld;
+    private MotionRecorder recorder;
+    private AtomicInteger nextId;
     private RigidBody groundBody;
     private Set<RigidBody> obstacleBodies = new HashSet<RigidBody>();
     private Set<RigidBody> flowerBodies = new HashSet<RigidBody>();
@@ -60,12 +66,15 @@ public class WorldMap {
     private float floraRadius = 0.1f;  // m
 
 
-    public WorldMap(World world, DiscreteDynamicsWorld dynWorld, long seed) {
+    public WorldMap(World world, DiscreteDynamicsWorld dynWorld,
+                    MotionRecorder recorder, AtomicInteger nextId, long seed) {
 
         this.world = world;
         this.rand = new Random(seed);
 
         this.dynamicsWorld = dynWorld;
+        this.recorder = recorder;
+        this.nextId = nextId;
 
         initialize();
     }
@@ -80,8 +89,12 @@ public class WorldMap {
         groundTransform.setIdentity();
         groundTransform.origin.set(new Vector3f(0, 0, 0));
 
-        // the plane is a static obejct, so it does not need mass properties
-        DefaultMotionState myMotionState = new DefaultMotionState(groundTransform);
+        int groundId = nextId.getAndIncrement();
+
+        recorder.initializeObject(groundId, groundShape);
+
+        // the plane is a static object, so it does not need mass properties
+        MotionState myMotionState = new RecordedMotionState(groundId, recorder, groundTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
                                                                          groundShape, new Vector3f(0, 0, 0));
 
@@ -168,7 +181,11 @@ public class WorldMap {
                                                            cone.getHeight() / 2));
                 }
 
-                myMotionState = new DefaultMotionState(startTransform);
+                int id = nextId.getAndIncrement();
+
+                recorder.initializeObject(id, colShape);
+
+                myMotionState = new RecordedMotionState(id, recorder, startTransform);
                 rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
                                                        colShape, new Vector3f(0, 0, 0));
 
@@ -213,7 +230,11 @@ public class WorldMap {
 
                     stemTransform.origin.set(new Vector3f(x, y, z + stemHeight / 2));
 
-                    DefaultMotionState stemMotion = new DefaultMotionState(stemTransform);
+                    int stemId = nextId.getAndIncrement();
+
+                    recorder.initializeObject(stemId, stemShape);
+
+                    DefaultMotionState stemMotion = new RecordedMotionState(stemId, recorder, stemTransform);
                     RigidBodyConstructionInfo stemRbInfo = new RigidBodyConstructionInfo(0, stemMotion,
                                                            stemShape, new Vector3f(0, 0, 0));
 
@@ -231,7 +252,11 @@ public class WorldMap {
 
                     platTransform.origin.set(new Vector3f(x, y, z + stemHeight));
 
-                    DefaultMotionState platMotion = new DefaultMotionState(platTransform);
+                    int platId = nextId.getAndIncrement();
+
+                    recorder.initializeObject(platId, platShape);
+
+                    DefaultMotionState platMotion = new RecordedMotionState(platId, recorder, platTransform);
                     RigidBodyConstructionInfo platRbInfo = new RigidBodyConstructionInfo(0, platMotion,
                                                                                          platShape, new Vector3f(0, 0, 0));
 

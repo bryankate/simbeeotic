@@ -24,6 +24,7 @@
             <xs:element name="master-seed" type="scenario:MasterSeed" minOccurs="0" maxOccurs="1"/>
             <xs:element name="simulation" type="scenario:Simulation" minOccurs="1" maxOccurs="1"/>
             <xs:element name="models" type="scenario:Models" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="components" type="scenario:Components" minOccurs="0" maxOccurs="1"/>
             <xs:element name="looping" type="scenario:Looping" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
@@ -111,6 +112,12 @@
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="Components">
+        <xs:sequence>
+            <xs:element name="variation" type="scenario:CustomClass" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="Vector">

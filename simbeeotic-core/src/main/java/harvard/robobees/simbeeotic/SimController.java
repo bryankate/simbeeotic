@@ -16,6 +16,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.Binder;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
@@ -28,6 +30,8 @@ import harvard.robobees.simbeeotic.configuration.scenario.ModelConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.SensorConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.RadioConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.Vector;
+import harvard.robobees.simbeeotic.configuration.scenario.ComponentConfig;
+import harvard.robobees.simbeeotic.configuration.scenario.CustomClass;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
 import harvard.robobees.simbeeotic.environment.WorldMap;
@@ -37,11 +41,13 @@ import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.Event;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.CollisionEvent;
+import harvard.robobees.simbeeotic.model.MotionRecorder;
 import harvard.robobees.simbeeotic.model.sensor.AbstractSensor;
 import harvard.robobees.simbeeotic.util.DocUtil;
 import harvard.robobees.simbeeotic.model.comms.AntennaPattern;
 import harvard.robobees.simbeeotic.model.comms.IsotropicAntenna;
 import harvard.robobees.simbeeotic.model.comms.AbstractRadio;
+import harvard.robobees.simbeeotic.component.VariationComponent;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
@@ -89,8 +95,10 @@ public class SimController {
     /**
      * Behaves identically to {@link #runSim(Scenario, World)} with the exception that
      * an attempt is made to constrain virtual time to real time, meaning that the
-     * simulation will not run as fast as possible.
+     * simulation may not run as fast as possible.
      *
+     * @param scenario The scenario, describing the models to execute.
+     * @param world The world in which the models operate.
      * @param realTimeScale The scale factor for constraining real time. A scale less
      *                      than or equal to zero indicates that no constraint should be made,
      *                      and values greater than zero will scale the virtual time accordingly.
@@ -104,7 +112,7 @@ public class SimController {
         VariationIterator variations = new VariationIterator(scenario);
 
         // todo: parallelize the running of variations
-        for (Variation variation : variations) {
+        for (final Variation variation : variations) {
 
             final int varId = ++currVariation;
 
@@ -114,7 +122,8 @@ public class SimController {
             logger.info("--------------------------------------------");
             logger.info("");
 
-            final AtomicInteger nextId = new AtomicInteger(0);
+            final AtomicInteger nextModelId = new AtomicInteger(0);
+            final AtomicInteger nextMotionId = new AtomicInteger(0);
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
             // make a new clock
@@ -137,8 +146,8 @@ public class SimController {
 
             dynamicsWorld.setGravity(new Vector3f(0, 0, (float)EARTH_GRAVITY));
 
-            // setup the simulated world (obstacle, flowers, etc)
-            final WorldMap map = new WorldMap(world, dynamicsWorld, variationSeedGenertor.nextLong());
+            final MotionRecorder motionRecorder = new MotionRecorder();
+
 
             // top level guice injector - all others are derived from this
             Module baseModule = new AbstractModule() {
@@ -154,8 +163,8 @@ public class SimController {
                     // dynamics world
                     bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
 
-                    // established simulated world instance
-                    bind(WorldMap.class).annotatedWith(GlobalScope.class).toInstance(map);
+                    // motion recorder
+                    bind(MotionRecorder.class).annotatedWith(GlobalScope.class).toInstance(motionRecorder);
                 }
 
                 // todo: figure out how to get these providers to not be called for each child injector?
@@ -168,40 +177,68 @@ public class SimController {
 
             Injector baseInjector = Guice.createInjector(baseModule);
 
-            // todo: fix this
-            // this callback is used to filter out collisions between bees when they are inside the hive
-//            dynamicsWorld.getBroadphase().getOverlappingPairCache().setOverlapFilterCallback(new OverlapFilterCallback() {
-//
-//                public boolean needBroadphaseCollision(BroadphaseProxy objA, BroadphaseProxy objB) {
-//
-//                    // check if both are bees by their collision group
-//                    if ((objA.collisionFilterGroup == PhysicalEntity.COLLISION_BEE) &&
-//                        (objB.collisionFilterGroup == PhysicalEntity.COLLISION_BEE)) {
-//
-//                        // if either bee's center is inside the hive, do not allow a collision
-//                        BoundingSphere hiveBounds = hive.getTruthBoundingSphere();
-//                        Vector3f diff = new Vector3f();
-//
-//                        diff.sub(hiveBounds.getCenter(),
-//                                 ((CollisionObject)objA.clientObject).getWorldTransform(new Transform()).origin);
-//
-//                        if (diff.length() <= hiveBounds.getRadius()) {
-//                            return false;
-//                        }
-//
-//                        diff.sub(hiveBounds.getCenter(),
-//                                 ((CollisionObject)objB.clientObject).getWorldTransform(new Transform()).origin);
-//
-//                        if (diff.length() <= hiveBounds.getRadius()) {
-//                            return false;
-//                        }
-//                    }
-//
-//                    // return the default collision filtering, which uses the collision group and mask
-//                    return ((objA.collisionFilterGroup & objB.collisionFilterMask) != 0) &&
-//                           ((objB.collisionFilterGroup & objA.collisionFilterMask) != 0);
-//                }
-//            });
+
+            // establish components
+            final List<VariationComponent> varComponents = new LinkedList<VariationComponent>();
+
+            if (scenario.getComponents() != null) {
+
+                for (CustomClass config : scenario.getComponents().getVariation()) {
+
+                    final Class compClass;
+                    final Properties compProps = loadConfigProps(config.getProperties(), variation);
+
+                    try {
+
+                        // locate the model implementation
+                        compClass = Class.forName(config.getJavaClass());
+
+                        // make sure it implements Model
+                        if (!VariationComponent.class.isAssignableFrom(compClass)) {
+                            throw new RuntimeException("The component implementation must extend from VariationComponent.");
+                        }
+                    }
+                    catch(ClassNotFoundException cnf) {
+                        throw new RuntimeException("Could not locate the component class: " +
+                                                   config.getJavaClass(), cnf);
+                    }
+
+                    Injector compInjector = baseInjector.createChildInjector(new AbstractModule() {
+
+                        @Override
+                        protected void configure() {
+
+                            // scenario variation variable map
+                            bind(new TypeLiteral<Map<String, String>>(){}).annotatedWith(Names.named("variables")).toInstance(variation.getVariables());
+
+                            Names.bindProperties(binder(), compProps);
+
+                            // component class
+                            bind(VariationComponent.class).to(compClass);
+                        }
+                    });
+
+
+                    VariationComponent component = compInjector.getInstance(VariationComponent.class);
+
+                    component.initialize();
+                    varComponents.add(component);
+                }
+            }
+
+
+            // setup the simulated world (obstacle, flowers, etc)
+            final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, variationSeedGenertor.nextLong());
+
+            baseInjector = baseInjector.createChildInjector(new AbstractModule() {
+
+                @Override
+                protected void configure() {
+
+                    // established simulated world instance
+                    bind(WorldMap.class).annotatedWith(GlobalScope.class).toInstance(map);
+                }
+            });
 
 
             // parse model definitions
@@ -210,7 +247,7 @@ public class SimController {
             if (scenario.getModels() != null) {
                 
                 for (ModelConfig config : scenario.getModels().getModel()) {
-                    parseModelConfig(config, null, null, models, variation, baseInjector, nextId);
+                    parseModelConfig(config, null, null, models, variation, baseInjector, nextModelId, nextMotionId);
                 }
             }
 
@@ -285,6 +322,8 @@ public class SimController {
                 }
             }
 
+            motionRecorder.shutdown();
+
             double runTime = (double)(System.currentTimeMillis() - variationStartTime) / TimeUnit.SECONDS.toMillis(1);
 
             logger.info("");
@@ -306,10 +345,12 @@ public class SimController {
      * @param models The list of configured models.
      * @param variation The current scenario variation.
      * @param injector The Guice injector to use as a parent injector.
-     * @param nextId The next ID for a model.
+     * @param nextModelId The next ID for a model.
+     * @param nextMotionId The next ID for a motion-recorded object.
      */
     private void parseModelConfig(final ModelConfig config, Model parent, Vector3f startPos, List<Model> models,
-                                  Variation variation, Injector injector, final AtomicInteger nextId) {
+                                  Variation variation, Injector injector,
+                                  final AtomicInteger nextModelId, final AtomicInteger nextMotionId) {
 
         if (config == null) {
             return;
@@ -375,7 +416,8 @@ public class SimController {
 
                 protected void configure() {
 
-                    bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                    bindConstant().annotatedWith(Names.named("model-id")).to(nextModelId.getAndIncrement());
+                    bindConstant().annotatedWith(Names.named("motion-id")).to(nextMotionId.getAndIncrement());
                     bindConstant().annotatedWith(Names.named("model-name")).to(config.getName());
 
                     bind(Vector3f.class).annotatedWith(Names.named("start-position")).toInstance(starting);
@@ -403,7 +445,7 @@ public class SimController {
 
             // go through child models
             for (ModelConfig childConfig : config.getModel()) {
-                parseModelConfig(childConfig, m, starting, models, variation, injector, nextId);
+                parseModelConfig(childConfig, m, starting, models, variation, injector, nextModelId, nextMotionId);
             }
 
             // sensors
@@ -457,7 +499,7 @@ public class SimController {
 
                         Names.bindProperties(binder(), sensorProps);
 
-                        bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                        bindConstant().annotatedWith(Names.named("model-id")).to(nextModelId.getAndIncrement());
                         bindConstant().annotatedWith(Names.named("model-name")).to(sensorConfig.getName());
 
                         bind(Vector3f.class).annotatedWith(Names.named("offset")).toInstance(offset);
@@ -553,7 +595,7 @@ public class SimController {
 
                         Names.bindProperties(binder(), radioProps);
 
-                        bindConstant().annotatedWith(Names.named("model-id")).to(nextId.getAndIncrement());
+                        bindConstant().annotatedWith(Names.named("model-id")).to(nextModelId.getAndIncrement());
                         bindConstant().annotatedWith(Names.named("model-name")).to(radioConfig.getName());
 
                         bind(AntennaPattern.class).toInstance(pattern);

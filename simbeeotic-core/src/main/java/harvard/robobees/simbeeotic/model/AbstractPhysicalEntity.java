@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
+import harvard.robobees.simbeeotic.SimEngine;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -27,11 +28,13 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     private DiscreteDynamicsWorld dynWorld;
     private RigidBody body;
+    private MotionRecorder recorder;
     private Set<Integer> collisionListeners = new HashSet<Integer>();
 
     private Vector3f linearAccel;
     private Vector3f angularAccel;
 
+    private int motionId;
     private Vector3f startPos = new Vector3f();    // m, geom center relative to world origin
 
 
@@ -244,8 +247,34 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
+    /**
+     * Gets the identifier that is to be used when sending updates to the {@link MotionRecorder}.
+     *
+     * @return The unique identifier of this entity with respect to the motion recorder.
+     */
+    protected final int getMotionId() {
+        return motionId;
+    }
+
+
+    /**
+     * Gets the starting position of this model, as set by the user.
+     *
+     * @return The starting position, in the world frame.
+     */
     protected final Vector3f getStartPosition() {
         return startPos;
+    }
+
+
+    /**
+     * Gets the global instance of {@link MotionRecorder} that can be used to update the state
+     * of this object when it changes.
+     *
+     * @return The motion recorder being used.
+     */
+    protected final MotionRecorder getMotionRecorder() {
+        return recorder;
     }
 
 
@@ -254,6 +283,24 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
         if (!isInitialized()) {
             this.dynWorld = world;
+        }
+    }
+
+
+    @Inject
+    public final void setMotionRecorder(@GlobalScope final MotionRecorder recorder) {
+
+        if (!isInitialized()) {
+            this.recorder = recorder;
+        }
+    }
+
+
+    @Inject
+    public final void setMotionId(@Named("motion-id") final int id) {
+
+        if (!isInitialized()) {
+            this.motionId = id;
         }
     }
 
