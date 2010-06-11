@@ -30,7 +30,6 @@ import harvard.robobees.simbeeotic.configuration.scenario.ModelConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.SensorConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.RadioConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.Vector;
-import harvard.robobees.simbeeotic.configuration.scenario.ComponentConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.CustomClass;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
