@@ -127,7 +127,7 @@ public class SimController {
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
             // make a new clock
-            final SimEngineImpl simEngine = new SimEngineImpl();
+            final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
 
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
@@ -803,6 +803,14 @@ public class SimController {
         private SimTime lastProcessed = null;
         private long nextEventId = 1;
 
+        private double realTimeScale = 1;
+        private long firstEventRealTime = -1;
+
+
+        public SimEngineImpl(double realTimeScale) {
+            this.realTimeScale = realTimeScale;
+        }
+
 
         /** {@inheritDoc} */
         public SimTime getCurrentTime() {
@@ -961,6 +969,25 @@ public class SimController {
             ScheduledEvent next = eventQ.poll();
 
             if (next != null) {
+
+                if (firstEventRealTime < 0) {
+                    firstEventRealTime = System.currentTimeMillis();
+                }
+
+                // if we are scaling to real time, hold off until we are ready to run the event.
+                // this implementation provide millisecond precision
+                long diff = TimeUnit.NANOSECONDS.toMillis((long)(next.time.getTime() * realTimeScale)) - 
+                            (System.currentTimeMillis() - firstEventRealTime);
+
+                if (diff > 0) {
+
+                    try {
+                        Thread.sleep(diff);
+                    }
+                    catch(InterruptedException ie) {
+                        throw new RuntimeException("SimEngine was interrupted while sleeping.");
+                    }
+                }
 
                 processing = next.time;
 
