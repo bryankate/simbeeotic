@@ -26,6 +26,8 @@ public class RecordedMotionState extends DefaultMotionState {
 
         this.modelId = modelId;
         this.recorder = recorder;
+
+        setWorldTransform(startWorldTrans);
     }
 
 
@@ -35,6 +37,8 @@ public class RecordedMotionState extends DefaultMotionState {
 
         this.modelId = modelId;
         this.recorder = recorder;
+
+        setWorldTransform(startWorldTrans);
     }
 
 
@@ -44,6 +48,8 @@ public class RecordedMotionState extends DefaultMotionState {
 
         this.modelId = modelId;
         this.recorder = recorder;
+
+        setWorldTransform(startWorldTrans);
     }
 
 
