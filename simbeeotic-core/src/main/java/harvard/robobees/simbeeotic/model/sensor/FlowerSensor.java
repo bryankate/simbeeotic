@@ -9,9 +9,10 @@ import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.Contact;
 import harvard.robobees.simbeeotic.model.EntityInfo;
+import harvard.robobees.simbeeotic.environment.WorldMap;
+import harvard.robobees.simbeeotic.environment.WorldObject;
 
 import javax.vecmath.Vector3f;
-import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -25,8 +26,10 @@ import java.util.HashSet;
 public class FlowerSensor extends AbstractSensor {
 
     private DiscreteDynamicsWorld world;
+    private WorldMap map;
 
-    private float maxRange  = 1.0f;  // m;
+    private float maxRange  = 1.0f;                // m;
+    private float halfAngle = (float)Math.PI / 8;  // rad
 
     private static final float CONTACT_EPSILON = 0.01f;
 
@@ -46,14 +49,12 @@ public class FlowerSensor extends AbstractSensor {
      *
      * @return The meta-properties of the flower detected.
      */
-    public Set<Map<String, Object>> detectFlowers() {
+    public Set<WorldObject> detectFlowers() {
         return senseFlowers();
     }
 
 
-    private Set<Map<String, Object>> senseFlowers() {
-
-        Set<Map<String, Object>> flowerProps = new HashSet<Map<String, Object>>();
+    private Set<WorldObject> senseFlowers() {
 
         // check if the sensor is actually in contact with another object.
         // if there is an object contacting the body in the vicinity of the sensor,
@@ -68,9 +69,7 @@ public class FlowerSensor extends AbstractSensor {
             diff.sub(getOffset(), c.getBodyContactPoint());
 
             if (diff.length() <= CONTACT_EPSILON) {
-
-                flowerProps.add(c.getContactMetadata());
-                return flowerProps;
+                return new HashSet<WorldObject>();
             }
         }
 
@@ -96,35 +95,44 @@ public class FlowerSensor extends AbstractSensor {
         to.add(rotatedOffset);
         to.add(rotatedPointing);
 
-        // collide the ray with the world and see what objects are intersected
-        RayCallback callback = new RayCallback(maxRange);
+        // collide the ray with the world and see how far the sensor is from the ground
+        RayCallback callback = new RayCallback(map.getTerrain().getObjectId(), maxRange);
 
         world.rayTest(from, to, callback);
 
-        if (isFlower(callback.getClosestObjectProps())) {
-            flowerProps.add(callback.getClosestObjectProps());
+        float range = callback.getRangeToGround();
+
+        if (range <= maxRange) {
+
+            // find the point on the ground that was intersected
+            Vector3f groundPoint = new Vector3f();
+
+            groundPoint.sub(to, from);
+            groundPoint.normalize();
+            groundPoint.scale(range);
+            groundPoint.add(from, groundPoint);
+
+            // determine the sensor's width at that range.
+            // todo: this should really be done with calculations for an oblique cone, but a right cone is a decent approximation
+            double width = Math.tan(halfAngle) * range;
+
+            // find all flowers in the sensor's area of coverage
+            return map.getFlowers(groundPoint, width);
         }
 
-        return flowerProps;
-    }
-
-
-    public static boolean isFlower(final Map<String, Object> info) {
-
-        if (info == null) {
-            return false;
-        }
-
-        // todo: do this in a better way?
-        Object prop = info.get("isFlower");
-
-        return ((prop != null) && (Boolean)prop);
+        return new HashSet<WorldObject>();
     }
 
 
     @Inject
     public final void setDynamicsWorld(@GlobalScope DiscreteDynamicsWorld world) {
         this.world = world;
+    }
+
+
+    @Inject
+    public final void setWorldMap(@GlobalScope WorldMap map) {
+        this.map = map;
     }
 
 
@@ -135,17 +143,31 @@ public class FlowerSensor extends AbstractSensor {
 
 
     /**
+     * Sets the half-angle of the sensor. If the sensor is viewed as a cone, this would be
+     * the angle from the center of the cone to the outer edge.
+     *
+     * @param angle The half-angle of the sensor's field of view.
+     */
+    @Inject(optional = true)
+    public final void setAngle(@Named("half-angle") final float angle) {
+        this.halfAngle = angle;
+    }
+
+
+    /**
      * A callback that handles ray intersections with objects in the world. It records
      * the minimum distance to any object.
      */
     private static class RayCallback extends CollisionWorld.RayResultCallback {
 
+        private int groundObjectId;
         private float rayLength;
-        private float minDistance = Float.POSITIVE_INFINITY;
-        private EntityInfo minObjectInfo;
+        private float groundRange = Float.POSITIVE_INFINITY;
 
 
-        public RayCallback(float length) {
+        public RayCallback(int groundId, float length) {
+
+            groundObjectId = groundId;
             rayLength = length;
         }
 
@@ -153,17 +175,16 @@ public class FlowerSensor extends AbstractSensor {
 
             float dist = rayResult.hitFraction * rayLength;
 
-            if (dist < minDistance) {
-
-                minDistance = dist;
-                minObjectInfo = (EntityInfo)rayResult.collisionObject.getUserPointer();
+            // check if we hit the ground
+            if (((EntityInfo)rayResult.collisionObject.getUserPointer()).getObjectId() == groundObjectId) {
+                groundRange = dist;
             }
 
             return rayResult.hitFraction;
         }
 
-        public Map<String, Object> getClosestObjectProps() {
-            return minObjectInfo.getMetadata();
+        public float getRangeToGround() {
+            return groundRange;
         }
     }
 }
