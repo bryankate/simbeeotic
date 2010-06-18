@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.awt.*;
 
 
 /**
@@ -94,6 +95,7 @@ public class WorldMap {
         int groundId = nextId.getAndIncrement();
 
         recorder.initializeObject(groundId, groundShape);
+        recorder.updateMetadata(groundId, new Color(0, 100, 0));
 
         // the plane is a static object, so it does not need mass properties
         MotionState myMotionState = new RecordedMotionState(groundId, recorder, groundTransform);
@@ -122,8 +124,6 @@ public class WorldMap {
 
                 int id = nextId.getAndIncrement();
                 EntityInfo info = new EntityInfo(id, meta);
-
-                // todo: use color info
 
                 if (obstacle.getBox() != null) {
 
@@ -189,7 +189,14 @@ public class WorldMap {
                                                            cone.getHeight() / 2));
                 }
 
+                Color color = new Color(140, 140, 140);
+
+                if (obstacle.getColor() != null) {
+                    color = new Color(obstacle.getColor().getRed(), obstacle.getColor().getGreen(), obstacle.getColor().getBlue());
+                }
+
                 recorder.initializeObject(id, colShape);
+                recorder.updateMetadata(id, color, obstacle.getLabel());
 
                 myMotionState = new RecordedMotionState(id, recorder, startTransform);
                 rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
@@ -229,8 +236,6 @@ public class WorldMap {
                     int id = nextId.getAndIncrement();
                     EntityInfo platformInfo = new EntityInfo(id, meta);
 
-                    // todo: use color info
-
                     // make stem
                     Transform stemTransform = new Transform();
                     stemTransform.setIdentity();
@@ -254,7 +259,14 @@ public class WorldMap {
                     shape.addChildShape(stemTransform, stemShape);
                     shape.addChildShape(platTransform, platShape);
 
+                    Color color = new Color(205, 50, 120);
+
+                    if (patch.getColor() != null) {
+                        color = new Color(patch.getColor().getRed(), patch.getColor().getGreen(), patch.getColor().getBlue());
+                    }
+
                     recorder.initializeObject(id, platShape);
+                    recorder.updateMetadata(id, color);
 
                     DefaultMotionState motion = new RecordedMotionState(id, recorder, trans);
                     RigidBodyConstructionInfo flowerRbInfo = new RigidBodyConstructionInfo(0, motion,

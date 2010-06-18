@@ -20,6 +20,7 @@ import harvard.robobees.simbeeotic.model.weather.WeatherModel;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.concurrent.TimeUnit;
+import java.awt.*;
 
 
 /**
@@ -159,6 +160,7 @@ public abstract class SimpleBee extends GenericModel {
         startTransform.origin.set(start);
 
         getMotionRecorder().initializeObject(getObjectId(), colShape);
+        getMotionRecorder().updateMetadata(getObjectId(), new Color(238, 201, 0), getName());
 
         int id = getObjectId();
         MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);

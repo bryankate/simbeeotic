@@ -11,6 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.awt.*;
 
 import org.apache.log4j.Logger;
 
@@ -25,7 +26,7 @@ import org.apache.log4j.Logger;
 public class MotionRecorder {
 
     private Set<MotionListener> listeners = new CopyOnWriteArraySet<MotionListener>();
-    private BlockingQueue<Update> queue = new LinkedBlockingQueue<Update>();
+    private BlockingQueue queue = new LinkedBlockingQueue();
     private Thread processThread;
     private Lock lock = new ReentrantLock();
 
@@ -44,17 +45,29 @@ public class MotionRecorder {
                     // forever wait for an update
                     while(true) {
 
-                        Update update = queue.take();
+                        Object update = queue.take();
 
                         lock.lock();
 
                         try {
 
-                            // inform all listeners of the update
+                            // inform all listeners of the motionUpdate
                             for (MotionListener listener : listeners) {
 
                                 try {
-                                    listener.stateUpdate(update.id, update.pos, update.orient);
+
+                                    if (update instanceof MotionUpdate) {
+
+                                        MotionUpdate m = (MotionUpdate)update;
+
+                                        listener.stateUpdate(m.id, m.pos, m.orient);
+                                    }
+                                    else {
+
+                                        MetaUpdate m = (MetaUpdate)update;
+
+                                        listener.metaUpdate(m.id, m.color, m.label);
+                                    }
                                 }
                                 catch(Exception e) {
                                     logger.warn("Caught an exception when updating MotionListener.");
@@ -117,7 +130,41 @@ public class MotionRecorder {
      * @param orientation The orientation of the object (in the world frame).
      */
     public void updateKinematicState(int objectId, Vector3f position, Quat4f orientation) {
-        queue.add(new Update(objectId, position, orientation));
+        queue.add(new MotionUpdate(objectId, position, orientation));
+    }
+
+
+    /**
+     * Updates the color of an object.
+     *
+     * @param objectId The unique identifier of the object.
+     * @param color The new color information (may be null if no change is being made).
+     */
+    public void updateMetadata(int objectId, Color color) {
+        updateMetadata(objectId, color, null);
+    }
+
+
+    /**
+     * Updates the label associated with an object.
+     *
+     * @param objectId The unique identifier of the object.
+     * @param label The new label information (may be null if no change is being made).
+     */
+    public void updateMetadata(int objectId, String label) {
+        updateMetadata(objectId, null, label);
+    }
+
+
+    /**
+     * Updates the metadata associated with an object.
+     *
+     * @param objectId The unique identifier of the object.
+     * @param color The new color information (may be null if no change is being made).
+     * @param label The new label information (may be null if no change is being made).
+     */
+    public void updateMetadata(int objectId, Color color, String label) {
+        queue.add(new MetaUpdate(objectId, color, label));
     }
 
 
@@ -152,19 +199,37 @@ public class MotionRecorder {
 
 
     /**
-     * A container class for update details.
+     * A container class for motion update details.
      */
-    private static class Update {
+    private static class MotionUpdate {
 
         public int id;
         public Vector3f pos;
         public Quat4f orient;
 
-        public Update(int id, Vector3f pos, Quat4f orient) {
+        public MotionUpdate(int id, Vector3f pos, Quat4f orient) {
 
             this.id = id;
             this.pos = pos;
             this.orient = orient;
+        }
+    }
+
+
+    /**
+     * A container class for motion update details.
+     */
+    private static class MetaUpdate {
+
+        public int id;
+        public Color color;
+        public String label;
+
+        public MetaUpdate(int id, Color color, String label) {
+
+            this.id = id;
+            this.color = color;
+            this.label = label;
         }
     }
 }

@@ -12,6 +12,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import javax.vecmath.Vector3f;
+import java.awt.*;
 
 
 /**
@@ -45,6 +46,7 @@ public class SimpleHive extends GenericModel {
         startTransform.origin.set(start);
 
         getMotionRecorder().initializeObject(getObjectId(), colShape);
+        getMotionRecorder().updateMetadata(getObjectId(), new Color(166, 128, 100), getName());
 
         int id = getObjectId();
         MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);

@@ -30,14 +30,15 @@
 
     <xs:complexType name="Obstacle">
         <xs:sequence>
-            <xs:element name="color" type="world:Color" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
             <xs:choice minOccurs="1" maxOccurs="1">
                 <xs:element name="box" type="world:Box"/>
                 <xs:element name="cylinder" type="world:Cylinder"/>
                 <xs:element name="sphere" type="world:Sphere"/>
                 <xs:element name="cone" type="world:Cone"/>
             </xs:choice>
+            <xs:element name="color" type="world:Color" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="label" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
 
