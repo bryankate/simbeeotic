@@ -312,12 +312,68 @@ public class WorldMap {
 
 
     /**
+     * Gets the obstacles that are contained within the given sphere. The
+     * obstacle is determined to be in the sphere if its center is in the sphere.
+     *
+     * @param center The center of the query sphere.
+     * @param radius The radius of the query sphere.
+     *
+     * @return The set of all objects.
+     */
+    public Set<WorldObject> getObstacles(Vector3f center, double radius) {
+
+        Set<WorldObject> in = new HashSet<WorldObject>();
+
+        for (WorldObject obj : obstacles) {
+
+            Vector3f diff = new Vector3f();
+
+            diff.sub(center, obj.getTruthPosition());
+
+            if (diff.length() <= radius) {
+                in.add(obj);
+            }
+        }
+
+        return in;
+    }
+
+
+    /**
      * Gets all flowers present in the world.
      *
      * @return The set of all flowers.
      */
     public Set<WorldObject> getFlowers() {
         return Collections.unmodifiableSet(flowers);
+    }
+
+
+    /**
+     * Gets the flowers that are contained within the given sphere. The
+     * flower is determined to be in the sphere if its center is in the sphere.
+     *
+     * @param center The center of the query sphere.
+     * @param radius The radius of the query sphere.
+     *
+     * @return The set of all objects.
+     */
+    public Set<WorldObject> getFlowers(Vector3f center, double radius) {
+
+        Set<WorldObject> in = new HashSet<WorldObject>();
+
+        for (WorldObject obj : flowers) {
+
+            Vector3f diff = new Vector3f();
+
+            diff.sub(center, obj.getTruthPosition());
+
+            if (diff.length() <= radius) {
+                in.add(obj);
+            }
+        }
+
+        return in;
     }
 
 
