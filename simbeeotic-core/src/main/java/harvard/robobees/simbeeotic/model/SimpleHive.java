@@ -6,12 +6,10 @@ import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
 
@@ -46,14 +44,15 @@ public class SimpleHive extends GenericModel {
 
         startTransform.origin.set(start);
 
-        getMotionRecorder().initializeObject(getMotionId(), colShape);
+        getMotionRecorder().initializeObject(getObjectId(), colShape);
 
-        MotionState myMotionState = new RecordedMotionState(getMotionId(), getMotionRecorder(), startTransform);
+        int id = getObjectId();
+        MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
                                                                          colShape, new Vector3f(0, 0, 0));
 
         RigidBody body = new RigidBody(rbInfo);
-        body.setUserPointer(new EntityInfo());
+        body.setUserPointer(new EntityInfo(id));
 
         world.addRigidBody(body, COLLISION_HIVE, COLLISION_NONE);
 

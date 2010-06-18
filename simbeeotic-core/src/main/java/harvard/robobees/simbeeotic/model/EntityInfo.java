@@ -18,17 +18,33 @@ import java.util.HashMap;
  */
 public class EntityInfo {
 
+    private int objectId;
     private Map<String, Object> metadata = new HashMap<String, Object>();
     private Set<Contact> contactPoints = new HashSet<Contact>();
     private Set<Integer> collisionListeners = new HashSet<Integer>();
 
 
-    public EntityInfo() {
+    public EntityInfo(final int objectId) {
+
+        this.objectId = objectId;
+        this.metadata = new HashMap<String, Object>();
     }
 
 
-    public EntityInfo(final Map<String, Object> meta) {
-        metadata = meta;
+    public EntityInfo(final int objectId, final Map<String, Object> meta) {
+
+        this.objectId = objectId;
+        this.metadata = meta;
+    }
+
+
+    /**
+     * Gets the object identifier for the physical object being represented.
+     *
+     * @return The object identifier (not to be confused with the model ID).
+     */
+    public int getObjectId() {
+        return objectId;
     }
 
 

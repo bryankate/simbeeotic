@@ -103,7 +103,7 @@ public class WorldMap {
         Map<String, Object> groundMeta = new HashMap<String, Object>();
 
         RigidBody groundBody = new RigidBody(rbInfo);
-        groundBody.setUserPointer(new EntityInfo(groundMeta));
+        groundBody.setUserPointer(new EntityInfo(groundId, groundMeta));
 
         ground = new WorldObject(groundId, WorldObject.Type.TERRAIN, groundBody, groundMeta);
         dynamicsWorld.addRigidBody(groundBody, COLLISION_TERRAIN, COLLISION_BEE);
@@ -119,7 +119,9 @@ public class WorldMap {
                 CollisionShape colShape = null;
                 Transform startTransform = null;
                 Map<String, Object> meta = loadProperties(obstacle.getMeta());
-                EntityInfo info = new EntityInfo(meta);
+
+                int id = nextId.getAndIncrement();
+                EntityInfo info = new EntityInfo(id, meta);
 
                 // todo: use color info
 
@@ -187,8 +189,6 @@ public class WorldMap {
                                                            cone.getHeight() / 2));
                 }
 
-                int id = nextId.getAndIncrement();
-
                 recorder.initializeObject(id, colShape);
 
                 myMotionState = new RecordedMotionState(id, recorder, startTransform);
@@ -222,7 +222,9 @@ public class WorldMap {
                     float z = 0;
 
                     Map<String, Object> meta = loadProperties(patch.getMeta());
-                    EntityInfo platformInfo = new EntityInfo(meta);
+
+                    int id = nextId.getAndIncrement();
+                    EntityInfo platformInfo = new EntityInfo(id, meta);
 
                     // todo: make this less brittle
                     platformInfo.getMetadata().put("isFlower", true);
@@ -255,8 +257,6 @@ public class WorldMap {
 
                     shape.addChildShape(stemTransform, stemShape);
                     shape.addChildShape(platTransform, platShape);
-
-                    int id = nextId.getAndIncrement();
 
                     recorder.initializeObject(id, platShape);
 

@@ -6,7 +6,6 @@ import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
@@ -159,9 +158,10 @@ public abstract class SimpleBee extends GenericModel {
 
         startTransform.origin.set(start);
 
-        getMotionRecorder().initializeObject(getMotionId(), colShape);
+        getMotionRecorder().initializeObject(getObjectId(), colShape);
 
-        MotionState myMotionState = new RecordedMotionState(getMotionId(), getMotionRecorder(), startTransform);
+        int id = getObjectId();
+        MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState,
                                                                          colShape, localInertia);
 
@@ -173,7 +173,7 @@ public abstract class SimpleBee extends GenericModel {
         body = new RigidBody(rbInfo);
 
         // todo: put the bee's properties into the entity info?
-        body.setUserPointer(new EntityInfo());
+        body.setUserPointer(new EntityInfo(id));
 
         // bees do not collide with each other or the hive
         world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
