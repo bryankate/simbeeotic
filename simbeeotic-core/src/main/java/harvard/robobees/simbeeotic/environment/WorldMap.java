@@ -7,6 +7,7 @@ import com.bulletphysics.collision.shapes.ConeShape;
 import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
+import com.bulletphysics.collision.shapes.CompoundShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
@@ -38,6 +39,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -55,9 +57,9 @@ public class WorldMap {
     private DiscreteDynamicsWorld dynamicsWorld;
     private MotionRecorder recorder;
     private AtomicInteger nextId;
-    private RigidBody groundBody;
-    private Set<RigidBody> obstacleBodies = new HashSet<RigidBody>();
-    private Set<RigidBody> flowerBodies = new HashSet<RigidBody>();
+    private WorldObject ground;
+    private Set<WorldObject> obstacles = new HashSet<WorldObject>();
+    private Set<WorldObject> flowers = new HashSet<WorldObject>();
 
     // todo: parameterize this?
     private float stemHeight = 0.3f;   // m
@@ -98,9 +100,12 @@ public class WorldMap {
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
                                                                          groundShape, new Vector3f(0, 0, 0));
 
-        groundBody = new RigidBody(rbInfo);
-        groundBody.setUserPointer(new EntityInfo());
+        Map<String, Object> groundMeta = new HashMap<String, Object>();
 
+        RigidBody groundBody = new RigidBody(rbInfo);
+        groundBody.setUserPointer(new EntityInfo(groundMeta));
+
+        ground = new WorldObject(groundId, WorldObject.Type.TERRAIN, groundBody, groundMeta);
         dynamicsWorld.addRigidBody(groundBody, COLLISION_TERRAIN, COLLISION_BEE);
 
         // todo: setup uneven terrain
@@ -113,7 +118,8 @@ public class WorldMap {
                 RigidBody body = null;
                 CollisionShape colShape = null;
                 Transform startTransform = null;
-                EntityInfo info = new EntityInfo(loadProperties(obstacle.getMeta()));
+                Map<String, Object> meta = loadProperties(obstacle.getMeta());
+                EntityInfo info = new EntityInfo(meta);
 
                 // todo: use color info
 
@@ -193,7 +199,7 @@ public class WorldMap {
 
                 body.setUserPointer(info);
 
-                obstacleBodies.add(body);
+                obstacles.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
                 dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
             }
         }
@@ -215,7 +221,8 @@ public class WorldMap {
                     float y = patch.getCenter().getY() + (rand.nextFloat() * diam) - radius;
                     float z = 0;
 
-                    EntityInfo platformInfo = new EntityInfo(loadProperties(patch.getMeta()));
+                    Map<String, Object> meta = loadProperties(patch.getMeta());
+                    EntityInfo platformInfo = new EntityInfo(meta);
 
                     // todo: make this less brittle
                     platformInfo.getMetadata().put("isFlower", true);
@@ -228,21 +235,7 @@ public class WorldMap {
                     Transform stemTransform = new Transform();
                     stemTransform.setIdentity();
 
-                    stemTransform.origin.set(new Vector3f(x, y, z + stemHeight / 2));
-
-                    int stemId = nextId.getAndIncrement();
-
-                    recorder.initializeObject(stemId, stemShape);
-
-                    DefaultMotionState stemMotion = new RecordedMotionState(stemId, recorder, stemTransform);
-                    RigidBodyConstructionInfo stemRbInfo = new RigidBodyConstructionInfo(0, stemMotion,
-                                                           stemShape, new Vector3f(0, 0, 0));
-
-                    RigidBody stemBody = new RigidBody(stemRbInfo);
-
-                    stemBody.setUserPointer(new EntityInfo());
-
-                    dynamicsWorld.addRigidBody(stemBody, COLLISION_FLOWER, COLLISION_BEE);
+                    stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
 
                     // make platform
                     CollisionShape platShape = new CylinderShape(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
@@ -250,23 +243,33 @@ public class WorldMap {
                     Transform platTransform = new Transform();
                     platTransform.setIdentity();
 
-                    platTransform.origin.set(new Vector3f(x, y, z + stemHeight));
+                    platTransform.origin.set(new Vector3f(0, 0, stemHeight));
 
-                    int platId = nextId.getAndIncrement();
+                    // put the flower together
+                    Transform trans = new Transform();
 
-                    recorder.initializeObject(platId, platShape);
+                    trans.setIdentity();
+                    trans.origin.set(new Vector3f(x, y, z));
 
-                    DefaultMotionState platMotion = new RecordedMotionState(platId, recorder, platTransform);
-                    RigidBodyConstructionInfo platRbInfo = new RigidBodyConstructionInfo(0, platMotion,
-                                                                                         platShape, new Vector3f(0, 0, 0));
+                    CompoundShape shape = new CompoundShape();
 
-                    RigidBody platBody = new RigidBody(platRbInfo);
+                    shape.addChildShape(stemTransform, stemShape);
+                    shape.addChildShape(platTransform, platShape);
 
+                    int id = nextId.getAndIncrement();
 
-                    platBody.setUserPointer(platformInfo);
+                    recorder.initializeObject(id, platShape);
 
-                    flowerBodies.add(platBody);
-                    dynamicsWorld.addRigidBody(platBody, COLLISION_FLOWER, COLLISION_BEE);
+                    DefaultMotionState motion = new RecordedMotionState(id, recorder, trans);
+                    RigidBodyConstructionInfo flowerRbInfo = new RigidBodyConstructionInfo(0, motion,
+                                                                                           shape, new Vector3f(0, 0, 0));
+
+                    RigidBody flowerBody = new RigidBody(flowerRbInfo);
+
+                    flowerBody.setUserPointer(platformInfo);
+
+                    flowers.add(new WorldObject(id, WorldObject.Type.FLOWER, flowerBody, meta));
+                    dynamicsWorld.addRigidBody(flowerBody, COLLISION_FLOWER, COLLISION_BEE);
                 }
             }
         }
@@ -285,6 +288,36 @@ public class WorldMap {
      */
     public float getBounds() {
         return world.getRadius();
+    }
+
+
+    /**
+     * Get the object that defines the terrain (ground) in the world.
+     *
+     * @return The details of the terrain.
+     */
+    public WorldObject getTerrain() {
+        return ground;
+    }
+
+
+    /**
+     * Gets all obstacles present in the world.
+     *
+     * @return The set of all objects.
+     */
+    public Set<WorldObject> getObstacles() {
+        return Collections.unmodifiableSet(obstacles);
+    }
+
+
+    /**
+     * Gets all flowers present in the world.
+     *
+     * @return The set of all flowers.
+     */
+    public Set<WorldObject> getFlowers() {
+        return Collections.unmodifiableSet(flowers);
     }
 
 
