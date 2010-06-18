@@ -18,8 +18,9 @@ import java.util.HashSet;
 
 
 /**
- * A sensor that can detect if a flower is within range of a sensor that is pointing
- * away from the body into the environment.
+ * A sensor that can detect if there are flowers within range of a sensor that is pointing
+ * away from the body into the environment. The sensor's coverage volume is modeled as a
+ * cone, and some approximations are made when determining if flowers intersect this volume.
  *
  * @author bkate
  */
