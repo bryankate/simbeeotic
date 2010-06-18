@@ -226,9 +226,6 @@ public class WorldMap {
                     int id = nextId.getAndIncrement();
                     EntityInfo platformInfo = new EntityInfo(id, meta);
 
-                    // todo: make this less brittle
-                    platformInfo.getMetadata().put("isFlower", true);
-
                     // todo: use color info
 
                     // make stem
