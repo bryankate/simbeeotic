@@ -213,6 +213,9 @@ public class WorldMap {
                 float diam = radius * 2;
                 int numFlowers = (int)(Math.PI * (radius * radius) * patch.getDensity());
 
+                CollisionShape stemShape = new CylinderShape(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
+                CollisionShape platShape = new CylinderShape(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
+
                 // make individual flowers and place them in the patch randomly
                 for (int i = 0; i < numFlowers; i++) {
 
@@ -229,16 +232,12 @@ public class WorldMap {
                     // todo: use color info
 
                     // make stem
-                    CollisionShape stemShape = new CylinderShape(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
-
                     Transform stemTransform = new Transform();
                     stemTransform.setIdentity();
 
                     stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
 
                     // make platform
-                    CollisionShape platShape = new CylinderShape(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
-
                     Transform platTransform = new Transform();
                     platTransform.setIdentity();
 
