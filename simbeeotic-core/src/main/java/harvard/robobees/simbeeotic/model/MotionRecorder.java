@@ -12,6 +12,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * A class that coordinates the dissemination of motion information for the
@@ -26,6 +28,8 @@ public class MotionRecorder {
     private BlockingQueue<Update> queue = new LinkedBlockingQueue<Update>();
     private Thread processThread;
     private Lock lock = new ReentrantLock();
+
+    private static Logger logger = Logger.getLogger(MotionRecorder.class);
 
 
     public MotionRecorder() {
@@ -48,7 +52,13 @@ public class MotionRecorder {
 
                             // inform all listeners of the update
                             for (MotionListener listener : listeners) {
-                                listener.stateUpdate(update.id, update.pos, update.orient);
+
+                                try {
+                                    listener.stateUpdate(update.id, update.pos, update.orient);
+                                }
+                                catch(Exception e) {
+                                    logger.warn("Caught an exception when updating MotionListener.");
+                                }
                             }
                         }
                         finally {
@@ -84,7 +94,13 @@ public class MotionRecorder {
 
             // inform all listeners of the update
             for (MotionListener listener : listeners) {
-                listener.initializeObject(objectId, shape);
+
+                try {
+                    listener.initializeObject(objectId, shape);
+                }
+                catch(Exception e) {
+                    logger.warn("Caught an exception when updating MotionListener.");
+                }
             }
         }
         finally {

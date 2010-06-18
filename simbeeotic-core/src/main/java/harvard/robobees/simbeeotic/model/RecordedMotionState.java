@@ -16,37 +16,37 @@ import javax.vecmath.Quat4f;
  */
 public class RecordedMotionState extends DefaultMotionState {
 
-    private int modelId;
+    private int objectId;
     private MotionRecorder recorder;
 
 
-    public RecordedMotionState(int modelId, MotionRecorder recorder) {
+    public RecordedMotionState(int objectId, MotionRecorder recorder) {
 
         super();
 
-        this.modelId = modelId;
+        this.objectId = objectId;
         this.recorder = recorder;
 
         setWorldTransform(startWorldTrans);
     }
 
 
-    public RecordedMotionState(int modelId, MotionRecorder recorder, Transform startTrans) {
+    public RecordedMotionState(int objectId, MotionRecorder recorder, Transform startTrans) {
 
         super(startTrans);
 
-        this.modelId = modelId;
+        this.objectId = objectId;
         this.recorder = recorder;
 
         setWorldTransform(startWorldTrans);
     }
 
 
-    public RecordedMotionState(int modelId, MotionRecorder recorder, Transform startTrans, Transform centerOfMassOffset) {
+    public RecordedMotionState(int objectId, MotionRecorder recorder, Transform startTrans, Transform centerOfMassOffset) {
 
         super(startTrans, centerOfMassOffset);
 
-        this.modelId = modelId;
+        this.objectId = objectId;
         this.recorder = recorder;
 
         setWorldTransform(startWorldTrans);
@@ -63,6 +63,6 @@ public class RecordedMotionState extends DefaultMotionState {
 
         trans.getRotation(orient);
 
-        recorder.updateKinematicState(modelId, pos, orient);
+        recorder.updateKinematicState(objectId, pos, orient);
     }
 }
