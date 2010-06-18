@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.util.BoundingSphere;
-import harvard.robobees.simbeeotic.SimEngine;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -34,7 +33,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     private Vector3f linearAccel;
     private Vector3f angularAccel;
 
-    private int motionId;
+    private int objectId;
     private Vector3f startPos = new Vector3f();    // m, geom center relative to world origin
 
 
@@ -252,8 +251,8 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
      *
      * @return The unique identifier of this entity with respect to the motion recorder.
      */
-    protected final int getMotionId() {
-        return motionId;
+    protected final int getObjectId() {
+        return objectId;
     }
 
 
@@ -297,10 +296,10 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
 
     @Inject
-    public final void setMotionId(@Named("motion-id") final int id) {
+    public final void setObjectId(@Named("object-id") final int id) {
 
         if (!isInitialized()) {
-            this.motionId = id;
+            this.objectId = id;
         }
     }
 

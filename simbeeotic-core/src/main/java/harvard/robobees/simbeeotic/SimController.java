@@ -420,7 +420,7 @@ public class SimController {
                 protected void configure() {
 
                     bindConstant().annotatedWith(Names.named("model-id")).to(nextModelId.getAndIncrement());
-                    bindConstant().annotatedWith(Names.named("motion-id")).to(nextMotionId.getAndIncrement());
+                    bindConstant().annotatedWith(Names.named("object-id")).to(nextMotionId.getAndIncrement());
                     bindConstant().annotatedWith(Names.named("model-name")).to(config.getName());
 
                     bind(Vector3f.class).annotatedWith(Names.named("start-position")).toInstance(starting);
