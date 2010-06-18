@@ -17,7 +17,7 @@ import harvard.robobees.simbeeotic.util.BoundingSphere;
  *
  * @author bkate
  */
-public final class WorldObject {
+public class WorldObject {
 
     private int objectId;
     private Type type;
