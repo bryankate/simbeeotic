@@ -25,6 +25,13 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="structures" minOccurs="0" maxOccurs="1">
+            	<xs:complexType>
+            		<xs:sequence>
+            			<xs:element name="structure" type="world:Structure" minOccurs="1" maxOccurs="unbounded"/>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -52,9 +59,24 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="Point">
+    <xs:complexType name="Structure">
+    	<xs:sequence>
+    		<xs:element name="color" type="world:Color" minOccurs="0"
+    			maxOccurs="1">
+    		</xs:element>
+    		<xs:element name="meta" type="world:Meta" minOccurs="0"
+    			maxOccurs="1">
+    		</xs:element>
+    		<xs:choice minOccurs="1" maxOccurs="1">
+    			<xs:element name="wall" type="world:Wall"></xs:element>
+    			<xs:element name="surface" type="world:Surface"></xs:element>
+    		</xs:choice>
+    	</xs:sequence>
+    </xs:complexType><xs:complexType name="Point">
         <xs:attribute name="x" type="xs:float" use="required"/>
-        <xs:attribute name="y" type="xs:float" use="required"/>
+        <xs:attribute name="y" type="xs:float" use="required"/><xs:attribute
+        	name="z" type="xs:float" default="0" use="optional">
+</xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="Meta">
@@ -116,4 +138,69 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <xs:complexType name="Wall">
+    	<xs:complexContent>
+    		<xs:extension base="world:Shape">
+    			<xs:attribute name="height" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="length" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="width" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="rotation" type="xs:float"
+    				default="0" use="optional"><!--Specifies degrees in radians which the wall should be rotated. Occurs about lower corner (smallest x/y values) in xy-plane.-->
+    			</xs:attribute>
+    			<xs:attribute name="door" type="xs:boolean"
+    				default="false" use="optional"><!--Does the wall have a door?-->
+    			</xs:attribute>
+    			<xs:attribute name="doorwidth" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="doorheight" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="doorposition" type="xs:float" default="1"
+    				use="optional"><!--Offset from 'left' side of wall to 'left' side of door. NOT center of door.-->
+    			</xs:attribute>    			
+    		</xs:extension>
+
+    	</xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="Surface">
+    	<xs:complexContent>
+    		<xs:extension base="world:Shape">
+    			<xs:attribute name="height" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="length" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="width" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="rotation" type="xs:float" default="0"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="trap" type="xs:boolean" default="false"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="trapX" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="trapY" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="trapLength" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    			<xs:attribute name="trapWidth" type="xs:float" default="1"
+    				use="optional">
+    			</xs:attribute>
+    		</xs:extension>
+    		
+    	</xs:complexContent>
+    </xs:complexType>    
 </xs:schema>

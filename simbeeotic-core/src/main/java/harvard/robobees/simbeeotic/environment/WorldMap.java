@@ -15,6 +15,8 @@ import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.MotionState;
+import com.bulletphysics.linearmath.VectorUtil;
+
 import harvard.robobees.simbeeotic.configuration.world.Box;
 import harvard.robobees.simbeeotic.configuration.world.Cone;
 import harvard.robobees.simbeeotic.configuration.world.Cylinder;
@@ -22,6 +24,9 @@ import harvard.robobees.simbeeotic.configuration.world.Meta;
 import harvard.robobees.simbeeotic.configuration.world.Obstacle;
 import harvard.robobees.simbeeotic.configuration.world.Patch;
 import harvard.robobees.simbeeotic.configuration.world.Sphere;
+import harvard.robobees.simbeeotic.configuration.world.Structure;
+import harvard.robobees.simbeeotic.configuration.world.Surface;
+import harvard.robobees.simbeeotic.configuration.world.Wall;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 import harvard.robobees.simbeeotic.model.MotionRecorder;
@@ -60,6 +65,7 @@ public class WorldMap {
     private AtomicInteger nextId;
     private WorldObject ground;
     private Set<WorldObject> obstacles = new HashSet<WorldObject>();
+    private Set<WorldObject> structures = new HashSet<WorldObject>();
     private Set<WorldObject> flowers = new HashSet<WorldObject>();
 
     // todo: parameterize this?
@@ -208,6 +214,265 @@ public class WorldMap {
 
                 obstacles.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
                 dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
+            }
+        }
+
+        // setup structures
+        if (world.getStructures() != null) {
+            
+            for (Structure structure : world.getStructures().getStructure()) {
+    
+                CollisionShape colShape = null;
+                Transform startTransform = null;
+                CompoundShape compoundShape = null;
+                
+                Map<String, Object> meta = loadProperties(structure.getMeta());
+
+                int id = nextId.getAndIncrement();
+                EntityInfo info = new EntityInfo(id, meta);
+            	
+                Color color = new Color(140, 140, 140);
+
+                if (structure.getColor() != null) {
+                    color = new Color(structure.getColor().getRed(), structure.getColor().getGreen(), structure.getColor().getBlue());
+                }
+                
+                // walls
+                if (structure.getWall() != null)
+                {
+	                Wall wall = structure.getWall();
+                	
+	            	startTransform = new Transform();
+	            	startTransform.setIdentity();
+	            	
+	            	// extract properties of the wall from the xml
+	            	// these are the coordinates of the 'lower-left corner' of the compound shape
+//	            	float xPos = wall.getPosition().getX();
+//	            	float yPos = wall.getPosition().getY();
+//	            	float zPos = wall.getPosition().getZ();
+//	            	
+	            	Vector3f position = new Vector3f(wall.getPosition().getX(),
+	            									 wall.getPosition().getY(),
+	            									 wall.getPosition().getZ());
+	            	
+//	            	float length = wall.getLength();
+//	            	float width = wall.getWidth();
+//	            	float height = wall.getHeight();
+//	            	
+	            	Vector3f dimensions = new Vector3f(wall.getLength(),
+	            									   wall.getWidth(),
+	            									   wall.getHeight());
+	            	
+	            	float rotation = wall.getRotation();
+	            	
+	            	float doorWidth = wall.getDoorwidth();
+	            	float doorHeight = wall.getDoorheight();
+	            	float doorX = wall.getDoorposition();
+	            	
+	            	// divide by 2 to preserve dimensions specified in xml
+//	            	float xExtent = dimensions.x/2;
+//	            	float yExtent = dimensions.y/2;
+//	            	float zExtent = dimensions.z/2;
+//	            	
+	            	Vector3f extents = new Vector3f(dimensions.x/2,
+	            									dimensions.y/2,
+	            									dimensions.z/2);
+
+	            	// rotate about z axis by angle 'rotation' (radians)
+	            	Matrix3f rot = new Matrix3f();
+	            	Quat4f quat = new Quat4f();
+	                MatrixUtil.setEulerZYX(rot, 0, 0, rotation);
+	                MatrixUtil.getRotation(rot, quat);
+	                
+	                Vector3f center = new Vector3f(position.x + extents.x, 
+	                							   position.y + extents.y, 
+	                							   position.z + extents.z);
+	                
+	                Vector3f relPos = new Vector3f(-extents.x, -extents.y, 0);
+	                adjustCenterPostRot(center, relPos, rotation);
+	                
+	                startTransform = new Transform();
+	                startTransform.setIdentity();
+	            	
+	            	// wall without door
+	            	if(!wall.isDoor()) {
+	                	colShape = new BoxShape(extents);
+	                		                	
+	                	// add half of given height to ensure that wall actually rests upon the specified z
+	                	startTransform.origin.set(center);
+		                startTransform.setRotation(quat);
+		                
+		                recorder.initializeObject(id, colShape);
+		                recorder.updateMetadata(id, color);
+		                
+	                	RigidBody body = addBody(id, startTransform, colShape, info);
+	                	
+	                	structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+	            	}
+	            	
+	            	// wall with door
+	            	else {
+	            		// relative distances from center of compound shape to centers of each child shape
+	            		float relDistLeft = -extents.x + doorX/2;
+	            		float relDistRight = extents.x - (dimensions.x  - (doorX + doorWidth + dimensions.x)/2);
+	            		float relDistTop = -extents.x + doorX + doorWidth/2;
+	            		
+	            		compoundShape = new CompoundShape();
+	            		
+	            		// collision shape for the boxes on the left side
+	            		// |xxxx|DOOR|----| form the x part!
+	            		colShape = new BoxShape(new Vector3f(doorX/2, extents.y, extents.z));
+	           
+	            		// relative transform for left piece
+	            		startTransform.origin.set(new Vector3f(relDistLeft, 0, 0));	            			
+	            		compoundShape.addChildShape(startTransform, colShape);
+	           
+	            		// collision shape for the box on the right side
+	            		colShape = new BoxShape(new Vector3f((dimensions.x - doorX - doorWidth)/2, extents.y, extents.z));
+	            		
+	            		// relative transform for right piece
+	            		startTransform.origin.set(new Vector3f(relDistRight, 0, 0));
+	            		compoundShape.addChildShape(startTransform, colShape);
+	            		
+	            		// collision shape for box above door
+	            		colShape = new BoxShape(new Vector3f(doorWidth/2, extents.y, extents.z - doorHeight/2));
+	            		startTransform.origin.set(new Vector3f(relDistTop, 0, doorHeight/2));
+
+	            		compoundShape.addChildShape(startTransform, colShape);
+	            		
+	            		// I think I have to do this since I added child shapes...
+	            		compoundShape.recalculateLocalAabb();
+	            		
+	            		// reset the transform for the full compound shape
+	            		startTransform.setRotation(quat);	 
+	            		startTransform.origin.set(center);
+		                            		
+	            		// add the compound shape into the world!
+	            		recorder.initializeObject(id, colShape);
+			            recorder.updateMetadata(id, color);
+	            		
+			            RigidBody body = addBody(id, startTransform, compoundShape, info);
+	            		
+	            		structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+	            	}
+                }
+                
+                // surfaces
+                else if (structure.getSurface() != null)
+                {
+	                Surface surface = structure.getSurface();
+                	
+	            	startTransform = new Transform();
+	            	startTransform.setIdentity();
+	            	
+	            	// extract properties of the wall from the xml
+	            	Vector3f position = new Vector3f(surface.getPosition().getX(),
+	            			     					 surface.getPosition().getY(),
+	            									 surface.getPosition().getZ());
+	            	
+	            	Vector3f dimensions = new Vector3f(surface.getLength(),
+	            									   surface.getWidth(),
+	            									   surface.getHeight());
+	            	
+	            	float rotation = surface.getRotation();
+	            	
+	            	// divide by 2 to preserve dimensions specified in xml
+	            	Vector3f extents = new Vector3f(dimensions.x/2, dimensions.y/2, dimensions.z/2);
+	            	
+	            	// rotate about z axis by angle 'rotation' (radians)
+	            	Matrix3f rot = new Matrix3f();
+	            	Quat4f quat = new Quat4f();
+	                MatrixUtil.setEulerZYX(rot, 0, 0, rotation);
+	                MatrixUtil.getRotation(rot, quat);
+	
+	                startTransform = new Transform();
+	                startTransform.setIdentity();
+	                startTransform.setRotation(quat);
+	            	
+	                // set up center to correct for rotation (in order to position corner at specified position)
+	                Vector3f center = new Vector3f(position.x + extents.x, 
+	                		    				   position.y + extents.y, 
+	                							   position.z + extents.z);
+	                Vector3f relPos = new Vector3f(-extents.x, -extents.y, 0);
+	                
+	                if(rotation != 0)
+	                {
+	                	adjustCenterPostRot(center, relPos, rotation);
+	                }
+	                
+	                // surface without 'trap'
+	                if(!surface.isTrap())
+	                {
+	                	colShape = new BoxShape(extents);
+		                startTransform.origin.set(center);  
+		                
+		                recorder.initializeObject(id, colShape);
+			            recorder.updateMetadata(id, color);
+			            
+			            RigidBody body = addBody(id, startTransform, colShape, info);
+		                
+		                structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+	                }
+	                
+	                // surface with 'trap'
+	                else // IT'S A TRAP!
+	                {
+	                	float trapX = surface.getTrapX();
+	                	float trapY = surface.getTrapY();
+	                	float trapLength = surface.getTrapLength();
+	                	float trapWidth = surface.getTrapWidth();
+	                	
+	                	float relDistLeft = -extents.x + trapX/2;
+	                	float relDistRight = extents.x - (dimensions.x - (trapX + trapLength + dimensions.x)/2);
+	                	float relDistTopY = extents.y - (dimensions.y - (trapY + trapWidth + dimensions.y)/2);
+	                	float relDistBottomY = -extents.y + trapY/2;
+	                	float relDistTopX = -extents.x + trapX + trapWidth/2;
+	                	float relDistBottomX = relDistTopX;
+	                	
+	                	compoundShape = new CompoundShape();
+	                	
+	                	// left shape
+	                	colShape = new BoxShape(new Vector3f(trapX/2, extents.y, extents.z));
+	                	
+	                	startTransform.origin.set(new Vector3f(relDistLeft, 0, 0));
+	                	compoundShape.addChildShape(startTransform, colShape);
+	                	
+	                	// right shape
+	                	colShape = new BoxShape(new Vector3f((dimensions.x - trapX - trapLength)/2, 
+	                										 extents.y, 
+	                										 extents.z));
+	                	
+	                	startTransform.origin.set(new Vector3f(relDistRight, 0, 0));
+	                	compoundShape.addChildShape(startTransform, colShape);
+	                	
+	                	// top shape
+	                	colShape = new BoxShape(new Vector3f(trapLength/2, 
+	                										(dimensions.y - trapY - trapWidth)/2, 0));
+	                	
+	                	startTransform.origin.set(new Vector3f(relDistTopX, relDistTopY, extents.z));
+	                	compoundShape.addChildShape(startTransform, colShape);
+	                	
+	                	// bottom shape
+	                	colShape = new BoxShape(new Vector3f(trapLength/2, trapY/2, 0));
+	                	
+	                	startTransform.origin.set(new Vector3f(relDistBottomX, relDistBottomY, extents.z));
+	                	compoundShape.addChildShape(startTransform, colShape);
+	                	
+	            		compoundShape.recalculateLocalAabb();
+	            		
+	            		// setup the transform for the full compound shape
+	            		// correct for rotation to place the surface such that the lower left corner is in position
+	            		startTransform.origin.set(center);
+		                            		
+	            		// add the compound shape into the world!
+	            		recorder.initializeObject(id, colShape);
+			            recorder.updateMetadata(id, color);
+			            
+	            		RigidBody body = addBody(id, startTransform, compoundShape, info);
+	            		
+	            		structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+	                }	               
+                }
             }
         }
 
@@ -399,5 +664,52 @@ public class WorldMap {
         }
 
         return props;
+    }
+    
+    
+    /**
+     * Given all the necessary objects, adds a rigid body to the simulated 
+     * physical world. Encapsulates code that is used frequently.
+     */
+    
+    private RigidBody addBody(int id, Transform startTransform, CollisionShape colShape, EntityInfo info)
+    {
+    	MotionState myMotionState = new RecordedMotionState(id, recorder, startTransform);
+    	RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
+											   colShape, new Vector3f(0, 0, 0));
+
+		RigidBody body = new RigidBody(rbInfo);
+		body.setUserPointer(info);
+
+		dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
+		
+		return body;
+    }
+    
+    /**
+     * Given the coordinates of a rotational center, the relative coordinates of the
+     * point about which we actually want to rotate, and a rotation in radians, changes 
+     * the center coordinates to those which should be used post-rotation to simulate a rotation 
+     * about the relative point. Assumes axis of rotation is parallel to the z axis.
+     * 
+     * @param center
+     * @param relPos
+     * @param rot
+     */
+	private void adjustCenterPostRot(Vector3f center, Vector3f relPos, float rot)
+    {  	
+		Vector3f newRelPos = new Vector3f();
+		newRelPos.x = (float) (Math.cos(rot) * relPos.x - Math.sin(rot) * relPos.y);
+		newRelPos.y = (float) (Math.sin(rot) * relPos.x + Math.cos(rot) * relPos.y);
+		
+		newRelPos.x *= -1;
+		newRelPos.y *= -1;
+		
+		Vector3f shift = new Vector3f();
+		VectorUtil.add(shift, relPos, newRelPos);
+		
+    	center.x = center.x + shift.x;
+    	center.y = center.y + shift.y;
+    	
     }
 }
