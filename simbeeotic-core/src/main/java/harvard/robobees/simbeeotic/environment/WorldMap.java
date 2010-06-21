@@ -11,7 +11,6 @@ import com.bulletphysics.collision.shapes.CompoundShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.MotionState;
@@ -39,7 +38,6 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
@@ -123,7 +121,6 @@ public class WorldMap {
             
             for (Obstacle obstacle : world.getObstacles().getObstacle()) {
 
-                RigidBody body = null;
                 CollisionShape colShape = null;
                 Transform startTransform = null;
                 Map<String, Object> meta = loadProperties(obstacle.getMeta());
@@ -201,79 +198,54 @@ public class WorldMap {
                     color = new Color(obstacle.getColor().getRed(), obstacle.getColor().getGreen(), obstacle.getColor().getBlue());
                 }
 
-                recorder.initializeObject(id, colShape);
-                recorder.updateMetadata(id, color, obstacle.getLabel());
-
-                myMotionState = new RecordedMotionState(id, recorder, startTransform);
-                rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
-                                                       colShape, new Vector3f(0, 0, 0));
-
-                body = new RigidBody(rbInfo);
-
-                body.setUserPointer(info);
-
-                obstacles.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
-                dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
+                addBody(WorldObject.Type.OBSTACLE, startTransform, colShape, color, obstacle.getLabel(), info, obstacles);
             }
         }
 
         // setup structures
         if (world.getStructures() != null) {
-            
+
             for (Structure structure : world.getStructures().getStructure()) {
-    
-                CollisionShape colShape = null;
+
                 Transform startTransform = null;
-                CompoundShape compoundShape = null;
-                
+
                 Map<String, Object> meta = loadProperties(structure.getMeta());
 
                 int id = nextId.getAndIncrement();
                 EntityInfo info = new EntityInfo(id, meta);
-            	
-                Color color = new Color(140, 140, 140);
+
+                String label = null;
+                Color color = new Color(77, 77, 77);
 
                 if (structure.getColor() != null) {
                     color = new Color(structure.getColor().getRed(), structure.getColor().getGreen(), structure.getColor().getBlue());
                 }
-                
+
                 // walls
                 if (structure.getWall() != null)
                 {
 	                Wall wall = structure.getWall();
-                	
+
 	            	startTransform = new Transform();
 	            	startTransform.setIdentity();
-	            	
+
 	            	// extract properties of the wall from the xml
 	            	// these are the coordinates of the 'lower-left corner' of the compound shape
-//	            	float xPos = wall.getPosition().getX();
-//	            	float yPos = wall.getPosition().getY();
-//	            	float zPos = wall.getPosition().getZ();
-//	            	
 	            	Vector3f position = new Vector3f(wall.getPosition().getX(),
 	            									 wall.getPosition().getY(),
 	            									 wall.getPosition().getZ());
-	            	
-//	            	float length = wall.getLength();
-//	            	float width = wall.getWidth();
-//	            	float height = wall.getHeight();
-//	            	
+
 	            	Vector3f dimensions = new Vector3f(wall.getLength(),
 	            									   wall.getWidth(),
 	            									   wall.getHeight());
-	            	
+
 	            	float rotation = wall.getRotation();
-	            	
+
 	            	float doorWidth = wall.getDoorwidth();
 	            	float doorHeight = wall.getDoorheight();
 	            	float doorX = wall.getDoorposition();
-	            	
+
 	            	// divide by 2 to preserve dimensions specified in xml
-//	            	float xExtent = dimensions.x/2;
-//	            	float yExtent = dimensions.y/2;
-//	            	float zExtent = dimensions.z/2;
-//	            	
 	            	Vector3f extents = new Vector3f(dimensions.x/2,
 	            									dimensions.y/2,
 	            									dimensions.z/2);
@@ -283,137 +255,123 @@ public class WorldMap {
 	            	Quat4f quat = new Quat4f();
 	                MatrixUtil.setEulerZYX(rot, 0, 0, rotation);
 	                MatrixUtil.getRotation(rot, quat);
-	                
-	                Vector3f center = new Vector3f(position.x + extents.x, 
-	                							   position.y + extents.y, 
+
+	                Vector3f center = new Vector3f(position.x + extents.x,
+	                							   position.y + extents.y,
 	                							   position.z + extents.z);
-	                
+
 	                Vector3f relPos = new Vector3f(-extents.x, -extents.y, 0);
 	                adjustCenterPostRot(center, relPos, rotation);
-	                
+
 	                startTransform = new Transform();
 	                startTransform.setIdentity();
-	            	
+
 	            	// wall without door
 	            	if(!wall.isDoor()) {
-	                	colShape = new BoxShape(extents);
-	                		                	
+
+	                	CollisionShape colShape = new BoxShape(extents);
+
 	                	// add half of given height to ensure that wall actually rests upon the specified z
 	                	startTransform.origin.set(center);
 		                startTransform.setRotation(quat);
-		                
-		                recorder.initializeObject(id, colShape);
-		                recorder.updateMetadata(id, color);
-		                
-	                	RigidBody body = addBody(id, startTransform, colShape, info);
-	                	
-	                	structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, label, info, structures);
 	            	}
-	            	
+
 	            	// wall with door
 	            	else {
 	            		// relative distances from center of compound shape to centers of each child shape
 	            		float relDistLeft = -extents.x + doorX/2;
 	            		float relDistRight = extents.x - (dimensions.x  - (doorX + doorWidth + dimensions.x)/2);
 	            		float relDistTop = -extents.x + doorX + doorWidth/2;
-	            		
-	            		compoundShape = new CompoundShape();
-	            		
+
+	            		CompoundShape compoundShape = new CompoundShape();
+
 	            		// collision shape for the boxes on the left side
 	            		// |xxxx|DOOR|----| form the x part!
-	            		colShape = new BoxShape(new Vector3f(doorX/2, extents.y, extents.z));
-	           
+	            		CollisionShape colShape = new BoxShape(new Vector3f(doorX/2, extents.y, extents.z));
+
 	            		// relative transform for left piece
-	            		startTransform.origin.set(new Vector3f(relDistLeft, 0, 0));	            			
+	            		startTransform.origin.set(new Vector3f(relDistLeft, 0, 0));
 	            		compoundShape.addChildShape(startTransform, colShape);
-	           
+
 	            		// collision shape for the box on the right side
 	            		colShape = new BoxShape(new Vector3f((dimensions.x - doorX - doorWidth)/2, extents.y, extents.z));
-	            		
+
 	            		// relative transform for right piece
 	            		startTransform.origin.set(new Vector3f(relDistRight, 0, 0));
 	            		compoundShape.addChildShape(startTransform, colShape);
-	            		
+
 	            		// collision shape for box above door
 	            		colShape = new BoxShape(new Vector3f(doorWidth/2, extents.y, extents.z - doorHeight/2));
 	            		startTransform.origin.set(new Vector3f(relDistTop, 0, doorHeight/2));
 
 	            		compoundShape.addChildShape(startTransform, colShape);
-	            		
+
 	            		// I think I have to do this since I added child shapes...
 	            		compoundShape.recalculateLocalAabb();
-	            		
+
 	            		// reset the transform for the full compound shape
-	            		startTransform.setRotation(quat);	 
+	            		startTransform.setRotation(quat);
 	            		startTransform.origin.set(center);
-		                            		
+
 	            		// add the compound shape into the world!
-	            		recorder.initializeObject(id, colShape);
-			            recorder.updateMetadata(id, color);
-	            		
-			            RigidBody body = addBody(id, startTransform, compoundShape, info);
-	            		
-	            		structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, label, info, structures);
 	            	}
                 }
-                
+
                 // surfaces
                 else if (structure.getSurface() != null)
                 {
 	                Surface surface = structure.getSurface();
-                	
+
 	            	startTransform = new Transform();
 	            	startTransform.setIdentity();
-	            	
+
 	            	// extract properties of the wall from the xml
 	            	Vector3f position = new Vector3f(surface.getPosition().getX(),
 	            			     					 surface.getPosition().getY(),
 	            									 surface.getPosition().getZ());
-	            	
+
 	            	Vector3f dimensions = new Vector3f(surface.getLength(),
 	            									   surface.getWidth(),
 	            									   surface.getHeight());
-	            	
+
 	            	float rotation = surface.getRotation();
-	            	
+
 	            	// divide by 2 to preserve dimensions specified in xml
 	            	Vector3f extents = new Vector3f(dimensions.x/2, dimensions.y/2, dimensions.z/2);
-	            	
+
 	            	// rotate about z axis by angle 'rotation' (radians)
 	            	Matrix3f rot = new Matrix3f();
 	            	Quat4f quat = new Quat4f();
 	                MatrixUtil.setEulerZYX(rot, 0, 0, rotation);
 	                MatrixUtil.getRotation(rot, quat);
-	
+
 	                startTransform = new Transform();
 	                startTransform.setIdentity();
 	                startTransform.setRotation(quat);
-	            	
+
 	                // set up center to correct for rotation (in order to position corner at specified position)
-	                Vector3f center = new Vector3f(position.x + extents.x, 
-	                		    				   position.y + extents.y, 
+	                Vector3f center = new Vector3f(position.x + extents.x,
+	                		    				   position.y + extents.y,
 	                							   position.z + extents.z);
 	                Vector3f relPos = new Vector3f(-extents.x, -extents.y, 0);
-	                
+
 	                if(rotation != 0)
 	                {
 	                	adjustCenterPostRot(center, relPos, rotation);
 	                }
-	                
+
 	                // surface without 'trap'
 	                if(!surface.isTrap())
 	                {
-	                	colShape = new BoxShape(extents);
-		                startTransform.origin.set(center);  
-		                
-		                recorder.initializeObject(id, colShape);
-			            recorder.updateMetadata(id, color);
-			            
-			            RigidBody body = addBody(id, startTransform, colShape, info);
-		                
-		                structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
+	                	CollisionShape colShape = new BoxShape(extents);
+		                startTransform.origin.set(center);
+
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, label, info, structures);
 	                }
-	                
+
 	                // surface with 'trap'
 	                else // IT'S A TRAP!
 	                {
@@ -421,57 +379,52 @@ public class WorldMap {
 	                	float trapY = surface.getTrapY();
 	                	float trapLength = surface.getTrapLength();
 	                	float trapWidth = surface.getTrapWidth();
-	                	
+
 	                	float relDistLeft = -extents.x + trapX/2;
 	                	float relDistRight = extents.x - (dimensions.x - (trapX + trapLength + dimensions.x)/2);
 	                	float relDistTopY = extents.y - (dimensions.y - (trapY + trapWidth + dimensions.y)/2);
 	                	float relDistBottomY = -extents.y + trapY/2;
 	                	float relDistTopX = -extents.x + trapX + trapWidth/2;
 	                	float relDistBottomX = relDistTopX;
-	                	
-	                	compoundShape = new CompoundShape();
-	                	
+
+	                	CompoundShape compoundShape = new CompoundShape();
+
 	                	// left shape
-	                	colShape = new BoxShape(new Vector3f(trapX/2, extents.y, extents.z));
-	                	
+	                	CollisionShape colShape = new BoxShape(new Vector3f(trapX/2, extents.y, extents.z));
+
 	                	startTransform.origin.set(new Vector3f(relDistLeft, 0, 0));
 	                	compoundShape.addChildShape(startTransform, colShape);
-	                	
+
 	                	// right shape
-	                	colShape = new BoxShape(new Vector3f((dimensions.x - trapX - trapLength)/2, 
-	                										 extents.y, 
+	                	colShape = new BoxShape(new Vector3f((dimensions.x - trapX - trapLength)/2,
+	                										 extents.y,
 	                										 extents.z));
-	                	
+
 	                	startTransform.origin.set(new Vector3f(relDistRight, 0, 0));
 	                	compoundShape.addChildShape(startTransform, colShape);
-	                	
+
 	                	// top shape
-	                	colShape = new BoxShape(new Vector3f(trapLength/2, 
+	                	colShape = new BoxShape(new Vector3f(trapLength/2,
 	                										(dimensions.y - trapY - trapWidth)/2, 0));
-	                	
+
 	                	startTransform.origin.set(new Vector3f(relDistTopX, relDistTopY, extents.z));
 	                	compoundShape.addChildShape(startTransform, colShape);
-	                	
+
 	                	// bottom shape
 	                	colShape = new BoxShape(new Vector3f(trapLength/2, trapY/2, 0));
-	                	
+
 	                	startTransform.origin.set(new Vector3f(relDistBottomX, relDistBottomY, extents.z));
 	                	compoundShape.addChildShape(startTransform, colShape);
-	                	
+
 	            		compoundShape.recalculateLocalAabb();
-	            		
+
 	            		// setup the transform for the full compound shape
 	            		// correct for rotation to place the surface such that the lower left corner is in position
 	            		startTransform.origin.set(center);
-		                            		
+
 	            		// add the compound shape into the world!
-	            		recorder.initializeObject(id, colShape);
-			            recorder.updateMetadata(id, color);
-			            
-	            		RigidBody body = addBody(id, startTransform, compoundShape, info);
-	            		
-	            		structures.add(new WorldObject(id, WorldObject.Type.OBSTACLE, body, meta));
-	                }	               
+	            		addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, label, info, structures);
+	                }
                 }
             }
         }
@@ -496,22 +449,23 @@ public class WorldMap {
                     float y = patch.getCenter().getY() + (rand.nextFloat() * diam) - radius;
                     float z = 0;
 
-                    Map<String, Object> meta = loadProperties(patch.getMeta());
-
-                    int id = nextId.getAndIncrement();
-                    EntityInfo platformInfo = new EntityInfo(id, meta);
+//                    EntityInfo stemInfo = new EntityInfo(nextId.getAndIncrement(), new HashMap<String, Object>());
+//                    EntityInfo platformInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
+                    EntityInfo flowerInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
 
                     // make stem
                     Transform stemTransform = new Transform();
                     stemTransform.setIdentity();
 
                     stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
+//                    stemTransform.origin.set(new Vector3f(x, y, z + (stemHeight / 2)));
 
                     // make platform
                     Transform platTransform = new Transform();
                     platTransform.setIdentity();
 
                     platTransform.origin.set(new Vector3f(0, 0, stemHeight));
+//                    platTransform.origin.set(new Vector3f(x, y, z + stemHeight));
 
                     // put the flower together
                     Transform trans = new Transform();
@@ -530,19 +484,9 @@ public class WorldMap {
                         color = new Color(patch.getColor().getRed(), patch.getColor().getGreen(), patch.getColor().getBlue());
                     }
 
-                    recorder.initializeObject(id, platShape);
-                    recorder.updateMetadata(id, color);
-
-                    DefaultMotionState motion = new RecordedMotionState(id, recorder, trans);
-                    RigidBodyConstructionInfo flowerRbInfo = new RigidBodyConstructionInfo(0, motion,
-                                                                                           shape, new Vector3f(0, 0, 0));
-
-                    RigidBody flowerBody = new RigidBody(flowerRbInfo);
-
-                    flowerBody.setUserPointer(platformInfo);
-
-                    flowers.add(new WorldObject(id, WorldObject.Type.FLOWER, flowerBody, meta));
-                    dynamicsWorld.addRigidBody(flowerBody, COLLISION_FLOWER, COLLISION_BEE);
+                    addBody(WorldObject.Type.FLOWER, trans, shape, color, null, flowerInfo, flowers);
+//                    addBody(WorldObject.Type.FLOWER, stemTransform, stemShape, color, null, stemInfo, flowers);
+//                    addBody(WorldObject.Type.FLOWER, platTransform, platShape, color, null, platformInfo, flowers);
                 }
             }
         }
@@ -577,7 +521,7 @@ public class WorldMap {
     /**
      * Gets all obstacles present in the world.
      *
-     * @return The set of all objects.
+     * @return The set of all obstacles.
      */
     public Set<WorldObject> getObstacles() {
         return Collections.unmodifiableSet(obstacles);
@@ -591,13 +535,51 @@ public class WorldMap {
      * @param center The center of the query sphere.
      * @param radius The radius of the query sphere.
      *
-     * @return The set of all objects.
+     * @return The set of all obstacles within the given area.
      */
     public Set<WorldObject> getObstacles(Vector3f center, double radius) {
 
         Set<WorldObject> in = new HashSet<WorldObject>();
 
         for (WorldObject obj : obstacles) {
+
+            Vector3f diff = new Vector3f();
+
+            diff.sub(center, obj.getTruthPosition());
+
+            if (diff.length() <= radius) {
+                in.add(obj);
+            }
+        }
+
+        return in;
+    }
+
+
+    /**
+     * Gets all structures present in the world.
+     *
+     * @return The set of all structures.
+     */
+    public Set<WorldObject> getStructures() {
+        return Collections.unmodifiableSet(structures);
+    }
+
+
+    /**
+     * Gets the structures that are contained within the given sphere. The
+     * obstacle is determined to be in the sphere if its center is in the sphere.
+     *
+     * @param center The center of the query sphere.
+     * @param radius The radius of the query sphere.
+     *
+     * @return The set of all objects.
+     */
+    public Set<WorldObject> getStructures(Vector3f center, double radius) {
+
+        Set<WorldObject> in = new HashSet<WorldObject>();
+
+        for (WorldObject obj : structures) {
 
             Vector3f diff = new Vector3f();
 
@@ -629,7 +611,7 @@ public class WorldMap {
      * @param center The center of the query sphere.
      * @param radius The radius of the query sphere.
      *
-     * @return The set of all objects.
+     * @return The set of all flowers in the given area.
      */
     public Set<WorldObject> getFlowers(Vector3f center, double radius) {
 
@@ -667,24 +649,38 @@ public class WorldMap {
     }
     
     
-    /**
-     * Given all the necessary objects, adds a rigid body to the simulated 
-     * physical world. Encapsulates code that is used frequently.
-     */
-    
-    private RigidBody addBody(int id, Transform startTransform, CollisionShape colShape, EntityInfo info)
-    {
+    private void addBody(WorldObject.Type type, Transform startTransform, CollisionShape colShape,
+                         Color color, String label, EntityInfo info, Set<WorldObject> objSet) {
+
+        int id = info.getObjectId();
+
+        recorder.initializeObject(id, colShape);
+        recorder.updateMetadata(id, color, label);
+
     	MotionState myMotionState = new RecordedMotionState(id, recorder, startTransform);
     	RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
-											   colShape, new Vector3f(0, 0, 0));
+                                                                         colShape, new Vector3f(0, 0, 0));
 
 		RigidBody body = new RigidBody(rbInfo);
 		body.setUserPointer(info);
 
-		dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
-		
-		return body;
+        switch(type) {
+
+            case OBSTACLE:
+            case TERRAIN:
+            case STRUCTURE:
+
+                dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
+                break;
+
+            case FLOWER:
+                dynamicsWorld.addRigidBody(body, COLLISION_FLOWER, COLLISION_BEE);
+                break;
+        }
+
+        objSet.add(new WorldObject(id, type, body, info.getMetadata()));
     }
+
     
     /**
      * Given the coordinates of a rotational center, the relative coordinates of the
