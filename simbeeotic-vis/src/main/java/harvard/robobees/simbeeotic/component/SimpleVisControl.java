@@ -308,6 +308,12 @@ public class SimpleVisControl extends Frame implements VariationComponent, Motio
 		
 	}
 	
+	@Override
+	public void metaUpdate(int objectId, Color color, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private void drawSphere(int objectId, float radius) {
 
 		//appearance 

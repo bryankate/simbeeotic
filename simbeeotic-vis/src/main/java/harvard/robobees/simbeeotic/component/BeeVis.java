@@ -198,6 +198,12 @@ public class BeeVis extends Frame implements VariationComponent, MotionListener 
 		
 	}
 	
+	@Override
+	public void metaUpdate(int objectId, Color color, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private void createBee() {
 
 		//appearance 

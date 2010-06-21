@@ -304,6 +304,13 @@ public class SimpleVis extends Frame implements VariationComponent, MotionListen
 		
 	}
 	
+	
+	@Override
+	public void metaUpdate(int objectId, Color color, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	private void drawSphere(int objectId, Color3f color, float radius) {
 
 		//appearance 
