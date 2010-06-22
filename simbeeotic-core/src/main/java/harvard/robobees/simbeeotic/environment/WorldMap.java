@@ -449,8 +449,6 @@ public class WorldMap {
                     float y = patch.getCenter().getY() + (rand.nextFloat() * diam) - radius;
                     float z = 0;
 
-//                    EntityInfo stemInfo = new EntityInfo(nextId.getAndIncrement(), new HashMap<String, Object>());
-//                    EntityInfo platformInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
                     EntityInfo flowerInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
 
                     // make stem
@@ -458,14 +456,12 @@ public class WorldMap {
                     stemTransform.setIdentity();
 
                     stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
-//                    stemTransform.origin.set(new Vector3f(x, y, z + (stemHeight / 2)));
 
                     // make platform
                     Transform platTransform = new Transform();
                     platTransform.setIdentity();
 
                     platTransform.origin.set(new Vector3f(0, 0, stemHeight));
-//                    platTransform.origin.set(new Vector3f(x, y, z + stemHeight));
 
                     // put the flower together
                     Transform trans = new Transform();
@@ -485,8 +481,6 @@ public class WorldMap {
                     }
 
                     addBody(WorldObject.Type.FLOWER, trans, shape, color, null, flowerInfo, flowers);
-//                    addBody(WorldObject.Type.FLOWER, stemTransform, stemShape, color, null, stemInfo, flowers);
-//                    addBody(WorldObject.Type.FLOWER, platTransform, platShape, color, null, platformInfo, flowers);
                 }
             }
         }
