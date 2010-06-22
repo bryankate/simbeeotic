@@ -1,7 +1,6 @@
 package harvard.robobees.simbeeotic.model.comms;
 
 
-import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,8 @@ import javax.vecmath.Vector3f;
 import harvard.robobees.simbeeotic.util.MathUtil;
 import harvard.robobees.simbeeotic.model.AbstractModel;
 import harvard.robobees.simbeeotic.model.Model;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.ClockControl;
 
 
 /**
@@ -24,6 +25,10 @@ import harvard.robobees.simbeeotic.model.Model;
  * @author bkate
  */
 public abstract class AbstractPropagationModel extends AbstractModel implements PropagationModel {
+
+    @Inject
+    @GlobalScope
+    private ClockControl clockControl;
 
     private Map<Integer, Radio> radios = new HashMap<Integer, Radio>();
 
@@ -103,7 +108,7 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
 
             // todo: copy the data?
 
-            getSimEngine().scheduleEvent(entry.getKey(), getSimEngine().getCurrentTime(),
+            getSimEngine().scheduleEvent(entry.getKey(), clockControl.getCurrentTime(),
                                          new ReceptionEvent(data, rxPower, band));
         }
     }

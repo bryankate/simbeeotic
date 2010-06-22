@@ -17,16 +17,6 @@ import java.util.List;
 public interface SimEngine {
 
     /**
-     * Gets the time of the event that was last processed (or is currently being processed). This
-     * is essentially the global virtual time (GVT) of the simulation. No events can be scheduled
-     * prior to this time.
-     *
-     * @return The current simulation time.
-     */
-    public SimTime getCurrentTime();
-
-
-    /**
      * Schedules an event to be processed in the future.
      *
      * @param modelId The ID of the model that is the target for the event.

@@ -16,7 +16,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -61,6 +60,7 @@ import java.util.PriorityQueue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 
 
@@ -127,6 +127,7 @@ public class SimController {
 
             // make a new clock
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
+            final ClockControl clockControl = new ClockControl();
 
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
@@ -158,6 +159,9 @@ public class SimController {
 
                     // the global access to sim engine executive
                     bind(SimEngine.class).annotatedWith(GlobalScope.class).toInstance(simEngine);
+
+                    // clock controller for the sim engine
+                    bind(ClockControl.class).annotatedWith(GlobalScope.class).toInstance(clockControl);
 
                     // dynamics world
                     bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
@@ -273,6 +277,8 @@ public class SimController {
 
             while((nextSimTime != null) && (nextSimTime.getImpreciseTime() < endTime)) {
 
+                clockControl.waitUntilStarted();
+
                 if (logger.isDebugEnabled()) {
                     logger.debug("Executing event at time: " + nextSimTime);
                 }
@@ -305,6 +311,8 @@ public class SimController {
 
                     lastSimTime = simEngine.getNextEventTime();
                 }
+
+                clockControl.notifyListeners(nextSimTime);
 
                 nextSimTime = simEngine.processNextEvent();
             }

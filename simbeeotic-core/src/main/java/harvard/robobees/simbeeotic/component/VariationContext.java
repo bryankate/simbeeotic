@@ -3,6 +3,7 @@ package harvard.robobees.simbeeotic.component;
 
 import harvard.robobees.simbeeotic.model.MotionRecorder;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.ClockControl;
 
 import java.util.Map;
 
@@ -29,13 +30,17 @@ public class VariationContext {
     @GlobalScope
     private MotionRecorder recorder;
 
+    @Inject
+    @GlobalScope
+    private ClockControl clockControl;
+
 
     /**
      * Gets the scenario variation number.
      *
      * @return The number of the variation of this scenario.
      */
-    protected final int getVariationNum() {
+    public final int getVariationNum() {
         return variationNum;
     }
 
@@ -45,7 +50,7 @@ public class VariationContext {
      *
      * @return The variable map for this variation.
      */
-    protected final Map<String, String> getVariables() {
+    public final Map<String, String> getVariables() {
         return variables;
     }
 
@@ -55,7 +60,17 @@ public class VariationContext {
      *
      * @return The motion recorder.
      */
-    protected final MotionRecorder getRecorder() {
+    public final MotionRecorder getRecorder() {
         return recorder;
+    }
+
+
+    /**
+     * Gets the class that controls the state of the simulation clock.
+     *
+     * @return The clock control class for this variation.
+     */
+    public final ClockControl getClockControl() {
+        return clockControl;
     }
 }
