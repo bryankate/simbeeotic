@@ -279,10 +279,6 @@ public class SimController {
 
                 clockControl.waitUntilStarted();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Executing event at time: " + nextSimTime);
-                }
-
                 // update positions in physical world so that all
                 // objects are up to date with the event time
                 if (nextSimTime.getTime() > lastSimTime.getTime()) {
@@ -310,6 +306,10 @@ public class SimController {
                     }
 
                     lastSimTime = simEngine.getNextEventTime();
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Executing event at time: " + nextSimTime);
                 }
 
                 clockControl.notifyListeners(nextSimTime);
