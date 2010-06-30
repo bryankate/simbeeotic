@@ -157,6 +157,9 @@ public class SimController {
                     // the variation number of this scenario variation
                     bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
 
+                    // scenario variation variable map
+                    bind(Variation.class).annotatedWith(Names.named("variation")).toInstance(variation);
+
                     // the global access to sim engine executive
                     bind(SimEngine.class).annotatedWith(GlobalScope.class).toInstance(simEngine);
 
@@ -210,9 +213,6 @@ public class SimController {
 
                         @Override
                         protected void configure() {
-
-                            // scenario variation variable map
-                            bind(new TypeLiteral<Map<String, String>>(){}).annotatedWith(Names.named("variables")).toInstance(variation.getVariables());
 
                             Names.bindProperties(binder(), compProps);
 

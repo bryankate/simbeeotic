@@ -3,9 +3,9 @@ package harvard.robobees.simbeeotic.component;
 
 import harvard.robobees.simbeeotic.model.MotionRecorder;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import harvard.robobees.simbeeotic.configuration.Variation;
 import harvard.robobees.simbeeotic.ClockControl;
-
-import java.util.Map;
+import harvard.robobees.simbeeotic.SimEngine;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -23,8 +23,8 @@ public class VariationContext {
     private int variationNum;
 
     @Inject
-    @Named("variables")
-    private Map<String, String> variables;
+    @Named("variation")
+    private Variation variation;
 
     @Inject
     @GlobalScope
@@ -33,6 +33,10 @@ public class VariationContext {
     @Inject
     @GlobalScope
     private ClockControl clockControl;
+
+    @Inject
+    @GlobalScope
+    private SimEngine simEngine;
 
 
     /**
@@ -46,12 +50,12 @@ public class VariationContext {
 
 
     /**
-     * Gets the set of variables that are used in this scenario variation.
+     * Gets the scenario variation details.
      *
-     * @return The variable map for this variation.
+     * @return The details of this scenario variation.
      */
-    public final Map<String, String> getVariables() {
-        return variables;
+    public final Variation getVariation() {
+        return variation;
     }
 
 
@@ -72,5 +76,15 @@ public class VariationContext {
      */
     public final ClockControl getClockControl() {
         return clockControl;
+    }
+
+
+    /**
+     * Gets the simulation engine, which can be used to find models.
+     *
+     * @return The simulation engine in use for this variation.
+     */
+    public SimEngine getSimEngine() {
+        return simEngine;
     }
 }
