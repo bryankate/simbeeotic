@@ -103,6 +103,18 @@ public interface PhysicalEntity {
 
 
     /**
+     * Gets the identifier that is to distinguish this pyhsical object in the virtual world.
+     * This identifier should be used when sending updates to the {@link MotionRecorder}. This
+     * identifier should not be confused with the model ID, which is assigned to abstract
+     * entities in the simulation. A class that implements {@link Model} and {@link PhysicalEntity}
+     * will end up with both identifiers.
+     *
+     * @return The unique physical identifier of this entity.
+     */
+    public int getObjectId();
+    
+
+    /**
      * Gets the truth position of the entity, (x, y, z), in meters,
      * relative to the world origin.
      *

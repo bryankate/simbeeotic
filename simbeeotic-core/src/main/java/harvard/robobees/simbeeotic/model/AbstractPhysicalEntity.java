@@ -246,12 +246,8 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     }
 
 
-    /**
-     * Gets the identifier that is to be used when sending updates to the {@link MotionRecorder}.
-     *
-     * @return The unique identifier of this entity with respect to the motion recorder.
-     */
-    protected final int getObjectId() {
+    /** {@inheritDoc} */
+    public final int getObjectId() {
         return objectId;
     }
 
