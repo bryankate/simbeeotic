@@ -99,7 +99,7 @@ public class WorldMap {
         int groundId = nextId.getAndIncrement();
 
         recorder.initializeObject(groundId, groundShape);
-        recorder.updateMetadata(groundId, new Color(0, 100, 0));
+        recorder.updateMetadata(groundId, new Color(20, 70, 30));
 
         // the plane is a static object, so it does not need mass properties
         MotionState myMotionState = new RecordedMotionState(groundId, recorder, groundTransform);
@@ -474,7 +474,7 @@ public class WorldMap {
                     shape.addChildShape(stemTransform, stemShape);
                     shape.addChildShape(platTransform, platShape);
 
-                    Color color = new Color(205, 50, 120);
+                    Color color = new Color(250, 0, 50);
 
                     if (patch.getColor() != null) {
                         color = new Color(patch.getColor().getRed(), patch.getColor().getGreen(), patch.getColor().getBlue());

@@ -9,12 +9,16 @@
     </master-seed>
 
     <simulation>
-        <end-time>100.0</end-time>
+        <end-time>1000.0</end-time>
     </simulation>
 
     <models>
-        <model count="100">
+        <model count="50">
         	<java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
+        	<properties>
+        		<prop name="max-vel" value="5"/>
+        		<prop name="vel-sigma" value="1"/>
+        	</properties>
         	<!--<start-position x="0" y="0" z="0"/>-->
         </model>	
     </models>
