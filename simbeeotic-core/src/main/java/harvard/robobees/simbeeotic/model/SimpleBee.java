@@ -159,10 +159,11 @@ public abstract class SimpleBee extends GenericModel {
 
         startTransform.origin.set(start);
 
-        getMotionRecorder().initializeObject(getObjectId(), colShape);
-        getMotionRecorder().updateMetadata(getObjectId(), new Color(238, 201, 0), getName());
-
         int id = getObjectId();
+        
+        getMotionRecorder().initializeObject(id, colShape);
+        getMotionRecorder().updateMetadata(id, new Color(238, 201, 0), getName());
+
         MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState,
                                                                          colShape, localInertia);

@@ -127,6 +127,9 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	
 	private ViewingPlatform vp2 = new ViewingPlatform(1);
 	
+	private boolean camFrame = false;
+	private int currBee = 0;
+	
 	private BranchGroup createSceneGraph() {
         
         addLights(); // add lights
@@ -349,9 +352,15 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		// store position in map
 		//pos.put(objectId,position);
 		
-		if (objectId==287){
+		if (camFrame && currBee==objectId){
+			
+			TransformGroup currBeeGroup = objects.get(currBee);
+			
 			Transform3D t3d = new Transform3D();
-			t3d.setTranslation(position);
+			currBeeGroup.getTransform(t3d);
+			//t3d.rotY(-Math.PI/2);
+			//t3d.setTranslation(position);
+			
 			vp2.getViewPlatformTransform().setTransform(t3d);
 		}
 		
@@ -638,8 +647,10 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			//userPosn = new Point3d(-20,12,20);
 		}
 		else if (e.getSource() == beeList) {
-			
+
 			int id = (Integer)beeList.getSelectedItem();
+			
+			currBee = id;
 
 			System.out.println(""+id);
 
@@ -654,9 +665,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			f.setVisible(true);
 			c2.setFocusable(true);
 			
-			
 			TransformGroup tg = objects.get(id);
-			
 			
 			Transform3D t3d = new Transform3D();
 			tg.getTransform(t3d);
@@ -669,6 +678,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			
 			vp2.getViewPlatformTransform().setTransform(t3d);
 			
+			camFrame = true;
 			
 		}
 	}
@@ -747,6 +757,8 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
         //Create the combo box
         //Indices start at 0
         beeList = new JComboBox();
+        beeList.insertItemAt("Select a bee",0);
+        beeList.setSelectedIndex(0);
         beeList.addActionListener(this);
         p2.add(beeList);
         
@@ -762,9 +774,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		main.add(p3);
 		
 		mf.add("East", main);
-		
-		
-	      
+
 		
 	}
 	
@@ -790,9 +800,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	}
 	
 	private void getBeeID(){
-		
-		
-		
+
 		
 		//return beeId;
 	}

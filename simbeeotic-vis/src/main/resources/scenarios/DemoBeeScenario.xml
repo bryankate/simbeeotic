@@ -13,7 +13,7 @@
     </simulation>
 
     <models>
-        <model count="50">
+        <model count="100">
         	<java-class>harvard.robobees.simbeeotic.example.RandomWalkBee</java-class>
         	<properties>
         		<prop name="max-vel" value="5"/>
