@@ -73,6 +73,12 @@ public class SimpleHive extends GenericModel {
     }
 
 
+    @Override
+    public String toString() {
+        return "SimpleHive " + getModelId() + " " + getObjectId();
+    }
+
+
     @Inject(optional = true)
     public final void setSize(@Named("size") final float size) {
 

@@ -333,6 +333,12 @@ public abstract class SimpleBee extends GenericModel {
     }
 
 
+    @Override
+    public String toString() {
+        return "SimpleBee " + getModelId() + " " + getObjectId();
+    }
+
+
     @Inject(optional = true)
     public final void setLength(@Named("length") final float length) {
 
