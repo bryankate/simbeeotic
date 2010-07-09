@@ -32,9 +32,6 @@ public class RandomWalkBee extends SimpleBee {
     private float maxVelocity = 2.0f;                  // m/s
     private float velocitySigma = 0.2f;                // m/s
     private float headingSigma = (float)Math.PI / 16;  // rad
-    private boolean useTracer = true;
-
-    private TracePlotter2D tracer;
 
     private static Logger logger = Logger.getLogger(RandomWalkBee.class);
 
@@ -51,10 +48,6 @@ public class RandomWalkBee extends SimpleBee {
         compass = getSensor("compass", Compass.class);
         rangeBottom = getSensor("rangeBottom", RangeSensor.class);
         contactBottom = getSensor("contactBottom", ContactSensor.class);
-
-        if (useTracer) {
-            tracer = new TracePlotter2D("", "X", "Y");
-        }
     }
 
 
@@ -87,19 +80,11 @@ public class RandomWalkBee extends SimpleBee {
                     "time: " + time.getImpreciseTime() + "  " +
                     "pos: " + pos + "  " +
                     "vel: " + vel + " ");
-
-        if (useTracer) {
-            tracer.addData("random", pos.x, pos.y);
-        }
     }
 
 
     @Override
     public void finish() {
-
-        if (tracer != null) {
-            tracer.dispose();
-        }
     }
 
 
@@ -118,11 +103,5 @@ public class RandomWalkBee extends SimpleBee {
     @Inject(optional = true)
     public final void setHeadingSigma(@Named(value = "heading-sigma") final float sigma) {
         this.headingSigma = sigma;
-    }
-
-
-    @Inject(optional = true)
-    public final void setUseTracer(@Named(value = "use-tracer") final boolean useTracer) {
-        this.useTracer = useTracer;
     }
 }
