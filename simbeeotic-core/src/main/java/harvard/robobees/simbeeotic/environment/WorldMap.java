@@ -4,7 +4,9 @@ package harvard.robobees.simbeeotic.environment;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.ConeShape;
+import com.bulletphysics.collision.shapes.ConeShapeZ;
 import com.bulletphysics.collision.shapes.CylinderShape;
+import com.bulletphysics.collision.shapes.CylinderShapeZ;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.collision.shapes.CompoundShape;
@@ -153,9 +155,9 @@ public class WorldMap {
                 else if (obstacle.getCylinder() != null) {
 
                     Cylinder cylinder = obstacle.getCylinder();
-                    colShape = new CylinderShape(new Vector3f(cylinder.getWidth() / 2,
-                                                              cylinder.getWidth() / 2,
-                                                              cylinder.getHeight() / 2));
+                    colShape = new CylinderShapeZ(new Vector3f(cylinder.getWidth() / 2,
+                                                               cylinder.getWidth() / 2,
+                                                               cylinder.getHeight() / 2));
 
                     startTransform = new Transform();
                     startTransform.setIdentity();
@@ -181,7 +183,7 @@ public class WorldMap {
                 else {
 
                     Cone cone = obstacle.getCone();
-                    colShape = new ConeShape(cone.getRadius(), cone.getHeight());
+                    colShape = new ConeShapeZ(cone.getRadius(), cone.getHeight());
 
                     startTransform = new Transform();
                     startTransform.setIdentity();
@@ -438,8 +440,8 @@ public class WorldMap {
                 float diam = radius * 2;
                 int numFlowers = (int)(Math.PI * (radius * radius) * patch.getDensity());
 
-                CollisionShape stemShape = new CylinderShape(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
-                CollisionShape platShape = new CylinderShape(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
+                CollisionShape stemShape = new CylinderShapeZ(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
+                CollisionShape platShape = new CylinderShapeZ(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
 
                 // make individual flowers and place them in the patch randomly
                 for (int i = 0; i < numFlowers; i++) {
