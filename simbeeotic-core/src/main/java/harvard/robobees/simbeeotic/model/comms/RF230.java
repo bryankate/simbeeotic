@@ -61,7 +61,7 @@ public class RF230 extends ZigbeeRadio {
         // todo: check the frequency against the current channel
 
         // consult the PRR/SNR curve
-        double snr = rxPower - getPropagationModel().getNoiseFloor();
+        double snr = rxPower - getPropagationModel().getNoiseFloor(getOperatingBand());
 
         // todo: define a PRR/SNR function
         double prr = 1;

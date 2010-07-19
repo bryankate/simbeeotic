@@ -25,7 +25,9 @@ public interface PropagationModel {
      * Gets a noise floor measurement from the RF environment. The returned value
      * from this call may not be constant over time.
      *
+     * @param band The band in which the noise floor is to be measured.
+     *
      * @return The current noise floor (in dBm).
      */
-    public double getNoiseFloor();
+    public double getNoiseFloor(Band band);
 }

@@ -63,7 +63,7 @@ public class CC2420 extends ZigbeeRadio {
         // todo: check the frequency against the current channel
 
         // consult the PRR/SNR curve
-        double snr = rxPower - getPropagationModel().getNoiseFloor();
+        double snr = rxPower - getPropagationModel().getNoiseFloor(getOperatingBand());
         double prr = 0;
 
         // this function approximates the PRR/SNR curve from the paper

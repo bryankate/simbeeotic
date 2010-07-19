@@ -49,7 +49,7 @@ public class DefaultRadio extends AbstractRadio {
 
         super.receive(time, data, rxPower, frequency);
 
-        double snr = rxPower - getPropagationModel().getNoiseFloor();
+        double snr = rxPower - getPropagationModel().getNoiseFloor(getOperatingBand());
 
         // enough power to capture signal?
         if (snr >= snrMargin) {

@@ -119,9 +119,10 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
      *
      * This implementation generates a random value using a Gaussian
      * distribution around a noise floor mean using the given sigma.
+     * The value is independent of the given band.
      */
     @Override
-    public double getNoiseFloor() {
+    public double getNoiseFloor(Band band) {
         return noiseFloorMean + (getRandom().nextGaussian() * noiseFloorSigma);
     }
 
