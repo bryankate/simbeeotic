@@ -173,7 +173,7 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
             double el = Math.atan2(diff.x, diff.z);
 
             // adjust the power according to the tx antenna pattern
-            rxPower += tx.getAntennaPattern().getPower(az, el);
+            rxPower += tx.getAntennaPattern().getGain(az, el);
 
             // todo: use antenna pattern of receiver
         }

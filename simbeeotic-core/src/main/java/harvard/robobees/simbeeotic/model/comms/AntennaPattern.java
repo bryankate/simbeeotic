@@ -9,7 +9,7 @@ package harvard.robobees.simbeeotic.model.comms;
 public interface AntennaPattern {
 
     /**
-     * Gets the power radiated/received by the antenna at a specific azimuth
+     * Gets the gain of the antenna at a specific azimuth
      * and elevation. For reference, consider the antenna to be oriented
      * in a 3-dimensional space along the positive {@code Z}
      * axis. This means that the azimuth is an angle in the {@code XY}
@@ -21,7 +21,7 @@ public interface AntennaPattern {
      * @param azimuth The azimuth angle in the pattern (rad).
      * @param elevation The angle of elevation in the pattern (rad).
      *
-     * @return The power radiated/received by the antenna (in dBi).
+     * @return The gain of the antenna (in dBi).
      */
-    public double getPower(double azimuth, double elevation);
+    public double getGain(double azimuth, double elevation);
 }
