@@ -48,7 +48,17 @@ public interface Radio {
      *
      * @return The pointing vector of the antenna, in the world reference frame.
      */
-    public Vector3f getPointing();
+    public Vector3f getAntennaPointing();
+
+
+    /**
+     * Gets the vector that is normal to the antenna pointing vector. This
+     * vector is essentially the {@code X axis} of the antenna frame translated
+     * into the world frame.
+     *
+     * @return The antenna normal, in the world reference frame.
+     */
+    public Vector3f getAntennaNormal();
 
 
     /**

@@ -1,6 +1,7 @@
 package harvard.robobees.simbeeotic.model.comms;
 
 
+import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -10,7 +11,9 @@ import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.EventHandler;
 import harvard.robobees.simbeeotic.model.TimerCallback;
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.util.MathUtil;
 
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +35,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     // parameters
     private Vector3f offset = new Vector3f();
     private Vector3f pointing = new Vector3f(0, 0, 1);
+    private Vector3f pointingNormal = new Vector3f(1, 0, 0);
+    private double rotation = 0;
     private AntennaPattern pattern;
 
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
@@ -41,6 +46,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     public void initialize() {
 
         super.initialize();
+
+        calculatePointingNormal();
 
         // there may be no propagation model, in which case comms won't work but we shouldn't throw an exception
         // until someone tries to use them. it is possible that someone attached a radio for no reason...
@@ -174,19 +181,15 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
 
     /** {@inheritDoc} */
     @Override
-    public final Vector3f getPointing() {
+    public final Vector3f getAntennaPointing() {
+        return transformToWorldFrame(pointing);
+    }
 
-        // transform the offset (which is in the body frame)
-        // to account for the body's current orientation
-        Vector3f point = new Vector3f(pointing);
-        Transform trans = new Transform();
 
-        trans.setIdentity();
-        trans.setRotation(host.getTruthOrientation());
-
-        trans.transform(point);
-
-        return point;
+    /** {@inheritDoc} */
+    @Override
+    public Vector3f getAntennaNormal() {
+        return transformToWorldFrame(pointingNormal);
     }
 
 
@@ -230,6 +233,67 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
      */
     public final void removeMessageListener(MessageListener listener) {
         listeners.remove(listener);
+    }
+
+
+    /**
+     * Transforms a vector in the body frame of the host to the
+     * world reference frame accodring to the body's current orientation.
+     *
+     * @param vec The vector to be transformed (in the body frame).
+     *
+     * @return The transformed vector (in the world frame).
+     */
+    private Vector3f transformToWorldFrame(Vector3f vec) {
+
+        Vector3f temp = new Vector3f(vec);
+        Transform trans = new Transform();
+
+        trans.setIdentity();
+        trans.setRotation(host.getTruthOrientation());
+
+        trans.transform(temp);
+
+        return temp;
+    }
+
+
+    /**
+     * Calculates the normal to the antenna pointing vector in the body frame.
+     */
+    private void calculatePointingNormal() {
+
+        Vector3f bodyY = new Vector3f(0, 1, 0);
+
+        // the rotation needed to transform the body Z axis to the pointing vector
+        Quat4f bodyRot = MathUtil.getRotation(new Vector3f(0, 0, 1), pointing);
+
+        // the body Y axis, rotated according to the pointing vector
+        Transform bodyTrans = new Transform();
+
+        bodyTrans.setIdentity();
+
+        if (!bodyRot.equals(new Quat4f())) {
+            bodyTrans.setRotation(bodyRot);
+        }
+
+        bodyTrans.transform(bodyY);
+
+        // the transform needed to rotate the antenna about its major axis
+        Quat4f antRot = new Quat4f();
+        MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM(0, 0, (float)rotation), antRot);
+        Transform rotTrans = new Transform();
+
+        rotTrans.setIdentity();
+
+        if (!antRot.equals(new Quat4f())) {
+            rotTrans.setRotation(antRot);
+        }
+
+        rotTrans.transform(bodyY);
+
+        // the pointing normal in the body frame
+        pointingNormal.cross(bodyY, pointing);
     }
 
 
@@ -301,6 +365,18 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     @Inject(optional = true)
     public final void setPointing(@Named("pointing") final Vector3f pointing) {
         this.pointing = pointing;
+    }
+
+
+    /**
+     * Sets the rotation angle of the antenna. This is the angle that
+     * the antenna is rotated (counter clockwise) about its major axis.
+     *
+     * @param rotation The rotation angle (radians).
+     */
+    @Inject(optional = true)
+    public final void setRotation(@Named("rotation") final double rotation) {
+        this.rotation = rotation;
     }
 
 

@@ -24,6 +24,7 @@ public class TestRadio implements Radio {
 
     private Vector3f position;
     private Vector3f pointing = new Vector3f(0, 0, 1);
+    private Vector3f pointingNormal = new Vector3f(1, 0, 0);
     private AntennaPattern pattern = new IsotropicAntenna();
     private PropagationModel propModel;
 
@@ -40,8 +41,14 @@ public class TestRadio implements Radio {
 
 
     @Override
-    public Vector3f getPointing() {
+    public Vector3f getAntennaPointing() {
         return pointing;
+    }
+
+
+    @Override
+    public Vector3f getAntennaNormal() {
+        return pointingNormal;
     }
 
 

@@ -140,45 +140,77 @@ public abstract class AbstractPropagationModel extends AbstractModel implements 
      */
     protected double getReceivedPower(Radio tx, Radio rx, double txPower) {
 
-        Vector3f txPos = tx.getPosition();
-        Vector3f txPointing = tx.getPointing();
         Vector3f diff = new Vector3f();
         double rxPower = txPower;
 
-        diff.sub(rx.getPosition(), txPos);
+        // vector between two radios
+        diff.sub(rx.getPosition(), tx.getPosition());
 
         float distSq = diff.lengthSquared();
 
         if (distSq > 0) {
 
-            // find the rotation needed to get from the pointing vector
+            // start with gain from transmitter
+
+            // find the rotations needed to get from the pointing vector
             // in the world frame to the antenna frame. the calculated
             // azimuth and elevation must be in the antenna frame before
             // querying the antenna pattern
-            Quat4f rot = MathUtil.getRotation(txPointing, new Vector3f(0, 0, 1));
-            Transform trans = new Transform();
+            Vector3f diffAz = transformAndNormalize(tx.getAntennaNormal(), new Vector3f(1, 0, 0), diff);
+            Vector3f diffEl = transformAndNormalize(tx.getAntennaPointing(), new Vector3f(0, 0, 1), diff);
 
-            trans.setIdentity();
-
-            if (!rot.equals(new Quat4f())) {
-                trans.setRotation(rot);
-            }
-
-            // transform the vector between rx and tx using this rotation to make it
-            // relative to the antenna frame
-            trans.transform(diff);
-            diff.normalize();
-
-            double az = Math.atan2(diff.y, diff.x);
-            double el = Math.atan2(diff.x, diff.z);
+            double az = Math.atan2(diffAz.y, diffAz.x);
+            double el = Math.atan2(diffEl.x, diffEl.z);
 
             // adjust the power according to the tx antenna pattern
             rxPower += tx.getAntennaPattern().getGain(az, el);
 
-            // todo: use antenna pattern of receiver
+            // invert the difference vector and get the receiver's gain
+            diff.negate();
+
+            diffAz = transformAndNormalize(rx.getAntennaNormal(), new Vector3f(1, 0, 0), diff);
+            diffEl = transformAndNormalize(rx.getAntennaPointing(), new Vector3f(0, 0, 1), diff);
+
+            az = Math.atan2(diffAz.y, diffAz.x);
+            el = Math.atan2(diffEl.x, diffEl.z);
+
+            // adjust the power according to the tx antenna pattern
+            rxPower += rx.getAntennaPattern().getGain(az, el);
         }
 
         return rxPower;
+    }
+
+
+    /**
+     * Figures out the rotation needed to get from one vector to another, then applies
+     * that rotation to a third vector and normalizes the result.
+     *
+     * @param from The vector from which we are finding the transform.
+     * @param to The vector to which we are finding the transform.
+     * @param vec The vector to be transformed.
+     *
+     * @return A new vector that represents the rotated and normalized input {@code vec}.
+     */
+    protected Vector3f transformAndNormalize(Vector3f from, Vector3f to, Vector3f vec) {
+
+        // find the transform between the first two vectors
+        Quat4f rot = MathUtil.getRotation(from, to);
+        Transform trans = new Transform();
+
+        trans.setIdentity();
+
+        if (!rot.equals(new Quat4f())) {
+            trans.setRotation(rot);
+        }
+
+        // apply the transform to the third vector and normalize
+        Vector3f temp = new Vector3f(vec);
+
+        trans.transform(temp);
+        temp.normalize();
+
+        return temp;
     }
 
 
