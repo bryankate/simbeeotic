@@ -24,7 +24,7 @@ public class IOUtil {
      *
      * @return The list of objects, represented as a stream of bytes.
      */
-    private static byte[] toBytes(Object ... objects) {
+    public static byte[] toBytes(Object ... objects) {
 
         ByteArrayOutputStream arrayStream = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(arrayStream);
