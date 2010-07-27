@@ -8,12 +8,24 @@ import harvard.robobees.simbeeotic.model.SimpleBee;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,15 +42,21 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.vecmath.Color3f;
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3d;
@@ -53,6 +71,8 @@ import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
+import com.sun.j3d.utils.image.TextureLoader;
+import com.sun.j3d.utils.behaviors.keyboard.KeyNavigatorBehavior;
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
@@ -75,9 +95,6 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 
 	@Inject
 	private VariationContext context;
-	//ClockControl clock;
-	
-	private static Point3d userPosn = new Point3d(-20,12,20);
 	
 	private SimpleUniverse u = null;
 	private Canvas3D c = null;
@@ -86,17 +103,16 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	
 	private BranchGroup objRoot = new BranchGroup(); 
 	private BoundingSphere bounds = new BoundingSphere(new Point3d(0,0,0), 100.0);
-	//private TransformGroup tg;
 	private TransformGroup objTrans;
 	Transform3D objTrans3D = new Transform3D();
-	//private Transform3D t3d;
 	
 	private Map<Integer, TransformGroup> objects = new HashMap<Integer, TransformGroup>();
 	private Map<Integer, Color3f> colors = new HashMap<Integer, Color3f>();
 	private Map<Integer, Appearance> app = new HashMap<Integer, Appearance>();
-	//private Map<Integer, Vector3f> pos = new HashMap<Integer, Vector3f>();
+	private Map<Integer, Text2D> labeltgs = new HashMap<Integer, Text2D>();
+	private Map<Integer, Boolean> needRot = new HashMap<Integer, Boolean>();
 	
-	private final static int FLOOR = 400; 
+	
 	private final static Color3f black = new Color3f(0f, 0f, 0f);
 	private final static Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
 	private final static Color3f yellow = new Color3f(1.0f, 0.7f, 0.1f);
@@ -107,23 +123,30 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	//private final static Color3f red = new Color3f(1.0f, 0.0f, 0.0f);
 	private final static Color3f pink = new Color3f(1.0f, 0.0f, 0.0f);
 	private final static Color3f gray = new Color3f(0.2f, 0.3f, 0.3f);
-	
-	private final static int HEIGHT = 700;
-	private final static int WIDTH = 1000;
+	private final static int FLOOR = 400; 
+	private final static Point3d userPosn = new Point3d(-20,12,20);
+	private final static int HEIGHT = 1000;
+	private final static int WIDTH = 1400;
 	private final static int CLIPDIST = 30;
 	
 	// GUI elements
 	private JButton pause = new JButton("pause");
-	private JButton start = new JButton("start");
 	private JButton reset = new JButton("reset");
-	private JButton labels = new JButton("labels");
-	//private Button camera = new Button("camera view");
+	private JButton save = new JButton("save");
+	private JButton load = new JButton("load");
+	private JButton labels = new JButton("on/off");
 	private JTextField simTime = new JTextField(5);
 	private JComboBox beeList;
+	private JComboBox viewList;
 	private boolean firstTime = true;
-	JFrame mf = new JFrame("Simbeeotic Visualization");
-	JPanel p0 = new JPanel();
-	JPanel main = new JPanel();
+	private JFrame mf = new JFrame("Simbeeotic Visualization");
+	private JPanel p0 = new JPanel();
+	private JPanel main = new JPanel();
+	private JFileChooser fc = new JFileChooser();
+	private JTextArea log = new JTextArea(5,20);
+
+	private int clockCount = 0;
+	private int labelCount = 0;
 	
 	private ViewingPlatform vp2 = new ViewingPlatform(1);
 	
@@ -135,9 +158,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
         addLights(); // add lights
         addBackground(); // add sky
         labelAxes();
-        
-        //objRoot.addChild(new Sphere(100));
-        
+      
         objTrans3D = new Transform3D();
         objTrans3D.rotX(-Math.PI/2);
         objTrans = new TransformGroup(objTrans3D);
@@ -174,7 +195,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	    OrbitBehavior orbit = 
 	        new OrbitBehavior(c, OrbitBehavior.REVERSE_ALL);
 	    orbit.setSchedulingBounds(bounds);
-
+	    
 	    ViewingPlatform vp = u.getViewingPlatform();
 	    vp.setViewPlatformBehavior(orbit);     
 	  } 
@@ -216,7 +237,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 
 	  private TransformGroup makeText(Vector3d vertex, String text)
 	  {
-	    Text2D message = new Text2D(text, black, "SansSerif", 76, Font.BOLD );
+	    Text2D message = new Text2D(text, white, "SansSerif", 76, Font.BOLD );
 
 	    TransformGroup tg = new TransformGroup();
 	    Transform3D t3d = new Transform3D();
@@ -249,7 +270,6 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
      
         u.addBranchGraph(objRoot);
         
-        //u.getLocale().addBranchGraph(createViewer(c2, new Vector3f(10,10,-10)));
 	}
 
 	@Override
@@ -261,17 +281,13 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 
 	@Override
 	public void initializeObject(int objectId, CollisionShape shape) {
-//		System.out.println("Object id: " + objectId);
-//		System.out.println("CollisionShape: " + shape.getName());
-		
+
 		// sphere shape
 		if (shape instanceof SphereShape) {
-//			System.out.println("Now drawing sphere!");
 			
 			SphereShape s = (SphereShape) shape;
 			float radius = s.getRadius();
-			//System.out.println("Radius: " + radius);
-			
+
 			drawSphere(objectId, yellow, radius);
 			u.addBranchGraph(objRoot);
 			
@@ -280,13 +296,11 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		else if (shape instanceof CylinderShape) {
 			CylinderShape c = (CylinderShape) shape;
 			float r = c.getRadius();
-			//System.out.println("Radius: " + r);
-			
+
 			Vector3f halfExtents = new Vector3f();
 			c.getHalfExtentsWithMargin(halfExtents);
-//			System.out.println("Half extents: " + halfExtents);
 			
-			drawCylinder(objectId, pink, r, Math.abs(halfExtents.z));
+			drawCylinder(objectId, pink, r, 2*Math.abs(halfExtents.z));
 			
 			u.addBranchGraph(objRoot);
 		}	
@@ -295,7 +309,6 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			BoxShape b = (BoxShape) shape;
 			Vector3f halfExtents = new Vector3f();
 			b.getHalfExtentsWithMargin(halfExtents);
-			//System.out.println("Half extents: " + halfExtents);
 			
 			drawBox(objectId, gray, Math.abs(halfExtents.x), Math.abs(halfExtents.y), Math.abs(halfExtents.z));
 			u.addBranchGraph(objRoot);
@@ -312,14 +325,9 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		// plane shape
 		else if (shape instanceof StaticPlaneShape){
 			StaticPlaneShape s = (StaticPlaneShape) shape;
-			float l = s.getPlaneConstant();
-			
-//			System.out.println("Plane constant: " + l);
 			
 			Vector3f normal = new Vector3f();
 			s.getPlaneNormal(normal);
-			
-//			System.out.println("Normal vector: " + normal);
 			
 			drawBox(objectId,green,6000,6000,0);
 			
@@ -343,8 +351,12 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		TransformGroup group = objects.get(objectId);
 		
 		Transform3D t3D = new Transform3D();
+		group.getTransform(t3D);
+		
+		
 		t3D.setRotation(orientation);
-
+		if (needRot.get(objectId)==true) 
+			t3D.rotX(Math.PI/2);
 		t3D.setTranslation(position);
 		
 		group.setTransform(t3D);
@@ -358,27 +370,45 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			
 			Transform3D t3d = new Transform3D();
 			currBeeGroup.getTransform(t3d);
-			//t3d.rotY(-Math.PI/2);
+//			t3d.rotX(-Math.PI/2);
+//			t3d.rotZ(-Math.PI/2);
 			//t3d.setTranslation(position);
+			
+			Vector3f pos = new Vector3f();
+			t3d.get(pos);
+			
+			Point3d camPos = new Point3d(pos);
+//			
+//			// args are: viewer posn, where looking, up direction
+			t3d.lookAt(camPos, new Point3d(camPos.x,camPos.y,-10), new Vector3d(0,1,0));
+		    t3d.invert();
 			
 			vp2.getViewPlatformTransform().setTransform(t3d);
 		}
-		
-		makeLabel(objectId, "aa"+objectId, new Vector3f(position.x+0.1f,position.y+0.1f,position.z+0.1f));
+
 	}
 	
 	@Override
 	public void metaUpdate(int objectId, Color color, String label) {
 		// updates color
+		if (color!=null) {
+			Color3f col = new Color3f();
+			col.set(color);
 		
-		Color3f col = new Color3f();
-		col.set(color);
-		
-		Appearance appear = app.get(objectId);
-		appear.setMaterial(new Material(col,black,col,specular,25.0f));
-		
+			Appearance appear = app.get(objectId);
+			appear.setMaterial(new Material(col,black,col,specular,25.0f));
+		}
+		 
 		// updates label
-		//makeLabel(objectId,label);
+		if (label!=null){
+			Text2D message = labeltgs.get(objectId);
+			
+			if (message==null) {
+				message = new Text2D(label, black, "SansSerif", 70, Font.BOLD);
+				labeltgs.put(objectId,message);
+			}
+			message = new Text2D(label, black, "SansSerif", 70, Font.BOLD);
+		}
 	}
 	
 	@Override
@@ -399,11 +429,18 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		}
 	}
 	
-	private void makeLabel(int objectId, String objectLabel, Vector3f position) {
-		//Vector3f position = pos.get(objectId);
-		Vector3d vertex = new Vector3d(position);
+	private TransformGroup makeLabel(Text2D message, Vector3f pos) {
 		
-		makeText(vertex,objectLabel);
+		TransformGroup labeltg = new TransformGroup();
+	    Transform3D labelt3d = new Transform3D();
+	    labelt3d.setTranslation(new Vector3f(pos.x+0.0f,pos.y+0.1f,pos.z+0.0f));
+	    Quat4f quat = new Quat4f();
+	    labelt3d.setRotation(quat);
+	    labeltg.setTransform(labelt3d);
+	    labeltg.addChild(message);
+	    
+	    return labeltg;
+		
 	}
 
 	private void drawSphere(int objectId, Color3f color, float radius) {
@@ -423,14 +460,36 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		
 	    TransformGroup tg = new TransformGroup(t3d);
 	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+	   
 	    tg.addChild(new Sphere(radius, appear)); 
+	    
+	    Vector3f pos = new Vector3f();
+	    t3d.get(pos);
+	    
+	    
+	    Text2D message = labeltgs.get(objectId);
+	    if (message==null) 
+	    	message = new Text2D(""+objectId, black, "SansSerif", 70, Font.BOLD );
+	    Transform3D labelt3d = new Transform3D();
+	    labelt3d.rotX(Math.PI/2);
+	    
+	    
+	    TransformGroup labeltg = new TransformGroup(labelt3d);
+	    labeltg.addChild(makeLabel(message,pos));
+	    
+	    tg.addChild(labeltg);
+	    
 	    objTrans.addChild(tg);
 	    objRoot.addChild(objTrans);
+	    
+//	    objRoot.addChild(tg);
 		
 	    // place TransformGroup into hash
 	    objects.put(objectId,tg);
 	    colors.put(objectId,color);
-	    app.put(objectId, appear);
+	    app.put(objectId,appear);
+	    labeltgs.put(objectId,message);
+	    needRot.put(objectId,false);
 	}
 	
 	private void drawCylinder(int objectId, Color3f color, float radius, float height) {
@@ -446,19 +505,41 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		// position 
 		objRoot = new BranchGroup();
 		objTrans = new TransformGroup(objTrans3D);
+		
 		Transform3D t3d = new Transform3D();
-
+//		t3d.rotX(-Math.PI/2);
+//		t3d.rotZ(Math.PI/2);
 	    TransformGroup tg = new TransformGroup(t3d);
-
 	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 	    tg.addChild(new Cylinder(radius, height, appear)); 
+	   
+//	    System.out.println(""+t3d);
+	    
+	    Vector3f pos = new Vector3f();
+	    t3d.get(pos);
+	    
+	    
+	    Text2D message = labeltgs.get(objectId);
+	    if (message==null) 
+	    	message = new Text2D(""+objectId, black, "SansSerif", 70, Font.BOLD );
+	    Transform3D labelt3d = new Transform3D();
+	    //labelt3d.rotX(Math.PI/2);
+	    
+	    
+	    TransformGroup labeltg = new TransformGroup(labelt3d);
+	    labeltg.addChild(makeLabel(message,pos));
+	    
+	    tg.addChild(labeltg);
 	    
 	    objTrans.addChild(tg);
 	    objRoot.addChild(objTrans);
 	    
+//	    objRoot.addChild(tg);
+	    
 	    objects.put(objectId,tg);
 	    colors.put(objectId,color);
 	    app.put(objectId,appear);
+	    needRot.put(objectId,true);
 	}
 	
 	private void drawCone(int objectId, Color3f color, float r, float h) {
@@ -473,16 +554,38 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		objRoot = new BranchGroup();
 		objTrans = new TransformGroup(objTrans3D);
 		Transform3D t3d = new Transform3D();
+		
 
 	    TransformGroup tg = new TransformGroup(t3d);
+//	    t3d.rotX(Math.PI/2);
+	    tg.setTransform(t3d);
+	    
 	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 	    tg.addChild(new Cone (r, h, appear)); 
+	    
+	    Vector3f pos = new Vector3f();
+	    t3d.get(pos);
+	    
+	    
+	    Text2D message = labeltgs.get(objectId);
+	    if (message==null) 
+	    	message = new Text2D(""+objectId, black, "SansSerif", 70, Font.BOLD );
+	    Transform3D labelt3d = new Transform3D();
+	    //labelt3d.rotX(Math.PI/2);
+	    
+	    
+	    TransformGroup labeltg = new TransformGroup(labelt3d);
+	    labeltg.addChild(makeLabel(message,pos));
+	    
+	    tg.addChild(labeltg);
+	    
 	    objTrans.addChild(tg);
 	    objRoot.addChild(objTrans);
 	    
 	    objects.put(objectId,tg);
 	    colors.put(objectId,color);
 	    app.put(objectId,appear);
+	    needRot.put(objectId,true);
 	}
 	
 	private void drawBox(int objectId, Color3f color, float l, float w, float h) {
@@ -501,12 +604,30 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 	    TransformGroup tg = new TransformGroup(t3d);
 	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 	    tg.addChild(new com.sun.j3d.utils.geometry.Box(l,w,h,appear)); 
+	    
+	    Vector3f pos = new Vector3f();
+	    t3d.get(pos);
+	    
+	    
+	    Text2D message = labeltgs.get(objectId);
+	    if (message==null) 
+	    	message = new Text2D(""+objectId, black, "SansSerif", 70, Font.BOLD );
+	    Transform3D labelt3d = new Transform3D();
+	    labelt3d.rotX(Math.PI/2);
+	    
+	    
+	    TransformGroup labeltg = new TransformGroup(labelt3d);
+	    labeltg.addChild(makeLabel(message,pos));
+	    
+	    tg.addChild(labeltg);
+	    
 	    objTrans.addChild(tg);
 	    objRoot.addChild(objTrans);
 	    
 	    objects.put(objectId,tg);
 	    colors.put(objectId,color);
 	    app.put(objectId,appear);
+	    needRot.put(objectId,false);
 	}
 	
 	private void drawCompoundShape(int objectId, Color3f color, CollisionShape shape){
@@ -514,8 +635,8 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		
 		objRoot = new BranchGroup();
 		objTrans = new TransformGroup(objTrans3D);
+	
 		Transform3D t3d = new Transform3D();
-
 	    TransformGroup tg = new TransformGroup(t3d);
 	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 	    
@@ -546,7 +667,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 				Quat4f rot = new Quat4f();
 				
 				trans.getRotation(rot);
-			
+				t3D.rotX(-Math.PI/2);
 				t3D.setRotation(rot);
 
 				t3D.setTranslation(trans.origin);
@@ -559,23 +680,22 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 			else if (c instanceof CylinderShape){
 				CylinderShape cylinder = (CylinderShape)c;
 				Float r = cylinder.getRadius();
-//				System.out.println("Radius: " + r);
 				
 				Vector3f halfExtents = new Vector3f();
 				cylinder.getHalfExtentsWithMargin(halfExtents);
 				
-				Transform3D t3D = new Transform3D();
-				Quat4f rot = new Quat4f();
 				
+				Quat4f rot = new Quat4f();
 				trans.getRotation(rot);
 				
+				Transform3D t3D = new Transform3D();
 				t3D.setRotation(rot);
 				t3D.rotX(-Math.PI/2);
 				t3D.setTranslation(trans.origin);
 							
 				TransformGroup childTg = new TransformGroup(t3D);
 				
-				childTg.addChild(new Cylinder(r,Math.abs(halfExtents.z),appear));
+				childTg.addChild(new Cylinder(r,2*Math.abs(halfExtents.z),appear));
 				
 				tg.addChild(childTg);
 			}
@@ -590,7 +710,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 				trans.getRotation(rot);
 				
 				t3D.setRotation(rot);
-		
+//				t3D.rotX(-Math.PI/2);
 				t3D.setTranslation(trans.origin);
 				
 				TransformGroup childTg = new TransformGroup(t3D);
@@ -611,7 +731,7 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 				trans.getRotation(rot);
 				
 				t3D.setRotation(rot);
-
+				t3D.rotX(-Math.PI/2);
 				t3D.setTranslation(trans.origin);
 
 				TransformGroup childTg = new TransformGroup(t3D);
@@ -632,55 +752,209 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		objects.put(objectId,tg);
 		colors.put(objectId,color);
 		app.put(objectId,appear);
+		needRot.put(objectId,false);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
 		if(e.getSource()==pause){
-			context.getClockControl().pause();
+			
+			clockCount++;
+			if (clockCount%2==1) { 
+				context.getClockControl().pause();
+				pause.setText("start");
+			}	
+			else { 
+				context.getClockControl().start();
+				pause.setText("pause");
+			}	
 		}
-		if(e.getSource()==start){
-			context.getClockControl().start();
+
+		if(e.getSource()==labels){
+			labelCount++;
+			
+			if (labelCount%2==1) {
+			// turn labels on	
+			}
+			else 
+			//turn labels off
+				;
 		}
-		if(e.getSource()==reset){
-			//userPosn = new Point3d(-20,12,20);
-		}
+		
 		else if (e.getSource() == beeList) {
 
-			int id = (Integer)beeList.getSelectedItem();
-			
-			currBee = id;
+//			if ((String)beeList.getSelectedItem()!="Select a bee view") {
+				
+				int id = (Integer)beeList.getSelectedItem();
 
-			System.out.println(""+id);
-
-			// spawn new window
-			JFrame f = new JFrame("Bee View");
-			f.setSize(400,400);
-			f.setLayout(new BorderLayout());
-
-			c2 = new Canvas3D(config);
-			c2.setSize(400,400);
-			f.add(c2,"Center");
-			f.setVisible(true);
-			c2.setFocusable(true);
+				currBee = id;
+//				System.out.println(""+id);
+	
+				// spawn new window
+				JFrame f = new JFrame("Bee View");
+				f.setSize(400,400);
+				f.setLayout(new BorderLayout());
+				f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				f.pack();
+	
+				c2 = new Canvas3D(config);
+				c2.setSize(400,400);
+				f.add(c2,"Center");
+				f.setVisible(true);
+				c2.setFocusable(true);
+				
+				TransformGroup tg = objects.get(id);
+				
+				Transform3D t3d = new Transform3D();
+				tg.getTransform(t3d);
+				//t3d.setTranslation(position);
+				
+				Vector3f pos = new Vector3f();
+				t3d.get(pos);
+				
+				u.getLocale().addBranchGraph(createViewer(c2, pos));
+				
+				vp2.getViewPlatformTransform().setTransform(t3d);
+				
+				camFrame = true;
 			
-			TransformGroup tg = objects.get(id);
-			
-			Transform3D t3d = new Transform3D();
-			tg.getTransform(t3d);
-			//t3d.setTranslation(position);
-			
-			Vector3f pos = new Vector3f();
-			t3d.get(pos);
-			
-			u.getLocale().addBranchGraph(createViewer(c2, pos));
-			
-			vp2.getViewPlatformTransform().setTransform(t3d);
-			
-			camFrame = true;
+//			}
 			
 		}
+		
+		if (e.getSource()==reset) {
+			setUserPos(userPosn, new Point3d(0,3,0), new Vector3d(0,1,0));
+		}
+		
+		if (e.getSource()==save) {
+			ViewingPlatform vp = u.getViewingPlatform();
+		    TransformGroup vpTg = vp.getViewPlatformTransform();
+			Transform3D vpTg3d = new Transform3D();
+			vpTg.getTransform(vpTg3d);
+			
+	        int returnVal = fc.showSaveDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                //This is where a real application would save the file.
+//                log.append("Saving: " + file.getName() + "." + "\n");
+                String filePath = file.getAbsolutePath();
+                
+                System.out.println(filePath);
+                
+                Quat4f q1 = new Quat4f();
+                Vector3f t1 = new Vector3f();
+                vpTg3d.get(q1, t1);
+                
+    			try
+    	        {
+    	            FileWriter f = new FileWriter(filePath+".txt");
+//    	            f.write(""+q1+","+""+t1);
+    	            f.write(""+vpTg3d);
+    	            f.close();
+    	        }
+    	        catch(Exception ex)
+    	        {
+    	            ex.printStackTrace();
+    	        }
+                
+            } else {
+//                log.append("Save command canceled by user." + "\n");
+            }
+//            log.setCaretPosition(log.getDocument().getLength());
+
+		}
+		
+		if (e.getSource()==load) {
+			 int returnVal = fc.showOpenDialog(this);
+
+	            if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                File file = fc.getSelectedFile();
+	                //This is where a real application would open the file.
+//	                log.append("Opening: " + file.getName() + "." + "\n");
+	                
+	                String filePath = file.getAbsolutePath();
+	                try {
+//						FileReader f = new FileReader(filePath);
+						
+						FileInputStream f = new FileInputStream(filePath);
+						DataInputStream in = new DataInputStream(f);
+				        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+				        String strLine;
+					    //Read File Line By Line
+				        String[] tokens = null;
+				        double[] values = new double[16];
+				        int count = 0;
+				        
+					    while ((strLine = br.readLine()) != null)   {
+					
+					      System.out.println (strLine);
+			
+					      tokens = strLine.split(",");
+					      
+					      for (String s : tokens) {
+						    	System.out.println("Tokens: "+s);
+						    }
+					      
+					      for (int i=count; i<tokens.length+count; i++) {
+						    	double v = new Double(tokens[i]).doubleValue();
+						    	values[i] = v; 
+						    }
+					      
+					      count += 4;
+					      
+					    }
+					    //Close the input stream
+					    in.close();	  
+					    
+					    System.out.println("Token length: " + tokens.length);
+
+					    
+					    // initialize with array values from above 
+					    
+//					    for (float fl : values) {
+//					    	System.out.print(" "+fl);
+//					    }
+					    
+					    Transform3D t3d = new Transform3D();
+//					    t3d.set(values);
+					    
+					    System.out.println("Array  values: "+t3d);
+					    
+					    ViewingPlatform vp = u.getViewingPlatform();
+					    TransformGroup steerTG = vp.getViewPlatformTransform();
+					    steerTG.setTransform(t3d);
+					    
+					} catch (FileNotFoundException e1) {	
+						e1.printStackTrace();		
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+	                
+	            } else {
+//	                log.append("Open command canceled by user." + "\n");
+	            }
+//	            log.setCaretPosition(log.getDocument().getLength());
+
+		}
+		
+		if (e.getSource()==viewList) {
+			
+			String chosenView = (String)viewList.getSelectedItem();
+			
+			if (chosenView.equals("Upper left")) {
+				setUserPos(new Point3d(-20,8,-20),new Point3d(0,3,0),new Vector3d(0,1,0));
+			}
+			if (chosenView.equals("Upper right")) {
+				setUserPos(new Point3d(20,12,-20),new Point3d(0,3,0),new Vector3d(0,1,0));
+			}
+			if (chosenView.equals("Top view")) {
+				setUserPos(new Point3d(.5,50,0),new Point3d(0,0,0),new Vector3d(0,1,0));
+			}
+			
+		}
+		
+		
 	}
 
 	@Override
@@ -717,65 +991,81 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
         mf.setVisible(true);
     
 		//panels
-        JLabel sTime = new JLabel("Simulation Time: ");
-        //p0.add(sTime);
+//        p0.setLayout(new BorderLayout(1, 1));
         p0.add(simTime);
-        LineBorder ln = new LineBorder(java.awt.Color.black);
         p0.setBorder(BorderFactory.createTitledBorder("Clock Control"));
-		
-		JPanel p1 = new JPanel();
-//		p0.add(new JSeparator(SwingConstants.HORIZONTAL));
-
-		JLabel simControl = new JLabel("Control: ");
-		p1.add(simControl); 
+        p0.add(Box.createRigidArea(new Dimension(5,0)));
+        
 		pause.setAlignmentX(Component.CENTER_ALIGNMENT);
-		p1.add(pause);
 		pause.addActionListener(this);
 		pause.addKeyListener(this);
-		start.setAlignmentX(Component.CENTER_ALIGNMENT);
-		p1.add(start);
-		start.addActionListener(this);
-		start.addKeyListener(this);
-		p0.add(javax.swing.Box.createVerticalGlue());
-		p0.add(start);
-		p0.add(javax.swing.Box.createVerticalGlue());
-		p0.add(pause);
+        p0.add(pause);
 		
-		JPanel p2 = new JPanel();
-//		JLabel label = new JLabel("View: ");
-//		p2.add(label); 
-		p2.setBorder(BorderFactory.createTitledBorder("View"));
-		p2.add(labels);
-		p2.add(reset);
+		JPanel beeview = new JPanel();
+		beeview.setBorder(BorderFactory.createTitledBorder("Bee View"));
+//		beeview.setLayout(new BorderLayout());
+		
+		JPanel plabel = new JPanel();
+		plabel.setBorder(BorderFactory.createTitledBorder("Labels"));
+		plabel.add(labels);
+		
+		JPanel p2reset = new JPanel();
+		p2reset.add(reset);
 		reset.addActionListener(this);
 		reset.addKeyListener(this);
+		p2reset.add(save);
+		save.addActionListener(this);
+		save.addKeyListener(this);
+		p2reset.add(load);
+		load.addActionListener(this);
+		load.addKeyListener(this);
+		
+		JPanel mapview = new JPanel();
+		mapview.add(p2reset);
+		mapview.setBorder(BorderFactory.createTitledBorder("Map View"));
 		
 		JPanel p3 = new JPanel();
-		JLabel beeView = new JLabel("Bee view ID: ");
-		//p3.add(beeView);
 
         //Create the combo box
         //Indices start at 0
         beeList = new JComboBox();
-        beeList.insertItemAt("Select a bee",0);
+        beeList.insertItemAt("Select a bee view",0);
         beeList.setSelectedIndex(0);
         beeList.addActionListener(this);
-        p2.add(beeList);
+        p3.add(beeList);
+        beeview.add(p3);
         
-        p3.setBorder(BorderFactory.createTitledBorder("2D Map"));
+        JPanel viewSetter = new JPanel();
+        viewSetter.setBorder(BorderFactory.createTitledBorder("Set View"));
+        String[] views = {"Upper left", "Upper right", "Top view"};
+        viewList = new JComboBox(views);
+        viewList.insertItemAt("Select a view",0);
+        viewList.setSelectedIndex(0);
+        viewList.addActionListener(this);
+        viewSetter.add(viewList);
+        
+        
+        JPanel map = new JPanel();
+        map.setLayout(new BorderLayout());
+
 
 		//main panel
-		
-		main.setLayout(new BoxLayout(main, BoxLayout.PAGE_AXIS));
-//        main.setLayout(new FlowLayout(FlowLayout.LEADING, FlowLayout.CENTER, FlowLayout.TRAILING));
+		main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
 		main.add(p0);
-//		main.add(p1);
-		main.add(p2);
-		main.add(p3);
+		main.add(plabel);
+		main.add(beeview);
+		main.add(mapview);
+		main.add(viewSetter);
+		main.add(map);
 		
 		mf.add("East", main);
-
 		
+		
+		// stuff for filechooser
+		log.setMargin(new Insets(5,5,5,5));
+        log.setEditable(false);
+        JScrollPane logScrollPane = new JScrollPane(log);
+
 	}
 	
 	private ViewingPlatform createViewer(Canvas3D c, Vector3f pos) {
@@ -798,16 +1088,19 @@ public class SimpleVis extends JPanel implements VariationComponent, MotionListe
 		
 		return vp2;
 	}
-	
-	private void getBeeID(){
 
-		
-		//return beeId;
+	
+	private void setUserPos(Point3d userPos, Point3d view, Vector3d upDir) {
+		ViewingPlatform vp = u.getViewingPlatform();
+	    TransformGroup steerTG = vp.getViewPlatformTransform();
+	
+	    Transform3D t3d = new Transform3D();
+	    steerTG.getTransform(t3d);
+	
+	    // args are: viewer posn, where looking, up direction
+	    t3d.lookAt(userPos, view, upDir);
+	    t3d.invert();
+	
+	    steerTG.setTransform(t3d);
 	}
-
-
-	
-//	private void setUserPosn(Point3d userPos) {
-//		userPosn = userPos;
-//	}
 }

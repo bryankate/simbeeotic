@@ -7,11 +7,11 @@
     <radius>2000</radius>
 
     <obstacles>
-        <obstacle>
+         <obstacle>
             <meta>
                 <prop name="foo" value="bar"/>
             </meta>
-            <box length="2" width="3">
+             <box length="2" width="3">
                 <position x="10" y="10"/>
             </box>
         </obstacle>
@@ -19,19 +19,32 @@
             <box>
                 <position x="-5" y="8"/>
             </box>
-        </obstacle>
+        </obstacle> 
         <obstacle>
-            <box height="2" width="1">
+            <box height="3" width="1" length="2">
                 <position x="6" y="-8"/>
             </box>
         </obstacle>
-       <!--  <obstacle>
+        
+                 <obstacle>
+            <cone height="4" radius="1">
+                <position x="3" y="-3"/>
+            </cone>
+        </obstacle>  
+        
+                <obstacle>
+            <cylinder height="4" radius="1">
+                <position x="-6" y="0"/>
+            </cylinder>
+        </obstacle>
+        
+         <obstacle>
             <box height="3" width="1">
                 <position x="-3" y="-8"/>
             </box>
-        </obstacle> -->
+        </obstacle> 
     </obstacles>
-
+ 
     <flowers>
         <patch>
             <center x="3" y="-2"/>
@@ -41,5 +54,5 @@
                 <prop name="pollen" value="2"/>
             </meta>
         </patch>
-    </flowers>
+    </flowers>  
 </world>
