@@ -978,18 +978,23 @@ public class SimController {
             if (next != null) {
 
                 if (firstEventRealTime < 0) {
-                    firstEventRealTime = System.currentTimeMillis();
+                    firstEventRealTime = System.nanoTime();
                 }
 
                 // if we are scaling to real time, hold off until we are ready to run the event.
                 // this implementation provide millisecond precision
-                long diff = TimeUnit.NANOSECONDS.toMillis((long)(next.time.getTime() * realTimeScale)) - 
-                            (System.currentTimeMillis() - firstEventRealTime);
+                long nanos = (long)(next.time.getTime() * realTimeScale) - (System.nanoTime() - firstEventRealTime);
 
-                if (diff > 0) {
+                if (nanos > 0) {
+
+                    long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
+
+                    if (millis > 0) {
+                        nanos -= TimeUnit.MILLISECONDS.toNanos(millis);
+                    }
 
                     try {
-                        Thread.sleep(diff);
+                        Thread.sleep(millis, (int)nanos);
                     }
                     catch(InterruptedException ie) {
                         throw new RuntimeException("SimEngine was interrupted while sleeping.");
