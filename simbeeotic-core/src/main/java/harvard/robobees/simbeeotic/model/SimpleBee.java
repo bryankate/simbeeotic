@@ -257,9 +257,13 @@ public abstract class SimpleBee extends GenericModel {
         axis.cross(unitX, diff);
         axis.normalize();
 
+        if (Float.isNaN(axis.length())) {
+            axis = new Vector3f(0, 0, 1);
+        }
+
         float angle = (float)Math.acos(unitX.dot(diff));
 
-        if ((angle == 0) || Float.isNaN(angle)) {
+        if (Float.isNaN(angle)) {
             return;
         }
 
