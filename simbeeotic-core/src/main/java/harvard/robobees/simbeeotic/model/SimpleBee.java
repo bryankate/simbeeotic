@@ -259,7 +259,7 @@ public abstract class SimpleBee extends GenericModel {
 
         float angle = (float)Math.acos(unitX.dot(diff));
 
-        if (Float.isNaN(angle)) {
+        if ((angle == 0) || Float.isNaN(angle)) {
             return;
         }
 
