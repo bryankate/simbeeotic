@@ -87,7 +87,7 @@ public class SimController {
      * @param world The world in which the models operate.
      */
     public void runSim(final Scenario scenario, final World world) {
-        runSim(scenario, world, 0);
+        runSim(scenario, world, 0, false);
     }
 
 
@@ -103,9 +103,11 @@ public class SimController {
      *                      and values greater than zero will scale the virtual time accordingly.
      *                      For example, a value of 2 will allow the simulation to progress,
      *                      at most, twice the rate of real time.
+     * @param startPaused Indicates that the clock controlling each scenario variation should start
+     *                    in a paused state and wait to be started.
      *
      */
-    public void runSim(final Scenario scenario, final World world, double realTimeScale) {
+    public void runSim(final Scenario scenario, final World world, double realTimeScale, boolean startPaused) {
 
         int currVariation = 0;
         VariationIterator variations = new VariationIterator(scenario);
@@ -128,6 +130,10 @@ public class SimController {
             // make a new clock
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
             final ClockControl clockControl = new ClockControl();
+
+            if (startPaused) {
+                clockControl.pause();
+            }
 
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
