@@ -815,6 +815,7 @@ public class SimController {
         private SimTime processing = null;
         private SimTime lastProcessed = null;
         private long nextEventId = 1;
+        private boolean terminated = false;
 
         private double realTimeScale = 1;
         private long firstEventRealTime = -1;
@@ -834,6 +835,12 @@ public class SimController {
         /** {@inheritDoc} */
         public long scheduleEvent(final int modelId, final SimTime time, final Event event) {
 
+            if (terminated) {
+
+                logger.debug("Attempting to schedule an event after scenario termination was requested.");
+                return -1;
+            }
+            
             SimTime minTime = processing;
 
             if ((minTime == null) && (lastProcessed != null)) {
@@ -880,6 +887,17 @@ public class SimController {
             if (toRemove != null) {
                 eventQ.remove(toRemove);
             }
+        }
+
+
+        /** {@inheritDoc} */
+        public void requestScenarioTermination() {
+
+            logger.info("A model has requested scenario termination.");
+
+            terminated = true;
+
+            eventQ.clear();
         }
 
 

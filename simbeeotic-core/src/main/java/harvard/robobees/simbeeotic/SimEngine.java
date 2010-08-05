@@ -24,6 +24,9 @@ public interface SimEngine {
      * @param event The event to execute at the given time.
      *
      * @return The handle of the scheduled event, which can be used to cancel the event.
+     *         The handle will be an integer greater than or equal to one if the event
+     *         was successfully scheduled, or less than one if the event could not be
+     *         scheduled (due to the simulation being previously terminated).
      */
     public long scheduleEvent(int modelId, SimTime time, Event event);
 
@@ -34,6 +37,17 @@ public interface SimEngine {
      * @param eventId The ID of the event to cancel.
      */
     public void cancelEvent(long eventId);
+
+
+    /**
+     * If this method is invoked, the simulation engine will cancel all future events and
+     * not accept any new requests to schedule events. This will have the effect of
+     * terminating the scenario. This method may be called by a model in the context of
+     * initialization (though that would be silly) or processing an event. The bahavior
+     * of any other entity calling this method (including components) is undefined since
+     * it is not guaranteed that the simulation engine implementation is thread safe.
+     */
+    public void requestScenarioTermination();
 
 
     /**
