@@ -17,6 +17,10 @@ public interface Model {
      * Initializes the model before the simulation starts. This method
      * will be called exactly once by the simulation executive prior to
      * any call to {@link #processEvent(harvard.robobees.simbeeotic.SimTime , Event)}.
+     * <p/>
+     * The implementation cannot assume that all other models have been initialized,
+     * so it is safer to perform actions that interact with other models from within
+     * an event that is scheduled during the invocation of this method.
      */
     public void initialize();
 
