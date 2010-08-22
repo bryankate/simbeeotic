@@ -174,20 +174,23 @@ public final class LoopingVariableFactory {
                 }
 
                 result = new NormalRandomVariable(definition.getSeed(), definition.getFrom(), definition.getTo(),
-                                                  definition.getNumDraws(), definition.getFirstDraw(), definition.getMean(), false);
+                                                  definition.getNumDraws(), definition.getFirstDraw(),
+                                                  definition.getMean(), definition.getStdDev(), false);
                 break;
 
             case RANDOM_STREAM:
 
                 result = new NormalRandomVariable(null, definition.getFrom(), definition.getTo(),
-                                                  definition.getNumDraws(), definition.getFirstDraw(), definition.getMean(), true);
+                                                  definition.getNumDraws(), definition.getFirstDraw(),
+                                                  definition.getMean(), definition.getStdDev(), true);
                 break;
 
             case DEFAULT:
             default:
 
                 result = new NormalRandomVariable("1", definition.getFrom(), definition.getTo(), 
-                                                  definition.getNumDraws(), definition.getFirstDraw(), definition.getMean(), false);
+                                                  definition.getNumDraws(), definition.getFirstDraw(),
+                                                  definition.getMean(), definition.getStdDev(), false);
         }
 
 

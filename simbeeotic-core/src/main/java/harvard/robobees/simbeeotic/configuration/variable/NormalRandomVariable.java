@@ -16,16 +16,19 @@ import java.util.Random;
 public class NormalRandomVariable extends RandomVariable {
 
     private String mean;
+    private String stdDev;
 
 
     public NormalRandomVariable(String seed, String minValue, String maxValue,
-                                String numDraws, String firstDraw, String mean, boolean externalSeed) {
+                                String numDraws, String firstDraw, String mean, String stdDev, boolean externalSeed) {
 
         super(seed, minValue, maxValue, numDraws, firstDraw, externalSeed);
 
         this.mean = mean;
         addDepIfNeeded(mean);
 
+        this.stdDev = stdDev;
+        addDepIfNeeded(stdDev);
     }
 
 
@@ -42,9 +45,12 @@ public class NormalRandomVariable extends RandomVariable {
 
         // required values
         if (mean == null) {
-            throw new VariableCalculationException("'normal-random' variable needs a draw number and a mean value.");
+            throw new VariableCalculationException("'normal-random' variable needs a mean value.");
         }
 
+        if (stdDev == null) {
+            throw new VariableCalculationException("'normal-random' variable needs a mean value.");
+        }
 
         int numDraws;
         try {
@@ -64,6 +70,13 @@ public class NormalRandomVariable extends RandomVariable {
             throw new VariableCalculationException("mean parameter is not optional", e);
         }
 
+        double stdDevVal;
+        try {
+            stdDevVal = doubleParam(this.stdDev);
+        }
+        catch (VariableCalculationException e) {
+            throw new VariableCalculationException("std-dev parameter is not optional", e);
+        }
 
         /*
         * Min and max values are optional for normal random looping variables.  They allow outliers to be discarded.
@@ -99,7 +112,7 @@ public class NormalRandomVariable extends RandomVariable {
 
             double value;
             do {
-                value = meanVal * rand.nextGaussian();
+                value = meanVal + (rand.nextGaussian() * stdDevVal);
             }
             while ((useMaxValue && value > maxValue) || (useMinValue && value < minValue));
 
