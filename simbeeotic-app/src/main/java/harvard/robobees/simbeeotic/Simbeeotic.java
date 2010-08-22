@@ -87,12 +87,12 @@ public class Simbeeotic {
             }
             catch(FileNotFoundException fnf) {
 
-                logger.fatal("Could not open the scenario XML file.", fnf);
+                logger.fatal("Could not open the log4j properties file.", fnf);
                 return;
             }
             catch(IOException ioe) {
 
-                logger.fatal("Could not load the properties file.", ioe);
+                logger.fatal("Could not load the log4j properties file.", ioe);
                 return;
             }
 
