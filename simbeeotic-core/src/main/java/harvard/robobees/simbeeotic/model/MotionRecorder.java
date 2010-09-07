@@ -8,6 +8,7 @@ import javax.vecmath.Quat4f;
 import java.util.HashSet;
 import java.util.Set;
 import java.awt.Color;
+import java.awt.Image;
 
 import org.apache.log4j.Logger;
 
@@ -75,7 +76,18 @@ public class MotionRecorder {
      * @param color The new color information (may be null if no change is being made).
      */
     public void updateMetadata(int objectId, Color color) {
-        updateMetadata(objectId, color, null);
+        updateMetadata(objectId, color, null, null);
+    }
+
+
+    /**
+     * Updates the color of an object.
+     *
+     * @param objectId The unique identifier of the object.
+     * @param texture The new texture information (may be null if no change is being made).
+     */
+    public void updateMetadata(int objectId, Image texture) {
+        updateMetadata(objectId, null, texture, null);
     }
 
 
@@ -86,7 +98,7 @@ public class MotionRecorder {
      * @param label The new label information (may be null if no change is being made).
      */
     public void updateMetadata(int objectId, String label) {
-        updateMetadata(objectId, null, label);
+        updateMetadata(objectId, null, null, label);
     }
 
 
@@ -95,14 +107,15 @@ public class MotionRecorder {
      *
      * @param objectId The unique identifier of the object.
      * @param color The new color information (may be null if no change is being made).
+     * @param texture The new texture information (may be null if no change is being made).
      * @param label The new label information (may be null if no change is being made).
      */
-    public void updateMetadata(int objectId, Color color, String label) {
+    public void updateMetadata(int objectId, Color color, Image texture, String label) {
 
         for (MotionListener listener : listeners) {
 
             try {
-                listener.metaUpdate(objectId, color, label);
+                listener.metaUpdate(objectId, color, texture, label);
             }
             catch(Exception e) {
                 logger.warn("Caught an exception when updating MotionListener.", e);

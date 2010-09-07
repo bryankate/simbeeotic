@@ -41,8 +41,9 @@ public interface MotionListener {
      *
      * @param objectId The unique identifier of the object.
      * @param color The color update for the object (may be null if no change is being made from previous value).
+     * @param texture The texture update for the object (may be null if no change is being made from previous value).
      * @param label The label update for the object (may be null if no change is being made from previous value).
      */
-    public void metaUpdate(int objectId, Color color, String label);
+    public void metaUpdate(int objectId, Color color, Image texture, String label);
 
 }

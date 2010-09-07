@@ -162,7 +162,7 @@ public abstract class SimpleBee extends GenericModel {
         int id = getObjectId();
         
         getMotionRecorder().initializeObject(id, colShape);
-        getMotionRecorder().updateMetadata(id, new Color(238, 201, 0), getName());
+        getMotionRecorder().updateMetadata(id, new Color(238, 201, 0), null, getName());
 
         MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState,
@@ -208,13 +208,15 @@ public abstract class SimpleBee extends GenericModel {
     /**
      * Performs an instantaneous right-handed rotation of the body about the Z axis. The results of
      * this call will be visible immediately through the bee's sensors. At the same time, the rotation
-     * about the X and Y axes are reset to 0 (emulating level flight).
+     * about the X and Y axes are reset to zero (emulating level flight) and the angular velocity is
+     * set to zero.
      *
      * @param angle The angle of rotation (rad).
      */
     protected final void turn(final float angle) {
 
         body.activate();
+        body.setAngularVelocity(new Vector3f());
         
         Transform orient = new Transform();
         orient.setIdentity();

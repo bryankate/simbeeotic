@@ -651,7 +651,7 @@ public class WorldMap {
         int id = info.getObjectId();
 
         recorder.initializeObject(id, colShape);
-        recorder.updateMetadata(id, color, label);
+        recorder.updateMetadata(id, color, null, label);
 
     	MotionState myMotionState = new RecordedMotionState(id, recorder, startTransform);
     	RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,
