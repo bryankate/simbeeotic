@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<world xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://harvard/robobees/simbeeotic/configuration/world"
+       xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/world http://some/path/to/schema.xsd">
+
+    <radius>2000</radius>
+
+    <obstacles>
+        <obstacle>
+            <box height="20" length="1" width="11">
+                <position x="-16.5" y="-22"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="11">
+                <position x="16.5" y="22"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="11">
+                <position x="5.5" y="-11"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="11">
+                <position x="-5.5" y="11"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="34">
+                <position x="16.5" y="-11"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="34">
+                <position x="-16.5" y="11"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="34" width="1">
+                <position x="0" y="-27.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="34" width="1">
+                <position x="0" y="27.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="23" width="1">
+                <position x="-5.5" y="-16.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="23" width="1">
+                <position x="5.5" y="16.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="23" width="1">
+                <position x="-5.5" y="-5.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="23" width="1">
+                <position x="5.5" y="5.5"/>
+            </box>
+        </obstacle>
+    </obstacles>
+</world>

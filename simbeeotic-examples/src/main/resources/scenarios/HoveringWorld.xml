@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<world xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://harvard/robobees/simbeeotic/configuration/world"
+       xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/world http://some/path/to/schema.xsd">
+
+    <radius>2000</radius>
+
+    <obstacles>
+        <obstacle>
+            <box height="20" length="102" width="1">
+                <position x="0" y="12.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="102" width="1">
+                <position x="0" y="-12.5"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="26">
+                <position x="50.5" y="0"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="20" length="1" width="26">
+                <position x="-50.5" y="0"/>
+            </box>
+        </obstacle>
+        <obstacle>
+            <box height="1" length="102" width="26">
+                <position x="0" y="0" z="-1"/>
+            </box>
+        </obstacle>
+    </obstacles>
+</world>
