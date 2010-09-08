@@ -805,7 +805,7 @@ public class SimController {
      * This class is not thread safe, so it would need to be updated if
      * multiple models are allowed to execute in parallel in the future.
      */
-    static final class SimEngineImpl implements SimEngine {
+    private static final class SimEngineImpl implements SimEngine {
 
         private Queue<ScheduledEvent> eventQ = new PriorityQueue<ScheduledEvent>();
         private Map<Integer, Model> modelMap = new HashMap<Integer, Model>();
