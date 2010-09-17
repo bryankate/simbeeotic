@@ -304,7 +304,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
     public final void setStartPosition(@Named("start-position") final Vector3f pos) {
 
         if (!isInitialized()) {
-            this.startPos = pos;
+            this.startPos = new Vector3f(pos);
         }
     }
 }
