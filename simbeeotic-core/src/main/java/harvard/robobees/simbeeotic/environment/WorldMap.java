@@ -32,6 +32,8 @@ import harvard.robobees.simbeeotic.configuration.world.World;
 import harvard.robobees.simbeeotic.model.EntityInfo;
 import harvard.robobees.simbeeotic.model.MotionRecorder;
 import harvard.robobees.simbeeotic.model.RecordedMotionState;
+import harvard.robobees.simbeeotic.util.ImageLoader;
+
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_BEE;
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_FLOWER;
 import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_TERRAIN;
@@ -101,7 +103,7 @@ public class WorldMap {
         int groundId = nextId.getAndIncrement();
 
         recorder.initializeObject(groundId, groundShape);
-        recorder.updateMetadata(groundId, new Color(20, 70, 30));
+        recorder.updateMetadata(groundId, new Color(20, 70, 30), ImageLoader.loadImageFromClasspath("/textures/grass_1.jpg"), null);
 
         // the plane is a static object, so it does not need mass properties
         MotionState myMotionState = new RecordedMotionState(groundId, recorder, groundTransform);
@@ -195,12 +197,23 @@ public class WorldMap {
                 }
 
                 Color color = new Color(140, 140, 140);
+                Image texture = null;
 
                 if (obstacle.getColor() != null) {
                     color = new Color(obstacle.getColor().getRed(), obstacle.getColor().getGreen(), obstacle.getColor().getBlue());
                 }
 
-                addBody(WorldObject.Type.OBSTACLE, startTransform, colShape, color, obstacle.getLabel(), info, obstacles);
+                if (obstacle.getTexture() != null) {
+
+                    if (obstacle.getTexture().getClasspath() != null) {
+                        texture = ImageLoader.loadImageFromClasspath(obstacle.getTexture().getClasspath().getPath());
+                    }
+                    else {
+                        texture = ImageLoader.loadImageFromFilesystem(obstacle.getTexture().getFilesystem().getPath());
+                    }
+                }
+
+                addBody(WorldObject.Type.OBSTACLE, startTransform, colShape, color, texture, obstacle.getLabel(), info, obstacles);
             }
         }
 
@@ -218,9 +231,20 @@ public class WorldMap {
 
                 String label = null;
                 Color color = new Color(77, 77, 77);
+                Image texture = null;
 
                 if (structure.getColor() != null) {
                     color = new Color(structure.getColor().getRed(), structure.getColor().getGreen(), structure.getColor().getBlue());
+                }
+
+                if (structure.getTexture() != null) {
+
+                    if (structure.getTexture().getClasspath() != null) {
+                        texture = ImageLoader.loadImageFromClasspath(structure.getTexture().getClasspath().getPath());
+                    }
+                    else {
+                        texture = ImageLoader.loadImageFromFilesystem(structure.getTexture().getFilesystem().getPath());
+                    }
                 }
 
                 // walls
@@ -277,7 +301,7 @@ public class WorldMap {
 	                	startTransform.origin.set(center);
 		                startTransform.setRotation(quat);
 
-                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, label, info, structures);
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, texture, label, info, structures);
 	            	}
 
 	            	// wall with door
@@ -318,7 +342,7 @@ public class WorldMap {
 	            		startTransform.origin.set(center);
 
 	            		// add the compound shape into the world!
-                        addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, label, info, structures);
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, texture, label, info, structures);
 	            	}
                 }
 
@@ -371,7 +395,7 @@ public class WorldMap {
 	                	CollisionShape colShape = new BoxShape(extents);
 		                startTransform.origin.set(center);
 
-                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, label, info, structures);
+                        addBody(WorldObject.Type.STRUCTURE, startTransform, colShape, color, texture, label, info, structures);
 	                }
 
 	                // surface with 'trap'
@@ -425,7 +449,7 @@ public class WorldMap {
 	            		startTransform.origin.set(center);
 
 	            		// add the compound shape into the world!
-	            		addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, label, info, structures);
+	            		addBody(WorldObject.Type.STRUCTURE, startTransform, compoundShape, color, texture, label, info, structures);
 	                }
                 }
             }
@@ -482,7 +506,7 @@ public class WorldMap {
                         color = new Color(patch.getColor().getRed(), patch.getColor().getGreen(), patch.getColor().getBlue());
                     }
 
-                    addBody(WorldObject.Type.FLOWER, trans, shape, color, null, flowerInfo, flowers);
+                    addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, flowerInfo, flowers);
                 }
             }
         }
@@ -646,12 +670,12 @@ public class WorldMap {
     
     
     private void addBody(WorldObject.Type type, Transform startTransform, CollisionShape colShape,
-                         Color color, String label, EntityInfo info, Set<WorldObject> objSet) {
+                         Color color, Image texture, String label, EntityInfo info, Set<WorldObject> objSet) {
 
         int id = info.getObjectId();
 
         recorder.initializeObject(id, colShape);
-        recorder.updateMetadata(id, color, null, label);
+        recorder.updateMetadata(id, color, texture, label);
 
     	MotionState myMotionState = new RecordedMotionState(id, recorder, startTransform);
     	RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(0, myMotionState,

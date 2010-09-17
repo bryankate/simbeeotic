@@ -8,22 +8,26 @@
 
     <obstacles>
         <obstacle>
-            <meta>
-                <prop name="foo" value="bar"/>
-            </meta>
             <box length="2" width="3">
                 <position x="10" y="10"/>
             </box>
+            <meta>
+                <prop name="foo" value="bar"/>
+            </meta>
         </obstacle>
         <obstacle>
             <box>
                 <position x="-5" y="8"/>
             </box>
+            <color red="192" green="65" blue="23" alpha="64"/>
         </obstacle>
         <obstacle>
             <box height="4">
                 <position x="3" y="-20"/>
             </box>
+            <texture>
+                <classpath path="/textures/brick_2.jpg"/>
+            </texture>
         </obstacle>
     </obstacles>
 

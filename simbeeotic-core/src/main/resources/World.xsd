@@ -44,6 +44,7 @@
                 <xs:element name="cone" type="world:Cone"/>
             </xs:choice>
             <xs:element name="color" type="world:Color" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="texture" type="world:Texture" minOccurs="0" maxOccurs="1"/>
             <xs:element name="label" type="xs:string" minOccurs="0" maxOccurs="1"/>
             <xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -62,6 +63,7 @@
     <xs:complexType name="Structure">
         <xs:sequence>
             <xs:element name="color" type="world:Color" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="texture" type="world:Texture" minOccurs="0" maxOccurs="1"/>
             <xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
             <xs:choice minOccurs="1" maxOccurs="1">
                 <xs:element name="wall" type="world:Wall"/>
@@ -92,6 +94,17 @@
         <xs:attribute name="green" type="xs:short" default="0" use="optional"/>
         <xs:attribute name="blue" type="xs:short" default="0" use="optional"/>
         <xs:attribute name="alpha" type="xs:short" default="0" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="Texture">
+        <xs:choice>
+            <xs:element name="classpath" type="world:Path"/>
+            <xs:element name="filesystem" type="world:Path"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="Path">
+        <xs:attribute name="path" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="Shape" abstract="true">
@@ -136,67 +149,37 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+
     <xs:complexType name="Wall">
         <xs:complexContent>
             <xs:extension base="world:Shape">
-                <xs:attribute name="height" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="length" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="width" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="rotation" type="xs:float"
-                              default="0" use="optional"><!--Specifies degrees in radians which the wall should be rotated. Occurs about lower corner (smallest x/y values) in xy-plane.-->
-                </xs:attribute>
-                <xs:attribute name="door" type="xs:boolean"
-                              default="false" use="optional"><!--Does the wall have a door?-->
-                </xs:attribute>
-                <xs:attribute name="doorwidth" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="doorheight" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="doorposition" type="xs:float" default="1"
-                              use="optional"><!--Offset from 'left' side of wall to 'left' side of door. NOT center of door.-->
-                </xs:attribute>
+                <xs:attribute name="height" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="length" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="width" type="xs:float" default="1" use="optional"/>
+                <!--Specifies degrees in radians which the wall should be rotated. Occurs about lower corner (smallest x/y values) in xy-plane.-->
+                <xs:attribute name="rotation" type="xs:float" default="0" use="optional"/>
+                <!--Does the wall have a door?-->
+                <xs:attribute name="door" type="xs:boolean" default="false" use="optional"/>
+                <xs:attribute name="doorwidth" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="doorheight" type="xs:float" default="1" use="optional"/>
+                <!--Offset from 'left' side of wall to 'left' side of door. NOT center of door.-->
+                <xs:attribute name="doorposition" type="xs:float" default="1" use="optional"/>
             </xs:extension>
-
         </xs:complexContent>
     </xs:complexType>
+
     <xs:complexType name="Surface">
         <xs:complexContent>
             <xs:extension base="world:Shape">
-                <xs:attribute name="height" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="length" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="width" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="rotation" type="xs:float" default="0"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="trap" type="xs:boolean" default="false"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="trapX" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="trapY" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="trapLength" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
-                <xs:attribute name="trapWidth" type="xs:float" default="1"
-                              use="optional">
-                </xs:attribute>
+                <xs:attribute name="height" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="length" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="width" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="rotation" type="xs:float" default="0" use="optional"/>
+                <xs:attribute name="trap" type="xs:boolean" default="false" use="optional"/>
+                <xs:attribute name="trapX" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="trapY" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="trapLength" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="trapWidth" type="xs:float" default="1" use="optional"/>
             </xs:extension>
 
         </xs:complexContent>
