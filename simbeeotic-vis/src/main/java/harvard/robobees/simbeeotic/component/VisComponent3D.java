@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -408,21 +409,21 @@ public class VisComponent3D extends JPanel implements VariationComponent, Motion
 //        app.setTransparencyAttributes(ta);
 
         // Load in the Texture File
-        TextureLoader loader = new TextureLoader
-                ("/home/dcai/workspace/simbeeotic/simbeeotic-vis/src/main/resources/textures/sky_3r.png",this);
-
-        // Create Texture object
-        Texture brick = loader.getTexture();
-
-        TextureAttributes txa = new TextureAttributes();
-        app.setTextureAttributes(txa);
-
-        // Attach Texture object to Appearance object
-        app.setTexture(brick);
-
-        TransformGroup tg = new TransformGroup();
-        tg.addChild(new Sphere(30,Primitive.GENERATE_TEXTURE_COORDS,app));
-        objRoot.addChild(tg);
+//        TextureLoader loader = new TextureLoader
+//                ("/home/dcai/workspace/simbeeotic/simbeeotic-vis/src/main/resources/textures/sky_3r.png",this);
+//
+//        // Create Texture object
+//        Texture brick = loader.getTexture();
+//
+//        TextureAttributes txa = new TextureAttributes();
+//        app.setTextureAttributes(txa);
+//
+//        // Attach Texture object to Appearance object
+//        app.setTexture(brick);
+//
+//        TransformGroup tg = new TransformGroup();
+//        tg.addChild(new Sphere(30,Primitive.GENERATE_TEXTURE_COORDS,app));
+//        objRoot.addChild(tg);
     }
 
     private Appearance createAppCap(Color3f color) {
@@ -543,8 +544,8 @@ public class VisComponent3D extends JPanel implements VariationComponent, Motion
         if (!isGround) {
 
             // Load in the Texture File
-            TextureLoader loader = new TextureLoader
-                    ("/home/dcai/workspace/simbeeotic/simbeeotic-vis/src/main/resources/textures/brick.jpg",this);
+//            TextureLoader loader = new TextureLoader
+//                    ("/home/dcai/workspace/simbeeotic/simbeeotic-vis/src/main/resources/textures/brick.jpg",this);
 
 //            // Create Texture object
 //            Texture brick = loader.getTexture();
@@ -560,16 +561,15 @@ public class VisComponent3D extends JPanel implements VariationComponent, Motion
 //            tg.addChild(new com.sun.j3d.utils.geometry.Box(l,w,h,Primitive.GENERATE_TEXTURE_COORDS,appear));
 
             // Create Texture object
-            Texture brick = loader.getTexture();
+//            Texture brick = loader.getTexture();
 //
-
-            TextureAttributes ta = new TextureAttributes();
-            appear.setTextureAttributes(ta);
-
-            // Attach Texture object to Appearance object
-            appear.setTexture(brick);
-
-            tg.addChild(new com.sun.j3d.utils.geometry.Box(l,w,h,Primitive.GENERATE_TEXTURE_COORDS,appear));
+//            TextureAttributes ta = new TextureAttributes();
+//            appear.setTextureAttributes(ta);
+//
+//            // Attach Texture object to Appearance object
+//            appear.setTexture(brick);
+//
+//            tg.addChild(new com.sun.j3d.utils.geometry.Box(l,w,h,Primitive.GENERATE_TEXTURE_COORDS,appear));
 
         }
         else {
