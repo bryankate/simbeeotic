@@ -397,7 +397,7 @@ public class SimController {
 
         if (startPos != null) {
 
-            starting = startPos;
+            starting = new Vector3f(startPos);
 
             Vector pos = config.getStartPosition();
 
@@ -416,12 +416,6 @@ public class SimController {
                 starting.x = config.getStartPosition().getX();
                 starting.y = config.getStartPosition().getY();
                 starting.z = config.getStartPosition().getZ();
-            }
-            else {
-
-                starting.x = 0;
-                starting.y = 0;
-                starting.z = 0;
             }
         }
 
