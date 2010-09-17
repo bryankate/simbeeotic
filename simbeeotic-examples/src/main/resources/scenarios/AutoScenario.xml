@@ -110,7 +110,7 @@
     
     <!-- <components>
     	<variation>
-    		<java-class>harvard.robobees.simbeeotic.component.SimpleVis</java-class>
+    		<java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class>
     	</variation>
     </components> -->
     
