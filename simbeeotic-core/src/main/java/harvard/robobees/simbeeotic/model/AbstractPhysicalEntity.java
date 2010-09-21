@@ -133,6 +133,15 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
 
     /** {@inheritDoc} */
+    public final void clearMotion() {
+
+        body.clearForces();
+        body.setLinearVelocity(new Vector3f());
+        body.setAngularVelocity(new Vector3f());
+    }
+
+
+    /** {@inheritDoc} */
     @Override
     public final Vector3f getTruthPosition() {
         return new Vector3f(body.getMotionState().getWorldTransform(new Transform()).origin);
