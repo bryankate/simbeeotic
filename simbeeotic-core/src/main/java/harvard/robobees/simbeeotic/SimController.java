@@ -127,9 +127,9 @@ public class SimController {
             final AtomicInteger nextMotionId = new AtomicInteger(0);
             final Random variationSeedGenertor = new Random(variation.getSeed());
 
-            // make a new clock
+            // sim engine setup
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
-            final ClockControl clockControl = new ClockControl();
+            final ClockControl clockControl = new ClockControl(new SimTime((long)scenario.getSimulation().getEndTime() * 1000));
 
             if (startPaused) {
                 clockControl.pause();
@@ -279,9 +279,9 @@ public class SimController {
 
             SimTime lastSimTime = new SimTime(0);
             SimTime nextSimTime = simEngine.getNextEventTime();
-            double endTime = scenario.getSimulation().getEndTime();
+            SimTime endTime = clockControl.getEndTime();
 
-            while((nextSimTime != null) && (nextSimTime.getImpreciseTime() < endTime)) {
+            while((nextSimTime != null) && (nextSimTime.compareTo(endTime) <= 0)) {
 
                 clockControl.waitUntilStarted();
 

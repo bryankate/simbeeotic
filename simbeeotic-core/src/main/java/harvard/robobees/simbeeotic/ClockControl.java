@@ -22,9 +22,15 @@ public class ClockControl {
     private Condition condition = lock.newCondition();
 
     private SimTime currTime;
+    private SimTime endTime;
     private Set<ClockListener> listeners = new HashSet<ClockListener>();
 
     private Logger logger = Logger.getLogger(ClockControl.class);
+
+
+    public ClockControl(SimTime end) {
+        endTime = end;
+    }
 
 
     /**
@@ -117,6 +123,17 @@ public class ClockControl {
      */
     public SimTime getCurrentTime() {
         return currTime;
+    }
+
+
+    /**
+     * Gets the time at which the scenario will end. The simulation engine will execute all events
+     * that are less than or equal to this time.
+     *
+     * @return The time at which the simulation ends.
+     */
+    public SimTime getEndTime() {
+        return endTime;
     }
 
 
