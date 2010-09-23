@@ -88,7 +88,7 @@ public final class SimTime implements Comparable<SimTime> {
 
     @Override
     public String toString() {
-        return time + "";
+        return getImpreciseTime() + " (" + time + ")";
     }
 
 
