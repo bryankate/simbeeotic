@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -183,8 +184,7 @@ public class VisComponent3D extends JPanel implements VariationComponent, Motion
 
     @Override
     public void shutdown() {
-        // close frame
-        mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(new WindowEvent(mf, WindowEvent.WINDOW_CLOSING));
     }
 
     @Override
@@ -926,6 +926,7 @@ public class VisComponent3D extends JPanel implements VariationComponent, Motion
         main.add(map);
 
         mf.add("East", main);
+        mf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
     }
 
