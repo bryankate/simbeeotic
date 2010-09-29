@@ -172,5 +172,8 @@ public class Simbeeotic {
         SimController sim = new SimController();
 
         sim.runSim(scenario, world, scale, opts.has(OPTION_PAUSED));
+
+        // explicitly exit so that the AWT threads will shutdown
+        System.exit(0);
     }
 }
