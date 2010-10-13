@@ -93,7 +93,7 @@
         <xs:attribute name="red" type="xs:short" default="0" use="optional"/>
         <xs:attribute name="green" type="xs:short" default="0" use="optional"/>
         <xs:attribute name="blue" type="xs:short" default="0" use="optional"/>
-        <xs:attribute name="alpha" type="xs:short" default="0" use="optional"/>
+        <xs:attribute name="alpha" type="xs:short" default="255" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="Texture">
