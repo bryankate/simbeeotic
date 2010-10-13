@@ -12,6 +12,9 @@ import javax.swing.*;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import java.awt.Component;
+import java.awt.GridBagLayout;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -54,7 +57,7 @@ public class ControlPanel extends JPanel {
 
     private void init() {
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new GridBagLayout());
 
         final JComboBox objectList = new JComboBox();
 
@@ -131,7 +134,7 @@ public class ControlPanel extends JPanel {
         timePanel.add(simTime);
         timePanel.add(pause);
 
-        // bee view
+        // object view
         JPanel objectViewPanel = new JPanel();
 
         objectViewPanel.setBorder(BorderFactory.createTitledBorder("Object View"));
@@ -175,18 +178,9 @@ public class ControlPanel extends JPanel {
         labelPanel.add(labels);
 
         // main window view controls
-        JPanel mainViewPanel = new JPanel();
-        JButton reset = new JButton("reset");
+        JPanel viewPanel = new JPanel(new BorderLayout());
         JButton save = new JButton("save");
         JButton load = new JButton("load");
-
-        reset.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                view3D.setMainView(DEFAULT_VIEW, LOOK_AT, UP);
-            }
-        });
 
         save.addActionListener(new ActionListener() {
 
@@ -265,15 +259,7 @@ public class ControlPanel extends JPanel {
             }
         });
 
-        mainViewPanel.setBorder(BorderFactory.createTitledBorder("Custom View"));
-        mainViewPanel.add(reset);
-        mainViewPanel.add(save);
-        mainViewPanel.add(load);
-
-        // preset views
-        JPanel presetViewPanel = new JPanel();
-
-        final String[] views = {"Upper Left", "Upper Right", "Top View"};
+        final String[] views = {"Upper Left", "Upper Right", "Top View", "Default View"};
         final JComboBox viewList = new JComboBox(views);
 
         viewList.insertItemAt("Select a View", 0);
@@ -292,21 +278,51 @@ public class ControlPanel extends JPanel {
                 else if (viewList.getSelectedItem().equals(views[2])) {
                     view3D.setMainView(TOP_VIEW, LOOK_AT, UP);
                 }
+                else if (viewList.getSelectedItem().equals(views[3])) {
+                    view3D.setMainView(DEFAULT_VIEW, LOOK_AT, UP);
+                }
                 else {
                     view3D.setMainView(DEFAULT_VIEW, LOOK_AT, UP);
                 }
             }
         });
 
-        presetViewPanel.setBorder(BorderFactory.createTitledBorder("Set View"));
-        presetViewPanel.add(viewList);
+        JPanel subPanel = new JPanel();
+
+        subPanel.add(save);
+        subPanel.add(load);
+
+        viewPanel.setBorder(BorderFactory.createTitledBorder("Custom View"));
+        viewPanel.add(viewList, BorderLayout.NORTH);
+        viewPanel.add(subPanel, BorderLayout.SOUTH);
+
 
         // populate
-        add(timePanel);
-        add(objectViewPanel);
-        add(labelPanel);
-        add(mainViewPanel);
-        add(presetViewPanel);
-        add(Box.createVerticalGlue());
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 0.5;
+
+        c.gridx = 0;
+        c.gridy = 0;
+        add(timePanel, c);
+
+        c.gridx = 0;
+        c.gridy = 1;
+        add(objectViewPanel,c);
+
+//        c.gridx = 0;
+//        c.gridy = 0;
+//        add(labelPanel, c);
+
+        c.gridx = 0;
+        c.gridy = 2;
+        add(viewPanel, c);
+
+        // fill up the rest of the space
+        c.gridx = 0;
+        c.gridy = 3;
+        c.weighty = 1.0;
+        c.fill = GridBagConstraints.BOTH;
+        add(new JPanel(), c);
     }
 }

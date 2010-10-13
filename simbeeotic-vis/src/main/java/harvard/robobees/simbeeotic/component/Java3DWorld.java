@@ -430,6 +430,13 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    /**
+     * Creates a new window that shows the world from the perspective of
+     * a simulated object. A camera is set at the obejct's center, pointing
+     * in the direction of it's positive body X axis.
+     *
+     * @param objectId The ID of the object for which the view is to be spawned.
+     */
     public void spawnObjectView(int objectId) {
 
         if (objectViewMap.containsKey(objectId)) {
@@ -455,6 +462,13 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    /**
+     * Sets the position and orientation of the camera used in the main 3D panel.
+     *
+     * @param from The position of the camera.
+     * @param to A point in the world upon which the camera is focused.
+     * @param up The unit vector indicating the direction that is "up".
+     */
     public void setMainView(Point3d from, Point3d to, Vector3d up) {
 
         ViewingPlatform vp = universe.getViewingPlatform();
@@ -470,11 +484,23 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    /**
+     * Sets the transform (position and orientation) of the camera used in the
+     * main 3D panel.
+     *
+     * @param t3d The new camera transform.
+     */
     public void setMainViewTransform(Transform3D t3d) {
         universe.getViewingPlatform().getViewPlatformTransform().setTransform(t3d);
     }
 
 
+    /**
+     * Gets the transform (position and orientation) of the camera that
+     * is used in the main 3D panel.
+     *
+     * @return The main camera's transform.
+     */
     public Transform3D getMainViewTransform() {
 
         TransformGroup tg = universe.getViewingPlatform().getViewPlatformTransform();
@@ -486,12 +512,21 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    /**
+     * Toggles the visibility of object labels.
+     *
+     * @param visible True if visible, false otherwise.
+     */
     public void setLabelsVisible(boolean visible) {
 
         // todo: toggle labels
     }
 
 
+    /**
+     * Called by the parent frame when it is disposed. The intent is to
+     * close any child frames that were spawned.
+     */
     public void dispose() {
 
         for (ObjectView v : objectViewMap.values()) {
