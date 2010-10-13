@@ -200,7 +200,11 @@ public class WorldMap {
                 Image texture = null;
 
                 if (obstacle.getColor() != null) {
-                    color = new Color(obstacle.getColor().getRed(), obstacle.getColor().getGreen(), obstacle.getColor().getBlue());
+                    
+                    color = new Color(obstacle.getColor().getRed(),
+                                      obstacle.getColor().getGreen(),
+                                      obstacle.getColor().getBlue(),
+                                      obstacle.getColor().getAlpha());
                 }
 
                 if (obstacle.getTexture() != null) {
@@ -234,7 +238,11 @@ public class WorldMap {
                 Image texture = null;
 
                 if (structure.getColor() != null) {
-                    color = new Color(structure.getColor().getRed(), structure.getColor().getGreen(), structure.getColor().getBlue());
+                    
+                    color = new Color(structure.getColor().getRed(),
+                                      structure.getColor().getGreen(),
+                                      structure.getColor().getBlue(),
+                                      structure.getColor().getAlpha());
                 }
 
                 if (structure.getTexture() != null) {
@@ -503,7 +511,11 @@ public class WorldMap {
                     Color color = new Color(250, 0, 50);
 
                     if (patch.getColor() != null) {
-                        color = new Color(patch.getColor().getRed(), patch.getColor().getGreen(), patch.getColor().getBlue());
+
+                        color = new Color(patch.getColor().getRed(),
+                                          patch.getColor().getGreen(),
+                                          patch.getColor().getBlue(),
+                                          patch.getColor().getAlpha());
                     }
 
                     addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, flowerInfo, flowers);
