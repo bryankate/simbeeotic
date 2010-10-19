@@ -13,11 +13,14 @@ import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
+import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.geometry.Sphere;
+import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 import harvard.robobees.simbeeotic.model.MotionListener;
+import harvard.robobees.simbeeotic.util.ImageLoader;
 import org.apache.log4j.Logger;
 
 import javax.media.j3d.AmbientLight;
@@ -28,6 +31,8 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Material;
+import javax.media.j3d.Texture;
+import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
@@ -66,10 +71,14 @@ public class Java3DWorld extends JPanel implements MotionListener {
 
     private static Logger logger = Logger.getLogger(Java3DWorld.class);
 
+    private static final Color3f SKY = new Color3f(new Color(65, 105, 225));
+    private static final Color3f GROUND = new Color3f(new Color(85, 107, 47));
     private static final Color3f BLACK = new Color3f(Color.BLACK);
+    private static final Color3f WHITE = new Color3f(Color.WHITE);
     private static final Color3f SPECULAR = new Color3f(new Color(0.9f, 0.9f, 0.9f));
     private static final Color3f DEFAULT_COLOR = new Color3f(Color.LIGHT_GRAY);
     private static final float SHININESS = 25;
+    private static final int PRIM_FLAGS = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS;
 
     private static final double BOUNDS = 1000;
 
@@ -78,12 +87,12 @@ public class Java3DWorld extends JPanel implements MotionListener {
     private static final Vector3d UP = new Vector3d(0, 1, 0);
 
 
-    public Java3DWorld() {
-        initWorld();
+    public Java3DWorld(boolean useSkyBackground) {
+        initWorld(useSkyBackground);
     }
 
 
-    private void initWorld() {
+    private void initWorld(boolean useSkyBackground) {
 
         BranchGroup rootBranchgroup = new BranchGroup();
         BoundingSphere bounds = new BoundingSphere(new Point3d(0, 0, 0), BOUNDS);
@@ -98,27 +107,55 @@ public class Java3DWorld extends JPanel implements MotionListener {
         AmbientLight ambientLightNode = new AmbientLight(new Color3f(Color.WHITE));
         ambientLightNode.setInfluencingBounds(bounds);
 
-        Vector3f light1Direction = new Vector3f(-1.0f, -1.0f, -1.0f);
-        Vector3f light2Direction  = new Vector3f(1.0f, -1.0f, 1.0f);
-
-        DirectionalLight light1 = new DirectionalLight(new Color3f(Color.WHITE), light1Direction);
-        DirectionalLight light2 = new DirectionalLight(new Color3f(Color.WHITE), light2Direction);
-
-        light1.setInfluencingBounds(bounds);
-        light2.setInfluencingBounds(bounds);
+        DirectionalLight light = new DirectionalLight(new Color3f(Color.WHITE), new Vector3f(-1.0f, -1.0f, -1.0f));
+        light.setInfluencingBounds(bounds);
 
         rootBranchgroup.addChild(ambientLightNode);
-        rootBranchgroup.addChild(light1);
-        rootBranchgroup.addChild(light2);
+        rootBranchgroup.addChild(light);
 
         // background
         Background back = new Background();
 
-        back.setColor(new Color3f(Color.BLUE));
-        back.setApplicationBounds(bounds);
-        rootBranchgroup.addChild(back);
+        if (useSkyBackground) {
 
-        // todo: draw axes
+            Material mat = new Material(GROUND, BLACK, GROUND, SPECULAR, SHININESS);
+            mat.setLightingEnable(false);
+
+            Appearance appear = new Appearance();
+            appear.setMaterial(mat);
+
+            Texture tex = new TextureLoader(ImageLoader.loadImageFromClasspath("/textures/sky_1.png"), this).getTexture();
+            TextureAttributes ta = new TextureAttributes();
+
+            tex.setBoundaryModeT(Texture.WRAP);
+            tex.setBoundaryModeS(Texture.WRAP);
+            ta.setTextureMode(TextureAttributes.REPLACE);
+
+            appear.setTexture(tex);
+            appear.setTextureAttributes(ta);
+
+            Sphere backSphere = new Sphere(1.0f,
+                                           PRIM_FLAGS | Primitive.GENERATE_NORMALS_INWARD,
+                                           45,
+                                           appear);
+
+            // rotate the sphere so the coords are the right way
+            Transform3D backTrans = new Transform3D();
+            backTrans.rotX(-Math.PI);
+
+            TransformGroup tg = new TransformGroup(backTrans);
+            BranchGroup backGeoBranch = new BranchGroup();
+
+            tg.addChild(backSphere);
+            backGeoBranch.addChild(tg);
+
+            back.setGeometry(backGeoBranch);
+        }
+
+        back.setColor(SKY);
+        back.setApplicationBounds(bounds);
+
+        rootBranchgroup.addChild(back);
 
         // root transform that makes Z axis up (as in Simbeeotic)
         Transform3D t3d = new Transform3D();
@@ -130,6 +167,10 @@ public class Java3DWorld extends JPanel implements MotionListener {
         rootTransformGroup.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
         rootTransformGroup.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
 
+        // draw axes
+        rootTransformGroup.addChild(createAxes());
+
+        // compile scene
         rootBranchgroup.addChild(rootTransformGroup);
         rootBranchgroup.compile();
 
@@ -186,12 +227,9 @@ public class Java3DWorld extends JPanel implements MotionListener {
         }
         else if (shape instanceof StaticPlaneShape){
 
-            StaticPlaneShape s = (StaticPlaneShape)shape;
-
-            Vector3f normal = new Vector3f();
-            s.getPlaneNormal(normal);
-
-            tg = createBox(objectId, (float)BOUNDS, (float)BOUNDS, 0);
+            // approximate a static plane with a cylinder
+            // that is large enough to cover the world bounds 
+            tg = createCylinder(objectId, (float)BOUNDS, 0);
         }
         else if (shape instanceof CompoundShape){
             tg = createCompoundShape(objectId, (CompoundShape)shape);
@@ -238,7 +276,12 @@ public class Java3DWorld extends JPanel implements MotionListener {
         if (color != null) {
 
             Color3f col = new Color3f(color);
-            float alpha = 1 - color.getAlpha() / 255;
+
+            // the alpha values coming in are [0,255] where
+            // 0 is fully transparent and 255 is opaque.
+            // java3d uses a range of [0.0,1.0] where 0.0 is
+            // fully opaque and 1.0 is fully transparent
+            float alpha = 1 - (color.getAlpha() / 255.0f);
 
             Appearance appear = appearanceMap.get(objectId);
             TransparencyAttributes ta = new TransparencyAttributes();
@@ -256,7 +299,19 @@ public class Java3DWorld extends JPanel implements MotionListener {
             appear.setTransparencyAttributes(ta);
         }
 
-        // todo: texture
+        if (texture != null) {
+
+            Texture tex = new TextureLoader(texture, this).getTexture();
+            TextureAttributes ta = new TextureAttributes();
+            Appearance appear = appearanceMap.get(objectId);
+
+            tex.setBoundaryModeT(Texture.WRAP);
+            tex.setBoundaryModeS(Texture.WRAP);
+            ta.setTextureMode(TextureAttributes.REPLACE);
+            
+            appear.setTexture(tex);
+            appear.setTextureAttributes(ta);
+        }
 
         // todo: labels
     }
@@ -270,7 +325,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 
-        tg.addChild(new Sphere(radius, appear));
+        tg.addChild(new Sphere(radius, PRIM_FLAGS, appear));
 
         transformMap.put(objectId, tg);
         appearanceMap.put(objectId, appear);
@@ -287,7 +342,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 
-        tg.addChild(new Box(l, w, h, appear));
+        tg.addChild(new Box(l, w, h, PRIM_FLAGS, appear));
 
         transformMap.put(objectId, tg);
         appearanceMap.put(objectId, appear);
@@ -304,7 +359,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 
-        tg.addChild(new Cone(r, h, appear));
+        tg.addChild(new Cone(r, h, PRIM_FLAGS, appear));
 
         transformMap.put(objectId, tg);
         appearanceMap.put(objectId, appear);
@@ -328,7 +383,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
 
         TransformGroup innerTg = new TransformGroup(t3d);
 
-        innerTg.addChild(new Cylinder(r, h, appear));
+        innerTg.addChild(new Cylinder(r, h, PRIM_FLAGS, appear));
         tg.addChild(innerTg);
 
         transformMap.put(objectId, tg);
@@ -367,7 +422,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
 
                 SphereShape sphere = (SphereShape)childShape;
 
-                childTg.addChild(new Sphere(sphere.getRadius(), appear));
+                childTg.addChild(new Sphere(sphere.getRadius(), PRIM_FLAGS, appear));
             }
             else if (childShape instanceof CylinderShape) {
 
@@ -383,7 +438,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
                 Vector3f halfExtents = new Vector3f();
                 cylinder.getHalfExtentsWithMargin(halfExtents);
 
-                innerTg.addChild(new Cylinder(cylinder.getRadius(), 2 * Math.abs(halfExtents.z), appear));
+                innerTg.addChild(new Cylinder(cylinder.getRadius(), 2 * Math.abs(halfExtents.z), PRIM_FLAGS, appear));
                 childTg.addChild(innerTg);
             }
             else if (childShape instanceof BoxShape) {
@@ -393,13 +448,13 @@ public class Java3DWorld extends JPanel implements MotionListener {
                 Vector3f halfExtents = new Vector3f();
                 box.getHalfExtentsWithMargin(halfExtents);
 
-                childTg.addChild(new Box(Math.abs(halfExtents.x), Math.abs(halfExtents.y), Math.abs(halfExtents.z), appear));
+                childTg.addChild(new Box(Math.abs(halfExtents.x), Math.abs(halfExtents.y), Math.abs(halfExtents.z), PRIM_FLAGS, appear));
             }
             else if (childShape instanceof ConeShape) {
 
                 ConeShape cone = (ConeShape)childShape;
 
-                childTg.addChild(new Cone(cone.getRadius(), cone.getHeight(), appear));
+                childTg.addChild(new Cone(cone.getRadius(), cone.getHeight(), PRIM_FLAGS, appear));
             }
             else {
                 logger.warn("Child not recognized!");
@@ -415,15 +470,92 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    private TransformGroup createAxes() {
+
+        float axisLength = 5.0f;
+        float axisWidth = 0.05f;
+        float coneHeight = 0.5f;
+        float coneWidth = 0.2f;
+
+        Appearance appear = createDefaultAppearance();
+        TransformGroup axesTg = new TransformGroup();
+        TransformGroup tg;
+        Transform3D t3d;
+
+        // origin
+        axesTg.addChild(new Sphere(coneWidth, PRIM_FLAGS, appear));
+
+        // X axis
+        t3d = new Transform3D();
+        t3d.rotZ(-Math.PI / 2);
+        t3d.setTranslation(new Vector3f(axisLength / 2, 0, 0));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cylinder(axisWidth, axisLength, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        t3d = new Transform3D();
+        t3d.rotZ(-Math.PI / 2);
+        t3d.setTranslation(new Vector3f(axisLength, 0, 0));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cone(coneWidth, coneHeight, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        // Y axis
+        t3d = new Transform3D();
+        t3d.setTranslation(new Vector3f(0, axisLength / 2, 0));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cylinder(axisWidth, axisLength, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        t3d = new Transform3D();
+        t3d.setTranslation(new Vector3f(0, axisLength, 0));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cone(coneWidth, coneHeight, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        // Z axis
+        t3d = new Transform3D();
+        t3d.rotX(-Math.PI / 2);
+        t3d.setTranslation(new Vector3f(0, 0, axisLength / 2));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cylinder(axisWidth, axisLength, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        t3d = new Transform3D();
+        t3d.rotX(Math.PI / 2);
+        t3d.setTranslation(new Vector3f(0, 0, axisLength));
+
+        tg = new TransformGroup(t3d);
+        tg.addChild(new Cone(coneWidth, coneHeight, PRIM_FLAGS, appear));
+
+        axesTg.addChild(tg);
+
+        return axesTg;
+    }
+
+
     private Appearance createDefaultAppearance() {
 
         Material mat = new Material(DEFAULT_COLOR, BLACK, DEFAULT_COLOR, SPECULAR, SHININESS);
         Appearance app = new Appearance();
 
         mat.setLightingEnable(true);
+
         app.setCapability(Appearance.ALLOW_MATERIAL_WRITE);
         app.setCapability(Appearance.ALLOW_COLORING_ATTRIBUTES_WRITE);
         app.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_WRITE);
+        app.setCapability(Appearance.ALLOW_TEXTURE_ATTRIBUTES_WRITE);
+        app.setCapability(Appearance.ALLOW_TEXTURE_WRITE);
         app.setMaterial(mat);
 
         return app;

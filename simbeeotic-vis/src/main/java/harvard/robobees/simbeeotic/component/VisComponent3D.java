@@ -2,6 +2,7 @@ package harvard.robobees.simbeeotic.component;
 
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,13 +21,17 @@ public class VisComponent3D extends JFrame implements VariationComponent {
     @Inject
     private VariationContext context;
 
+    @Inject(optional=true)
+    @Named("use-background")
+    private boolean useBackground = true;
+    
     
     @Override
     public void initialize() {
 
         Dimension size = new Dimension(900, 600);
 
-        world = new Java3DWorld();
+        world = new Java3DWorld(useBackground);
 
         ControlPanel control = new ControlPanel(world, context.getClockControl(), context.getSimEngine());
         JSplitPane pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, world, control);
