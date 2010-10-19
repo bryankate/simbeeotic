@@ -8,7 +8,7 @@
 
     <obstacles>
         <obstacle>
-            <box length="2" width="3">
+            <box>
                 <position x="10" y="10"/>
             </box>
             <meta>
@@ -16,10 +16,10 @@
             </meta>
         </obstacle>
         <obstacle>
-            <box>
+            <box length="4" width="4" height="4">
                 <position x="-5" y="8"/>
             </box>
-            <color red="192" green="65" blue="23" alpha="64"/>
+            <color red="192" green="65" blue="23" alpha="128"/>
         </obstacle>
         <obstacle>
             <box height="4">
@@ -27,6 +27,14 @@
             </box>
             <texture>
                 <classpath path="/textures/brick_2.jpg"/>
+            </texture>
+        </obstacle>
+        <obstacle>
+            <sphere radius="1">
+                <position x="-4" y="-10"/>
+            </sphere>
+            <texture>
+                <classpath path="/textures/metal_2.jpg"/>
             </texture>
         </obstacle>
     </obstacles>
