@@ -118,8 +118,8 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
         if (useSkyBackground) {
 
-            Material mat = new Material(GROUND, BLACK, GROUND, SPECULAR, SHININESS);
-            mat.setLightingEnable(false);
+            Material mat = new Material(GROUND, GROUND, GROUND, SPECULAR, SHININESS);
+            mat.setLightingEnable(true);
 
             Appearance appear = new Appearance();
             appear.setMaterial(mat);
@@ -129,7 +129,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
             tex.setBoundaryModeT(Texture.WRAP);
             tex.setBoundaryModeS(Texture.WRAP);
-            ta.setTextureMode(TextureAttributes.REPLACE);
+            ta.setTextureMode(TextureAttributes.DECAL);
 
             appear.setTexture(tex);
             appear.setTextureAttributes(ta);
@@ -307,7 +307,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
             tex.setBoundaryModeT(Texture.WRAP);
             tex.setBoundaryModeS(Texture.WRAP);
-            ta.setTextureMode(TextureAttributes.REPLACE);
+            ta.setTextureMode(TextureAttributes.DECAL);
             
             appear.setTexture(tex);
             appear.setTextureAttributes(ta);
@@ -359,7 +359,15 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 
-        tg.addChild(new Cone(r, h, PRIM_FLAGS, appear));
+        // cones in Java3D are about a different axis than JBullet,
+        // so wrap them in an extra TG so that they can be rotated properly
+        Transform3D t3d = new Transform3D();
+        t3d.rotX(Math.PI / 2);
+
+        TransformGroup innerTg = new TransformGroup(t3d);
+
+        innerTg.addChild(new Cone(r, h, PRIM_FLAGS, appear));
+        tg.addChild(innerTg);
 
         transformMap.put(objectId, tg);
         appearanceMap.put(objectId, appear);
@@ -454,7 +462,15 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
                 ConeShape cone = (ConeShape)childShape;
 
-                childTg.addChild(new Cone(cone.getRadius(), cone.getHeight(), PRIM_FLAGS, appear));
+                // cones in Java3D are about a different axis than JBullet,
+                // so wrap them in an extra TG so that they can be rotated properly
+                Transform3D t3d = new Transform3D();
+                t3d.rotX(Math.PI / 2);
+
+                TransformGroup innerTg = new TransformGroup(t3d);
+
+                innerTg.addChild(new Cone(cone.getRadius(), cone.getHeight(), PRIM_FLAGS, appear));
+                childTg.addChild(innerTg);
             }
             else {
                 logger.warn("Child not recognized!");
