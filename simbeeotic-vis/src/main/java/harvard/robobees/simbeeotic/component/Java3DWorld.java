@@ -15,6 +15,7 @@ import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.geometry.Sphere;
+import com.sun.j3d.utils.geometry.Text2D;
 import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
@@ -60,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author dcai
  * @author bkate
  */
-public class Java3DWorld extends JPanel implements MotionListener {
+public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
     private SimpleUniverse universe;
     private TransformGroup rootTransformGroup;
@@ -74,7 +75,6 @@ public class Java3DWorld extends JPanel implements MotionListener {
     private static final Color3f SKY = new Color3f(new Color(65, 105, 225));
     private static final Color3f GROUND = new Color3f(new Color(85, 107, 47));
     private static final Color3f BLACK = new Color3f(Color.BLACK);
-    private static final Color3f WHITE = new Color3f(Color.WHITE);
     private static final Color3f SPECULAR = new Color3f(new Color(0.9f, 0.9f, 0.9f));
     private static final Color3f DEFAULT_COLOR = new Color3f(Color.LIGHT_GRAY);
     private static final float SHININESS = 25;
@@ -470,6 +470,20 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
+    private TransformGroup createLabel(Text2D message, Vector3f pos) {
+
+        TransformGroup labeltg = new TransformGroup();
+        Transform3D labelt3d = new Transform3D();
+        labelt3d.setTranslation(new Vector3f(pos.x+0.0f,pos.y+0.1f,pos.z+0.0f));
+        Quat4f quat = new Quat4f();
+        labelt3d.setRotation(quat);
+        labeltg.setTransform(labelt3d);
+        labeltg.addChild(message);
+
+        return labeltg;
+    }
+
+
     private TransformGroup createAxes() {
 
         float axisLength = 5.0f;
@@ -562,13 +576,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
-    /**
-     * Creates a new window that shows the world from the perspective of
-     * a simulated object. A camera is set at the obejct's center, pointing
-     * in the direction of it's positive body X axis.
-     *
-     * @param objectId The ID of the object for which the view is to be spawned.
-     */
+    @Override
     public void spawnObjectView(int objectId) {
 
         if (objectViewMap.containsKey(objectId)) {
@@ -594,13 +602,7 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
-    /**
-     * Sets the position and orientation of the camera used in the main 3D panel.
-     *
-     * @param from The position of the camera.
-     * @param to A point in the world upon which the camera is focused.
-     * @param up The unit vector indicating the direction that is "up".
-     */
+    @Override
     public void setMainView(Point3d from, Point3d to, Vector3d up) {
 
         ViewingPlatform vp = universe.getViewingPlatform();
@@ -616,23 +618,13 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
-    /**
-     * Sets the transform (position and orientation) of the camera used in the
-     * main 3D panel.
-     *
-     * @param t3d The new camera transform.
-     */
+    @Override
     public void setMainViewTransform(Transform3D t3d) {
         universe.getViewingPlatform().getViewPlatformTransform().setTransform(t3d);
     }
 
 
-    /**
-     * Gets the transform (position and orientation) of the camera that
-     * is used in the main 3D panel.
-     *
-     * @return The main camera's transform.
-     */
+    @Override
     public Transform3D getMainViewTransform() {
 
         TransformGroup tg = universe.getViewingPlatform().getViewPlatformTransform();
@@ -644,21 +636,14 @@ public class Java3DWorld extends JPanel implements MotionListener {
     }
 
 
-    /**
-     * Toggles the visibility of object labels.
-     *
-     * @param visible True if visible, false otherwise.
-     */
+    @Override
     public void setLabelsVisible(boolean visible) {
 
         // todo: toggle labels
     }
 
 
-    /**
-     * Called by the parent frame when it is disposed. The intent is to
-     * close any child frames that were spawned.
-     */
+    @Override
     public void dispose() {
 
         for (ObjectView v : objectViewMap.values()) {
