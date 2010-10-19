@@ -488,15 +488,16 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
     private TransformGroup createLabel(Text2D message, Vector3f pos) {
 
-        TransformGroup labeltg = new TransformGroup();
-        Transform3D labelt3d = new Transform3D();
-        labelt3d.setTranslation(new Vector3f(pos.x+0.0f,pos.y+0.1f,pos.z+0.0f));
-        Quat4f quat = new Quat4f();
-        labelt3d.setRotation(quat);
-        labeltg.setTransform(labelt3d);
-        labeltg.addChild(message);
+        // todo: fix this - taken from old code
+//        TransformGroup labeltg = new TransformGroup();
+//        Transform3D labelt3d = new Transform3D();
+//        labelt3d.setTranslation(new Vector3f(pos.x+0.0f,pos.y+0.1f,pos.z+0.0f));
+//        Quat4f quat = new Quat4f();
+//        labelt3d.setRotation(quat);
+//        labeltg.setTransform(labelt3d);
+//        labeltg.addChild(message);
 
-        return labeltg;
+        return null;
     }
 
 
