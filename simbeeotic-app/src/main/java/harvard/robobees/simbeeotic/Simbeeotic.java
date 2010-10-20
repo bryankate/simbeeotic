@@ -169,9 +169,16 @@ public class Simbeeotic {
         }
 
         // start up the simulation
+        boolean noSim = Boolean.parseBoolean(System.getProperty("simbeeotic.nosim", "false"));
+
         SimController sim = new SimController();
 
-        sim.runSim(scenario, world, scale, opts.has(OPTION_PAUSED));
+        if (noSim) {
+            sim.runComponents(scenario, world);
+        }
+        else {
+            sim.runSim(scenario, world, scale, opts.has(OPTION_PAUSED));
+        }
 
         // explicitly exit so that the AWT threads will shutdown
         System.exit(0);

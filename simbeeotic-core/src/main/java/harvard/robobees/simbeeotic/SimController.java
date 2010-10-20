@@ -16,7 +16,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
@@ -60,7 +59,6 @@ import java.util.PriorityQueue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 
 
@@ -125,7 +123,7 @@ public class SimController {
 
             final AtomicInteger nextModelId = new AtomicInteger(0);
             final AtomicInteger nextMotionId = new AtomicInteger(0);
-            final Random variationSeedGenertor = new Random(variation.getSeed());
+            final Random variationSeedGenerator = new Random(variation.getSeed());
 
             // sim engine setup
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
@@ -183,7 +181,7 @@ public class SimController {
 
                 @Provides @Named("random-seed")
                 public long generateRandomSeed() {
-                    return variationSeedGenertor.nextLong();
+                    return variationSeedGenerator.nextLong();
                 }
             };
 
@@ -237,7 +235,7 @@ public class SimController {
 
 
             // setup the simulated world (obstacle, flowers, etc)
-            final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, variationSeedGenertor.nextLong());
+            final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, variationSeedGenerator.nextLong());
 
             baseInjector = baseInjector.createChildInjector(new AbstractModule() {
 
@@ -347,6 +345,140 @@ public class SimController {
             logger.info("--------------------------------------------");
             logger.info("Scenario variation " + currVariation + " executed in " + runTime + " seconds.");
             logger.info("--------------------------------------------");
+        }
+    }
+
+
+    /**
+     * Creates a virtual world and the components specified in the scenario, but does not
+     * create any models or start a simulation engine. This method allows users to
+     * utilize the Simbeeotic framework without running a scenario (e.g. for visualization).
+     * <p/>
+     * Note that not all aspects of the framework will be available to components - specifically,
+     * there will be no sim engine or clock control. In addition, only the first variation
+     * will be executed if the scenario defines multiple variations.
+     *
+     * @param scenario The scenario, describing the models to execute.
+     * @param world The world in which the models operate.
+     */
+    public void runComponents(final Scenario scenario, final World world) {
+
+        VariationIterator variations = new VariationIterator(scenario);
+
+        final int varId = 1;
+        final Variation firstVariation = variations.next();
+
+        final AtomicInteger nextMotionId = new AtomicInteger(0);
+        final Random seedGenerator = new Random(112181);
+
+        // setup a new world in the physics engine
+        CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
+        CollisionDispatcher dispatcher = new CollisionDispatcher(collisionConfiguration);
+
+        float aabbDim = world.getRadius() / (float)Math.sqrt(3);
+
+        Vector3f worldAabbMin = new Vector3f(-aabbDim, -aabbDim, 0);
+        Vector3f worldAabbMax = new Vector3f(aabbDim, aabbDim, aabbDim * 2);
+
+        AxisSweep3 overlappingPairCache = new AxisSweep3(worldAabbMin, worldAabbMax);
+        SequentialImpulseConstraintSolver solver = new SequentialImpulseConstraintSolver();
+
+        final DiscreteDynamicsWorld dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, overlappingPairCache,
+                                                                              solver, collisionConfiguration);
+
+        dynamicsWorld.setGravity(new Vector3f(0, 0, (float)EARTH_GRAVITY));
+
+        final MotionRecorder motionRecorder = new MotionRecorder();
+
+
+        // top level guice injector - all others are derived from this
+        Module baseModule = new AbstractModule() {
+
+            protected void configure() {
+
+                // the variation number of this scenario variation
+                bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
+
+                // scenario variation variable map
+                bind(Variation.class).annotatedWith(Names.named("variation")).toInstance(firstVariation);
+
+                // dynamics world
+                bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
+
+                // motion recorder
+                bind(MotionRecorder.class).annotatedWith(GlobalScope.class).toInstance(motionRecorder);
+            }
+
+            // todo: figure out how to get these providers to not be called for each child injector?
+
+            @Provides @Named("random-seed")
+            public long generateRandomSeed() {
+                return seedGenerator.nextLong();
+            }
+        };
+
+        Injector baseInjector = Guice.createInjector(baseModule);
+
+
+        // establish components
+        final List<VariationComponent> varComponents = new LinkedList<VariationComponent>();
+
+        if (scenario.getComponents() != null) {
+
+            for (CustomClass config : scenario.getComponents().getVariation()) {
+
+                final Class compClass;
+                final Properties compProps = loadConfigProps(config.getProperties(), firstVariation);
+
+                try {
+
+                    // locate the model implementation
+                    compClass = Class.forName(config.getJavaClass());
+
+                    // make sure it implements Model
+                    if (!VariationComponent.class.isAssignableFrom(compClass)) {
+                        throw new RuntimeException("The component implementation must extend from VariationComponent.");
+                    }
+                }
+                catch(ClassNotFoundException cnf) {
+                    throw new RuntimeException("Could not locate the component class: " +
+                                               config.getJavaClass(), cnf);
+                }
+
+                Injector compInjector = baseInjector.createChildInjector(new AbstractModule() {
+
+                    @Override
+                    protected void configure() {
+
+                        Names.bindProperties(binder(), compProps);
+
+                        // component class
+                        bind(VariationComponent.class).to(compClass);
+                    }
+                });
+
+
+                VariationComponent component = compInjector.getInstance(VariationComponent.class);
+
+                component.initialize();
+                varComponents.add(component);
+            }
+        }
+
+
+        // setup the simulated world (obstacle, flowers, etc)
+        final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, seedGenerator.nextLong());
+
+        
+        // do nothing until killed - there is no way to know that the components are done
+        while(true) {
+
+            try {
+                Thread.sleep(1000000);
+            }
+            catch(InterruptedException ie) {
+                break;
+            }
         }
     }
 

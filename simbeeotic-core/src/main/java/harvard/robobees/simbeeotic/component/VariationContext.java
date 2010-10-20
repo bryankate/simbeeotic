@@ -30,11 +30,11 @@ public class VariationContext {
     @GlobalScope
     private MotionRecorder recorder;
 
-    @Inject
+    @Inject(optional = true)
     @GlobalScope
     private ClockControl clockControl;
 
-    @Inject
+    @Inject(optional = true)
     @GlobalScope
     private SimEngine simEngine;
 
