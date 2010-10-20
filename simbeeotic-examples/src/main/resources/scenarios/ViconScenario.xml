@@ -12,7 +12,8 @@
         <variation>
             <java-class>harvard.robobees.simbeeotic.component.ViconVisComponent</java-class>
             <properties>
-                <prop name="object-names" value="wand"/>
+                <prop name="server-host" value="192.168.7.11"/>
+                <prop name="object-names" value="heli"/>
             </properties>
         </variation>
     </components>

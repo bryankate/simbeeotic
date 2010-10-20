@@ -12,10 +12,13 @@ import org.apache.log4j.Logger;
 
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
@@ -113,10 +116,11 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
             // open an incoming socket to receive data
             try {
 
-                sock = new DatagramSocket();
+                sock = new DatagramSocket(null);
+                sock.bind(null);
 
                 byte[] buff = Control.Connect.newBuilder().setObjectName(objectName)
-                                                          .setPort(sock.getPort()).build().toByteArray();
+                                                          .setPort(sock.getLocalPort()).build().toByteArray();
 
                 // send request
                 DatagramPacket packet = new DatagramPacket(buff, buff.length, InetAddress.getByName(serverHost), serverPort);
@@ -129,7 +133,9 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
 
                 sock.receive(packet);
 
-                Control.Result result = Control.Result.parseFrom(packet.getData());
+                ByteArrayInputStream in = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
+                Control.Result result = Control.Result.parseFrom(in);
+                in.close();
 
                 if (result.getType() == Control.Result.Type.SUCCESS) {
 
@@ -140,7 +146,7 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                     objectId = nextId++;
 
                     // todo: size, color, label
-                    world.initializeObject(objectId, new BoxShape(new Vector3f(1.0f, 0.5f, 0.1f)));
+                    world.initializeObject(objectId, new BoxShape(new Vector3f(0.2f, 0.05f, 0.07f)));
 
                     return true;
                 }
@@ -149,6 +155,8 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                 }
             }
             catch(Exception e) {
+                
+                e.printStackTrace();
                 // fall through
             }
 
@@ -163,6 +171,7 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                 return;
             }
 
+            int count = 0;
             byte[] buff = new byte[1024];
             DatagramPacket packet = new DatagramPacket(buff, buff.length);
 
@@ -173,18 +182,30 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                     // get another data packet and update the object in the world
                     sock.receive(packet);
 
-                    KinematicState.State state = KinematicState.State.parseFrom(packet.getData());
+                    // drop most packets, don't need to update the screen that fast
+                    if ((count % 5) != 0) {
+                        continue;
+                    }
 
-                    Vector3f pos = new Vector3f((float)state.getLocX(),
-                                                (float)state.getLocY(),
-                                                (float)state.getLocZ());
+                    ByteArrayInputStream in = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
+                    KinematicState.State state = KinematicState.State.parseFrom(in);
+                    in.close();
 
-                    Quat4f orient = new Quat4f();
+                    Vector3f pos = new Vector3f((float)state.getLocX() / 1000.0f,
+                                                (float)state.getLocY() / 1000.0f,
+                                                (float)state.getLocZ() / 1000.0f);
 
-                    MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM((float)state.getOrientEulerX(),
-                                                                  (float)state.getOrientEulerY(),
-                                                                  (float)state.getOrientEulerZ()),
-                                           orient);
+                    Quat4f orient = new Quat4f((float)state.getOrientQuatX(),
+                                               (float)state.getOrientQuatY(),
+                                               (float)state.getOrientQuatZ(),
+                                               (float)state.getOrientQuatW());
+
+//                    Quat4f orient = new Quat4f();
+//
+//                    MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM((float)state.getOrientEulerX(),
+//                                                                  (float)state.getOrientEulerY(),
+//                                                                  (float)state.getOrientEulerZ()),
+//                                           orient);
 
                     worldLock.lock();
 
