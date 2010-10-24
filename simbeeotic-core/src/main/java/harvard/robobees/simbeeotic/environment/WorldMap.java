@@ -508,7 +508,7 @@ public class WorldMap {
                     shape.addChildShape(stemTransform, stemShape);
                     shape.addChildShape(platTransform, platShape);
 
-                    Color color = new Color(250, 0, 50);
+                    Color color = new Color(192, 65, 23);
 
                     if (patch.getColor() != null) {
 
