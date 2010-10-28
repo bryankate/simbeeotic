@@ -2,14 +2,18 @@ package harvard.robobees.simbeeotic.component;
 
 
 import com.bulletphysics.collision.shapes.BoxShape;
-import com.bulletphysics.linearmath.MatrixUtil;
+import com.bulletphysics.collision.shapes.CompoundShape;
+import com.bulletphysics.collision.shapes.CylinderShape;
+import com.bulletphysics.collision.shapes.CylinderShapeZ;
+import com.bulletphysics.collision.shapes.SphereShape;
+import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import filterd.protocol.Control;
 import filterd.protocol.KinematicState;
-import harvard.robobees.simbeeotic.util.MathUtil;
 import org.apache.log4j.Logger;
 
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
@@ -17,8 +21,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
@@ -145,8 +147,52 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                     // make an object in the 3D world
                     objectId = nextId++;
 
-                    // todo: size, color, label
-                    world.initializeObject(objectId, new BoxShape(new Vector3f(0.2f, 0.05f, 0.07f)));
+                    if (objectName.startsWith("heli")) {
+
+                        CompoundShape cs = new CompoundShape();
+                        Transform trans = new Transform();
+
+                        // main body
+                        trans.origin.set(new Vector3f(0.0175f, 0, 0));
+
+                        cs.addChildShape(trans, new BoxShape(new Vector3f(0.045f, 0.02f, 0.025f)));
+
+                        // tail
+                        trans = new Transform();
+                        trans.origin.set(new Vector3f(-0.055f, 0, 0));
+
+                        cs.addChildShape(trans, new BoxShape(new Vector3f(0.055f, 0.0015f, 0.0015f)));
+
+                        trans = new Transform();
+                        trans.origin.set(new Vector3f(-0.11f, 0, 0.01f));
+
+                        cs.addChildShape(trans, new BoxShape(new Vector3f(0.01f, 0.0015f, 0.03f)));
+
+                        // rotors
+                        trans = new Transform();
+                        trans.origin.set(0, 0, 0.025f);
+
+                        cs.addChildShape(trans, new CylinderShapeZ(new Vector3f(0.002f, 0.002f, 0.05f)));
+
+                        trans = new Transform();
+                        trans.origin.set(0, 0, 0.03f);
+
+                        cs.addChildShape(trans, new CylinderShapeZ(new Vector3f(0.0925f, 0.0925f, 0.0001f)));
+
+                        trans = new Transform();
+                        trans.origin.set(0, 0, 0.045f);
+
+                        cs.addChildShape(trans, new CylinderShapeZ(new Vector3f(0.0925f, 0.0925f, 0.0001f)));
+
+                        // add to world
+                        world.initializeObject(objectId, cs);
+                        world.metaUpdate(objectId, Color.GRAY, null, objectName);
+                    }
+                    else {
+
+                        world.initializeObject(objectId, new SphereShape(0.075f));
+                        world.metaUpdate(objectId, Color.RED, null, objectName);
+                    }
 
                     return true;
                 }

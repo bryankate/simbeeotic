@@ -13,7 +13,7 @@
             <java-class>harvard.robobees.simbeeotic.component.ViconVisComponent</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <prop name="object-names" value="heli"/>
+                <prop name="object-names" value="heli2,wand"/>
             </properties>
         </variation>
     </components>

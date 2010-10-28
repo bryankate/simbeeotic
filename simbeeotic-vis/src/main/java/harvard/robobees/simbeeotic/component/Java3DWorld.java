@@ -168,7 +168,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
         rootTransformGroup.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
 
         // draw axes
-        rootTransformGroup.addChild(createAxes());
+//        rootTransformGroup.addChild(createAxes());
 
         // compile scene
         rootBranchgroup.addChild(rootTransformGroup);
