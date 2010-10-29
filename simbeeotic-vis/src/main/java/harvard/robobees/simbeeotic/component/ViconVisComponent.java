@@ -69,7 +69,7 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
         context.getRecorder().addListener(world);
 
         // setup GUI
-        setTitle("Vicon 3D Visulaization");
+        setTitle("Vicon 3D Visualization");
         setSize(900, 600);
         setContentPane(world);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
