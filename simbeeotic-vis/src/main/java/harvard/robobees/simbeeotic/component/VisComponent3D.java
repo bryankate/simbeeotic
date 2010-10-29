@@ -41,7 +41,7 @@ public class VisComponent3D extends JFrame implements VariationComponent {
         pane.setPreferredSize(size);
         pane.setResizeWeight(1.0);
 
-        setTitle("3D Visulaization");
+        setTitle("3D Visualization");
         setSize(size);
         setContentPane(pane);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
