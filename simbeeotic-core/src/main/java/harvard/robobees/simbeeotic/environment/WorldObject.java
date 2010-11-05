@@ -32,7 +32,8 @@ public class WorldObject {
         TERRAIN,
         OBSTACLE,
         STRUCTURE,
-        FLOWER
+        FLOWER,
+        PERSON
     }
 
 

@@ -25,6 +25,14 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+             <xs:element name="people" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="person" type="world:Person" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            
             <xs:element name="structures" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
@@ -59,6 +67,18 @@
             <xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
+
+ 	<xs:complexType name="Person">
+    	<xs:sequence>
+    		<xs:element name="color" type="world:Color" minOccurs="0" maxOccurs="1"/>
+    		<xs:element name="label" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    		<xs:element name="meta" type="world:Meta" minOccurs="0" maxOccurs="1"/>
+    		<xs:choice minOccurs="1" maxOccurs="1">
+    			<xs:element name="man" type="world:Man"></xs:element>
+    		</xs:choice>
+    	</xs:sequence>
+    </xs:complexType>
+
 
     <xs:complexType name="Structure">
         <xs:sequence>
@@ -184,4 +204,14 @@
 
         </xs:complexContent>
     </xs:complexType>
+    
+     <xs:complexType name="Man">
+        <xs:complexContent>
+            <xs:extension base="world:Shape">
+                <xs:attribute name="width" type="xs:float" default="1" use="optional"/>
+                <xs:attribute name="height" type="xs:float" default="1" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+    
 </xs:schema>

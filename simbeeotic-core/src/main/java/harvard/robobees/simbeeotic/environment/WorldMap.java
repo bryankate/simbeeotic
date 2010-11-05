@@ -21,9 +21,11 @@ import com.bulletphysics.linearmath.VectorUtil;
 import harvard.robobees.simbeeotic.configuration.world.Box;
 import harvard.robobees.simbeeotic.configuration.world.Cone;
 import harvard.robobees.simbeeotic.configuration.world.Cylinder;
+import harvard.robobees.simbeeotic.configuration.world.Man;
 import harvard.robobees.simbeeotic.configuration.world.Meta;
 import harvard.robobees.simbeeotic.configuration.world.Obstacle;
 import harvard.robobees.simbeeotic.configuration.world.Patch;
+import harvard.robobees.simbeeotic.configuration.world.Person;
 import harvard.robobees.simbeeotic.configuration.world.Sphere;
 import harvard.robobees.simbeeotic.configuration.world.Structure;
 import harvard.robobees.simbeeotic.configuration.world.Surface;
@@ -69,6 +71,7 @@ public class WorldMap {
     private Set<WorldObject> obstacles = new HashSet<WorldObject>();
     private Set<WorldObject> structures = new HashSet<WorldObject>();
     private Set<WorldObject> flowers = new HashSet<WorldObject>();
+    private Set<WorldObject> people = new HashSet<WorldObject>();
 
     // todo: parameterize this?
     private float stemHeight = 0.3f;   // m
@@ -220,7 +223,7 @@ public class WorldMap {
                 addBody(WorldObject.Type.OBSTACLE, startTransform, colShape, color, texture, obstacle.getLabel(), info, obstacles);
             }
         }
-
+        
         // setup structures
         if (world.getStructures() != null) {
 
@@ -433,7 +436,7 @@ public class WorldMap {
 	                	colShape = new BoxShape(new Vector3f((dimensions.x - trapX - trapLength)/2,
 	                										 extents.y,
 	                										 extents.z));
-
+	                	
 	                	startTransform.origin.set(new Vector3f(relDistRight, 0, 0));
 	                	compoundShape.addChildShape(startTransform, colShape);
 
@@ -461,6 +464,112 @@ public class WorldMap {
 	                }
                 }
             }
+        }
+        
+        // setup people
+        if (world.getPeople() != null) {
+        	
+        	for (Person person: world.getPeople().getPerson()) {
+        		
+        		if (person.getMan() != null) {
+        			
+        			Transform startTransform = null;
+
+                    Map<String, Object> meta = loadProperties(person.getMeta());
+
+                    int id = nextId.getAndIncrement();
+                    EntityInfo info = new EntityInfo(id, meta);
+
+                    String label = null;
+                    Color color = new Color(205, 175, 149, 128);
+
+                    if (person.getColor() != null) {
+                    	
+                        color = new Color(person.getColor().getRed(), 
+                        				  person.getColor().getGreen(), 
+                        				  person.getColor().getBlue(),
+                        				  person.getColor().getAlpha());
+                    }
+
+        			Man man = person.getMan();
+
+	            	// extract properties of the man from the xml
+	            	Vector3f position = new Vector3f(man.getPosition().getX(),
+	            			     					 man.getPosition().getY(),
+	            									 man.getPosition().getZ());
+
+	            	float width = man.getWidth();
+	            	float height = man.getHeight();
+	            	float xscale = width / 13.0f;
+	            	float thickness = 0.075f * height;
+	            	float zscale = height / 13.0f;
+
+	                startTransform = new Transform();
+	                startTransform.setIdentity();
+
+	                // set up center
+	                Vector3f center = new Vector3f(position.x,
+	                		    				   position.y,
+	                							   position.z + height/2.0f);
+
+	                CompoundShape compoundShape = new CompoundShape();
+
+	                CollisionShape colShape = null;
+	                
+                	// left leg
+                	colShape = new BoxShape(new Vector3f(0.5f * xscale, thickness, 2.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(-1 * xscale, 0, -4.0f * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+
+                	// right leg
+                	colShape = new BoxShape(new Vector3f(0.5f * xscale, thickness, 2.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(1 * xscale, 0, -4 * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+
+                	// torso
+                	colShape = new BoxShape(new Vector3f(1.5f * xscale, thickness, 2.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(0 * xscale, 0, 1 * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+                	
+                	// left arm
+                	colShape = new BoxShape(new Vector3f(2.5f * xscale, thickness, 0.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(-4 * xscale, 0, 3 * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+                	
+                	// right arm
+                	colShape = new BoxShape(new Vector3f(2.5f * xscale, thickness, 0.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(4 * xscale, 0, 3 * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+                	
+                	// neck
+                	colShape = new BoxShape(new Vector3f(0.5f * xscale, thickness, 0.5f * zscale));
+
+                	startTransform.origin.set(new Vector3f(0 * xscale, 0, 4 * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+                	
+                	// head
+                	colShape = new BoxShape(new Vector3f(1 * xscale, thickness, 1 * zscale));
+
+                	startTransform.origin.set(new Vector3f(0 * xscale, 0, 5.5f * zscale));
+                	compoundShape.addChildShape(startTransform, colShape);
+                	
+                	
+                	// necessary I think?
+            		compoundShape.recalculateLocalAabb();
+
+            		// setup the transform for the full compound shape
+            		// correct for rotation to place the surface such that the lower left corner is in position
+            		startTransform.origin.set(center);
+
+            		// add the compound shape into the world!
+            		addBody(WorldObject.Type.PERSON, startTransform, compoundShape, color, null, label, info, people);
+        		}
+        	}
         }
 
         // setup flower patches
@@ -662,6 +771,67 @@ public class WorldMap {
 
         return in;
     }
+    
+    /**
+     * Gets the people that are contained within the right cone defining the field of view. The
+     * person is determined to be in the cone if its center is in the cone.
+     *
+     * @param origin The center of the sensor.
+     * @param pointing Direction in which sensor looks. Assume normalized.
+     * @param range The length of the field-of-view cone.
+     * @param halfAngle Angle in radians of half of the field of view.
+     *
+     * @return The set of all people in the given area.
+     */
+    public Set<WorldObject> getPeople(Vector3f origin, Vector3f pointing, double range, float halfAngle) {
+
+        Set<WorldObject> in = new HashSet<WorldObject>();
+
+        for (WorldObject obj : people) {
+        	
+        	// vector from sensor to object
+            Vector3f relPos = new Vector3f();
+            relPos.sub(obj.getTruthPosition(), origin);
+            
+            pointing.normalize();
+            
+            // distance between sensor and object along direction in which sensor is pointed
+            float component = pointing.dot(relPos);
+            
+            // check that component falls within range of cone
+            if(component >= 0 && component <= range) {
+            	
+            	// get vector projection
+            	Vector3f proj = new Vector3f();
+            	proj.get(pointing);
+            	proj.scale(component);
+            	
+            	// get orthogonal component
+            	Vector3f orthogonal = new Vector3f();
+            	orthogonal.sub(relPos, proj);
+            	float orthogonalComponent = proj.length();
+            	
+            	// 'right angle cone' portion
+            	if(component <= range * Math.cos(halfAngle)) {
+	            	// determine whether orthogonal component places the object in the cone
+	            	if(orthogonalComponent <= Math.tan(halfAngle) * component)
+	            		in.add(obj);
+            	}
+            	// 'oblique' portion
+            	else {
+            		float arcHeight = (float) range - component;
+            		// get chord length from radius and arc height
+            		float coneWidth = ((float) Math.sqrt((8 * arcHeight) * (range - arcHeight/2)))/2;
+            		if(orthogonalComponent <= coneWidth)
+            			in.add(obj);
+            	}
+            }
+
+            
+        }
+
+        return in;
+    }
 
 
     private Map<String, Object> loadProperties(Meta meta) {
@@ -701,6 +871,7 @@ public class WorldMap {
             case OBSTACLE:
             case TERRAIN:
             case STRUCTURE:
+            case PERSON:
 
                 dynamicsWorld.addRigidBody(body, COLLISION_TERRAIN, COLLISION_BEE);
                 break;

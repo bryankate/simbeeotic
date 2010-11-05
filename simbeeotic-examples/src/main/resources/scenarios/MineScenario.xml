@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>20000</end-time>
+    </simulation>
+    
+   <components>
+   	<variation>
+   		<java-class>harvard.robobees.simbeeotic.component.SimpleVis</java-class>
+   	</variation>
+   </components>
+
+    <models>
+        <model>
+          <java-class>harvard.robobees.simbeeotic.example.MineBee</java-class>
+            <sensor name="person-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.PersonSensor</java-class>
+                <properties>
+                    <prop name="max-range" value="1.0"/>
+                </properties>
+                <offset x="0" y="0" z="-0.1"/>
+                <pointing x="1" y="0" z="0"/>
+            </sensor>
+            <sensor name="wall-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.WallSensor</java-class>
+                <properties>
+                    <prop name="max-range" value="1.0"/>
+                </properties>
+                <offset x="0" y="0" z="0.1"/>
+                <pointing x="1" y="0" z="0"/>
+            </sensor>
+            <start-position x="0.5" y="0.5" z="0.6"></start-position>
+        </model>
+    </models>
+
+</scenario>

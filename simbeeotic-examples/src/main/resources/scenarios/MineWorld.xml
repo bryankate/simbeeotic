@@ -1,0 +1,1385 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<world xmlns="http://harvard/robobees/simbeeotic/configuration/world"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/world http://some/path/to/schema.xsd">
+	
+	<radius>2000</radius>
+	
+	<structures>
+		<structure>
+			<surface height="0.1" length="3.9973688" rotation="0.0"
+				width="3.9973688">
+				<position x="0.0" y="0.0" z="0.0" />
+			</surface>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="1.9477876"
+				width="0.1">
+				<position x="3.9060595" y="2.618034" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.0734513"
+				width="0.1">
+				<position x="3.8136005" y="2.8515584" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.199115"
+				width="0.1">
+				<position x="3.6926022" y="3.0716534" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.3247788"
+				width="0.1">
+				<position x="3.5449727" y="3.2748477" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.4504426"
+				width="0.1">
+				<position x="3.3730404" y="3.457937" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.5761063"
+				width="0.1">
+				<position x="3.1795168" y="3.6180336" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.70177"
+				width="0.1">
+				<position x="2.9674535" y="3.752613" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.8274338"
+				width="0.1">
+				<position x="2.7401953" y="3.8595526" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="2.9530976"
+				width="0.1">
+				<position x="2.5013258" y="3.937166" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.0787613"
+				width="0.1">
+				<position x="2.2546124" y="3.9842288" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.204425"
+				width="0.1">
+				<position x="2.0039458" y="3.9999993" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.3300889"
+				width="0.1">
+				<position x="1.7532793" y="3.9842286" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.4557526"
+				width="0.1">
+				<position x="1.506566" y="3.9371653" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.5814164"
+				width="0.1">
+				<position x="1.2676967" y="3.8595517" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.7070801"
+				width="0.1">
+				<position x="1.0404385" y="3.7526119" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.832744"
+				width="0.1">
+				<position x="0.82837546" y="3.6180325" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="3.9584076"
+				width="0.1">
+				<position x="0.6348519" y="3.4579356" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.084071"
+				width="0.1">
+				<position x="0.46291977" y="3.274846" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.209735"
+				width="0.1">
+				<position x="0.31529054" y="3.0716515" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.3353987"
+				width="0.1">
+				<position x="0.19429246" y="2.8515563" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.4610624"
+				width="0.1">
+				<position x="0.101833716" y="2.6180315" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.586726"
+				width="0.1">
+				<position x="0.039372455" y="2.3747602" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.71239"
+				width="0.1">
+				<position x="0.007893726" y="2.1255784" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.8380537"
+				width="0.1">
+				<position x="0.007893968" y="1.8744164" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="4.9637175"
+				width="0.1">
+				<position x="0.039373178" y="1.6252348" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.089381"
+				width="0.1">
+				<position x="0.10183491" y="1.3819635" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.215045"
+				width="0.1">
+				<position x="0.1942941" y="1.1484389" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.3407087"
+				width="0.1">
+				<position x="0.3152926" y="0.9283441" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.4663725"
+				width="0.1">
+				<position x="0.46292222" y="0.72514987" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.5920362"
+				width="0.1">
+				<position x="0.63485473" y="0.5420608" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.7177" width="0.1">
+				<position x="0.8283787" y="0.38196433" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.843364"
+				width="0.1">
+				<position x="1.040442" y="0.24738525" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="5.9690275"
+				width="0.1">
+				<position x="1.2677004" y="0.14044596" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="6.0946913"
+				width="0.1">
+				<position x="1.5065699" y="0.06283296" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="6.220355"
+				width="0.1">
+				<position x="1.7532833" y="0.015770257" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.06283331"
+				width="0.1">
+				<position x="2.0039496" y="5.5879354E-8" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.18849702"
+				width="0.1">
+				<position x="2.254616" y="0.015771018" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.31416073"
+				width="0.1">
+				<position x="2.5013292" y="0.062834464" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.43982446"
+				width="0.1">
+				<position x="2.7401984" y="0.14044817" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.56548816"
+				width="0.1">
+				<position x="2.9674563" y="0.24738812" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.69115186"
+				width="0.1">
+				<position x="3.1795194" y="0.3819678" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.81681556"
+				width="0.1">
+				<position x="3.3730428" y="0.54206485" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="0.94247925"
+				width="0.1">
+				<position x="3.5449748" y="0.7251544" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="1.068143"
+				width="0.1">
+				<position x="3.6926038" y="0.928349" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="1.1938068"
+				width="0.1">
+				<position x="3.8136017" y="1.1484442" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="10.0" length="0.25116208" rotation="1.3194705"
+				width="0.1">
+				<position x="3.9060602" y="1.381969" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="0.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="1.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="1.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="1.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="1.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="1.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="3.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="3.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="3.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="3.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="3.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="4.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="4.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="4.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="4.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="4.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="6.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="6.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="6.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="6.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="6.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.4451343"
+				width="0.1">
+				<position x="3.9685214" y="1.6252404" z="7.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.570798"
+				width="0.1">
+				<position x="4.0" y="1.8744221" z="7.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.6964618"
+				width="0.1">
+				<position x="3.9999995" y="2.1255841" z="7.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.8221256"
+				width="0.1">
+				<position x="3.9685202" y="2.3747656" z="7.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="0.25116208" rotation="1.9477893"
+				width="0.1">
+				<position x="3.9060583" y="2.618037" z="7.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="1.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="1.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="1.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="1.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.374213" y="1.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="9.374213" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="10.374213" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="11.788427" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="11.374213" y="4.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="13.788427" y="-1.3747596" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.788427" y="-1.4747596" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="12.788427" y="-0.37475955" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="14.202641" y="-0.37475955" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="11.788427" y="0.62524045" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="11.788427" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.202641" y="-0.37475955" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.2026415" y="-1.4747596" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.202641" y="0.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.202641" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="18.031069" y="-1.3747596" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.616854" y="-0.37475955" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.616854" y="-1.4747596" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.616854" y="0.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.616854" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.031067" y="0.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.031067" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="18.859493" y="0.62524045" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="17.44528" y="0.5252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.0" rotation="1.5707964" width="0.1">
+				<position x="17.859495" y="1.6252404" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="17.859495" y="2.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="17.44528" y="3.6252403" z="2.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="9.545786" y="-1.3747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.545786" y="-1.4747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="8.545787" y="-0.37475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="7.5457864" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="8.96" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.96" y="-1.4747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="8.96" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="13.788427" y="-1.3747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.374213" y="-1.4747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.374213" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.374213" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.374213" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="11.788427" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.788427" y="-0.47475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.788427" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.788427" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.202641" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.202641" y="-0.47475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="16.616854" y="-1.3747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="18.031069" y="-1.3747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.616854" y="-1.4747596" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.616854" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.031067" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="17.031067" y="-0.47475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.031068" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.031068" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="19.859495" y="-0.37475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="17.44528" y="0.62524045" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="18.44528" y="-0.47475955" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.0" rotation="1.5707964" width="0.1">
+				<position x="17.859495" y="1.6252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.44528" y="2.6252403" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.44528" y="1.5252404" z="5.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.374213" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.374213" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.788427" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="10.788427" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="12.202641" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="11.788427" y="3.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="13.202641" y="3.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="12.788427" y="4.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.788427" y="5.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.2026415" y="5.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.202641" y="4.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.0" rotation="1.5707964" width="0.1">
+				<position x="15.031068" y="1.6252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="2.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="1.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.616854" y="5.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.616854" y="4.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="18.031069" y="5.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="17.031067" y="4.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="19.859495" y="4.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="19.445282" y="5.6252403" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="18.44528" y="4.5252404" z="8.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="3.7173593" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="8.131573" y="-1.3747596" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="8.131573" y="-1.4747596" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="7.1315727" y="-0.37475955" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="6.1315727" y="0.62524045" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="5.1315727" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="9.545786" y="-1.4747596" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="6.5457864" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="12.374213" y="-1.3747596" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.96" y="-1.4747596" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="11.374213" y="-0.37475955" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="7.96" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="2.3561945"
+				width="0.1">
+				<position x="11.788427" y="0.62524045" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.374213" y="0.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="9.374213" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="10.788427" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="10.374213" y="3.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="11.374213" y="4.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.374213" y="5.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.788427" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="10.788427" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="13.202641" y="3.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="11.788427" y="3.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.788427" y="5.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="12.202641" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.2026415" y="5.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="14.202641" y="4.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="13.616855" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.7853982"
+				width="0.1">
+				<position x="17.031067" y="4.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.616854" y="5.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.616854" y="4.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.031068" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="15.031068" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.0" rotation="1.5707964" width="0.1">
+				<position x="17.859495" y="1.6252404" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.44528" y="2.6252403" z="9.0" />
+			</wall>
+		</structure>
+		<structure>
+			<wall height="1.0" length="1.4142135" rotation="0.0" width="0.1">
+				<position x="16.44528" y="1.5252404" z="9.0" />
+			</wall>
+		</structure>
+	</structures>
+	<people>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="14.495534" y="-0.87475955" z="2.1" />
+				<meta>
+					<prop name="person-id" value="20" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="13.495534" y="0.12524045" z="2.1" />
+				<meta>
+					<prop name="person-id" value="21" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="12.495534" y="1.1252404" z="2.1" />
+				<meta>
+					<prop name="person-id" value="22" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="15.738174" y="2.1252403" z="2.1" />
+				<meta>
+					<prop name="person-id" value="23" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="17.152388" y="3.1252403" z="2.1" />
+				<meta>
+					<prop name="person-id" value="24" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="9.252893" y="0.12524045" z="5.1" />
+				<meta>
+					<prop name="person-id" value="50" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="10.08132" y="2.1252403" z="5.1" />
+				<meta>
+					<prop name="person-id" value="51" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="11.495534" y="2.1252403" z="5.1" />
+				<meta>
+					<prop name="person-id" value="52" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="17.738174" y="0.12524045" z="5.1" />
+				<meta>
+					<prop name="person-id" value="53" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="5.8386793" y="2.1252403" z="8.1" />
+				<meta>
+					<prop name="person-id" value="80" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="11.495534" y="2.1252403" z="8.1" />
+				<meta>
+					<prop name="person-id" value="81" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="12.495534" y="4.1252403" z="8.1" />
+				<meta>
+					<prop name="person-id" value="82" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="19.152388" y="5.1252403" z="8.1" />
+				<meta>
+					<prop name="person-id" value="83" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="4.424466" y="2.1252403" z="9.1" />
+				<meta>
+					<prop name="person-id" value="90" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="8.667107" y="2.1252403" z="9.1" />
+				<meta>
+					<prop name="person-id" value="91" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="11.495534" y="2.1252403" z="9.1" />
+				<meta>
+					<prop name="person-id" value="92" />
+				</meta>
+			</man>
+		</person>
+		<person>
+			<man height="0.5" width="0.5">
+				<position x="14.323961" y="2.1252403" z="9.1" />
+				<meta>
+					<prop name="person-id" value="93" />
+				</meta>
+			</man>
+		</person>
+	</people>
+</world>
