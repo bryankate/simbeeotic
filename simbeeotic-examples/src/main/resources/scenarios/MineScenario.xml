@@ -11,12 +11,6 @@
     <simulation>
         <end-time>20000</end-time>
     </simulation>
-    
-   <components>
-   	<variation>
-   		<java-class>harvard.robobees.simbeeotic.component.SimpleVis</java-class>
-   	</variation>
-   </components>
 
     <models>
         <model>
@@ -40,5 +34,11 @@
             <start-position x="0.5" y="0.5" z="0.6"></start-position>
         </model>
     </models>
+
+    <components>
+        <variation>
+            <java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class>
+        </variation>
+    </components>
 
 </scenario>

@@ -1246,139 +1246,139 @@
 	</structures>
 	<people>
 		<person>
+            <meta>
+                <prop name="person-id" value="20" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="14.495534" y="-0.87475955" z="2.1" />
-				<meta>
-					<prop name="person-id" value="20" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="21" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="13.495534" y="0.12524045" z="2.1" />
-				<meta>
-					<prop name="person-id" value="21" />
-				</meta>
 			</man>
 		</person>
 		<person>
-			<man height="0.5" width="0.5">
+            <meta>
+                <prop name="person-id" value="22" />
+            </meta>
+            <man height="0.5" width="0.5">
 				<position x="12.495534" y="1.1252404" z="2.1" />
-				<meta>
-					<prop name="person-id" value="22" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="23" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="15.738174" y="2.1252403" z="2.1" />
-				<meta>
-					<prop name="person-id" value="23" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="24" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="17.152388" y="3.1252403" z="2.1" />
-				<meta>
-					<prop name="person-id" value="24" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="50" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="9.252893" y="0.12524045" z="5.1" />
-				<meta>
-					<prop name="person-id" value="50" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="51" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="10.08132" y="2.1252403" z="5.1" />
-				<meta>
-					<prop name="person-id" value="51" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="52" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="11.495534" y="2.1252403" z="5.1" />
-				<meta>
-					<prop name="person-id" value="52" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="53" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="17.738174" y="0.12524045" z="5.1" />
-				<meta>
-					<prop name="person-id" value="53" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="80" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="5.8386793" y="2.1252403" z="8.1" />
-				<meta>
-					<prop name="person-id" value="80" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="81" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="11.495534" y="2.1252403" z="8.1" />
-				<meta>
-					<prop name="person-id" value="81" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="82" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="12.495534" y="4.1252403" z="8.1" />
-				<meta>
-					<prop name="person-id" value="82" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="83" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="19.152388" y="5.1252403" z="8.1" />
-				<meta>
-					<prop name="person-id" value="83" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="90" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="4.424466" y="2.1252403" z="9.1" />
-				<meta>
-					<prop name="person-id" value="90" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="91" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="8.667107" y="2.1252403" z="9.1" />
-				<meta>
-					<prop name="person-id" value="91" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="92" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="11.495534" y="2.1252403" z="9.1" />
-				<meta>
-					<prop name="person-id" value="92" />
-				</meta>
 			</man>
 		</person>
 		<person>
+            <meta>
+                <prop name="person-id" value="93" />
+            </meta>
 			<man height="0.5" width="0.5">
 				<position x="14.323961" y="2.1252403" z="9.1" />
-				<meta>
-					<prop name="person-id" value="93" />
-				</meta>
 			</man>
 		</person>
 	</people>
