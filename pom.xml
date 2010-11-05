@@ -20,6 +20,7 @@
 
     <modules>
         <module>simbeeotic-core</module>
+        <module>simbeeotic-env</module>
         <module>simbeeotic-vis</module>
         <module>simbeeotic-examples</module>
         <module>simbeeotic-app</module>
