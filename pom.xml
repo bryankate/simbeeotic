@@ -15,7 +15,7 @@
     <parent>
         <groupId>harvard.robobees</groupId>
         <artifactId>robobees-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
 
     <modules>
@@ -180,31 +180,18 @@
         </plugins>
     </build>
 
-    <!-- todo: fix this once we get a real maven repo -->
     <repositories>
         <repository>
             <id>hive</id>
             <name>RoboBees Maven Repository</name>
-            <url>http://hive.seas.harvard.edu/svn/main/mavenrepo</url>
+            <url>http://hive.seas.harvard.edu/artifactory/mavenrepo</url>
         </repository>
         <repository>
             <id>hive-snapshots</id>
             <name>RoboBees Maven Snapshot Repository</name>
-            <url>http://hive.seas.harvard.edu/svn/main/mavenrepo-snapshots</url>
+            <url>http://hive.seas.harvard.edu/artifactory/mavenrepo-snapshots</url>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>java.net</id>
-            <name>java.net Maven Repository</name>
-            <url>http://download.java.net/maven/2</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <mailingLists>
         <mailingList>

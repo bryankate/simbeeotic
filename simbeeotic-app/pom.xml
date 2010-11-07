@@ -41,20 +41,4 @@
         </plugins>
     </build>
 
-    <!-- todo: remove this when we get a real repo -->
-    <distributionManagement>
-        <repository>
-            <id>hive</id>
-            <name>RoboBees Maven Repository</name>
-            <!-- release from a tagged version -->
-            <url>file://${basedir}/../../../../../mavenrepo</url>
-        </repository>
-        <snapshotRepository>
-            <id>hive-snapshot</id>
-            <name>RoboBees Maven Snapshot Repository</name>
-            <!-- release from the trunk -->
-            <url>file://${basedir}/../../../../mavenrepo-snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
