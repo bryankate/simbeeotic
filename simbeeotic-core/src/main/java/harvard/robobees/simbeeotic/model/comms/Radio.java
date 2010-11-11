@@ -23,6 +23,15 @@ public interface Radio {
 
 
     /**
+     * Transmits a message asynchronously over the physical medium. The {@link PropagationModel}
+     * in use will determine which radios receive the message
+     *
+     * Returns 1 on success and 0 on failure
+     *
+     */
+    public int transmitAsync(byte[] data);
+
+    /**
      * Called by the {@link PropagationModel} when a transmission is received by this
      * radio.
      *

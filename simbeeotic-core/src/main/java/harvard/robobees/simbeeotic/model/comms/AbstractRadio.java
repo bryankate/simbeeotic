@@ -5,6 +5,7 @@ import com.bulletphysics.linearmath.MatrixUtil;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.ClockControl;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.AbstractModel;
 import harvard.robobees.simbeeotic.model.Model;
@@ -15,8 +16,7 @@ import harvard.robobees.simbeeotic.util.MathUtil;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,9 +28,14 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractRadio extends AbstractModel implements Radio {
 
+    private final int SENDQUEUE_SIZE = 100;
     private PhysicalEntity host;
     private PropagationModel propModel;
     private double txRxTime = 0;
+
+    //async send data
+    private LinkedList<byte[]> sendQueue = new LinkedList();
+    private harvard.robobees.simbeeotic.model.Timer sendTimer;
 
     // parameters
     private Vector3f offset = new Vector3f();
@@ -73,6 +78,34 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
             }
 
         }, 0, TimeUnit.MICROSECONDS, idlePollPeriod, TimeUnit.MILLISECONDS);
+
+
+        sendTimer=createTimer(new TimerCallback() {
+           public void fire(SimTime t) {
+               /**
+                * check if queue is empty, if not schedule next timer when the next packet has been sent
+                * if queue is empty, send nextFiring to null so that sendAsync checks and knows that it needs
+                * to restart the timer.
+                * Finally, send packet using send()
+                * NOTE: Packet sent at the end of time period of sending. 
+                 */
+               long sendTime;
+
+               // send packet
+               transmit((byte[])sendQueue.removeFirst());
+
+               if(sendQueue.isEmpty()) {
+                   sendTime = 0; 
+               }
+               else {
+                   sendTime = (new Double(((byte[])sendQueue.getFirst()).length / 125 / getBandwidth())).longValue();
+               }
+
+               //reset timer              
+               sendTimer.reset(t, sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
+                
+           }
+        }, 0, TimeUnit.MICROSECONDS, 0, TimeUnit.MILLISECONDS);
     }
 
 
@@ -114,6 +147,34 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
         getAggregator().addValue("energy", "radio-tx", timeToTx * getTxEnergy());
     }
 
+
+    /** {@inheritDoc} */
+    public int transmitAsync(byte[] data) {
+
+        double timeToTx = data.length / 125.0 / getBandwidth();
+        int timerSuccess = 0;
+
+        //Check if queue is full
+        if(sendQueue.size() > SENDQUEUE_SIZE) {
+            return 0;
+        }
+
+        // Queue not full - so add this packet to queue
+        sendQueue.add(data);
+
+        // Check if timer is running for send
+
+        timerSuccess = checkTimer();        
+
+        if(timerSuccess == 0)
+            return 0;
+
+        txRxTime += timeToTx * TimeUnit.SECONDS.toMillis(1);
+
+        getAggregator().addValue("energy", "radio-tx", timeToTx * getTxEnergy());
+
+        return 1;
+    }
 
     /**
      * Gets the amount of energy used by the radio when it is receiving a
@@ -383,5 +444,13 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     @Inject
     public final void setAntennaPattern(final AntennaPattern pattern) {
         this.pattern = pattern;
+    }
+
+    protected int checkTimer() {
+        if(sendTimer.getNextFiringTime().getTime() == 0) {
+            long sendTime = (new Double(((byte[])sendQueue.getFirst()).length / 125.0 / getBandwidth())).longValue();
+            sendTimer.reset(/*((ClockControl)getSimEngine().findModelByType(ClockControl.class)).getCurrentTime()*/ getCurrTime(), sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
+        }
+        return 0;
     }
 }
