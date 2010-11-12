@@ -24,12 +24,12 @@ public interface Radio {
 
     /**
      * Transmits a message asynchronously over the physical medium. The {@link PropagationModel}
-     * in use will determine which radios receive the message
+     * in use will determine which radios receive the message.
      *
-     * Returns 1 on success and 0 on failure
-     *
+     * @return True on success and false on failure. Failure occurs if the massage buffer
+     *         in the radio is full.
      */
-    public int transmitAsync(byte[] data);
+    public boolean transmitAsync(byte[] data);
 
     /**
      * Called by the {@link PropagationModel} when a transmission is received by this

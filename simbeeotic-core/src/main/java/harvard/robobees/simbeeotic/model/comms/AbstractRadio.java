@@ -6,17 +6,22 @@ import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.ClockControl;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
 import harvard.robobees.simbeeotic.model.AbstractModel;
 import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.EventHandler;
+import harvard.robobees.simbeeotic.model.Timer;
 import harvard.robobees.simbeeotic.model.TimerCallback;
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.util.MathUtil;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,14 +33,14 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractRadio extends AbstractModel implements Radio {
 
-    private final int SENDQUEUE_SIZE = 100;
     private PhysicalEntity host;
     private PropagationModel propModel;
+    private ClockControl clock;
     private double txRxTime = 0;
 
-    //async send data
-    private LinkedList<byte[]> sendQueue = new LinkedList();
-    private harvard.robobees.simbeeotic.model.Timer sendTimer;
+    // async send data
+    private Queue<byte[]> sendQueue = new LinkedList<byte[]>();
+    private Timer sendTimer;
 
     // parameters
     private Vector3f offset = new Vector3f();
@@ -45,6 +50,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     private AntennaPattern pattern;
 
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
+
+    private static final int SENDQUEUE_SIZE = 100;
 
 
     /** {@inheritDoc} */
@@ -80,30 +87,25 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
         }, 0, TimeUnit.MICROSECONDS, idlePollPeriod, TimeUnit.MILLISECONDS);
 
 
-        sendTimer=createTimer(new TimerCallback() {
+        // a timer that pulls messages off the message queue and sends them
+        // at the fastest rate possible
+        sendTimer = createTimer(new TimerCallback() {
+
            public void fire(SimTime t) {
-               /**
-                * check if queue is empty, if not schedule next timer when the next packet has been sent
-                * if queue is empty, send nextFiring to null so that sendAsync checks and knows that it needs
-                * to restart the timer.
-                * Finally, send packet using send()
-                * NOTE: Packet sent at the end of time period of sending. 
-                 */
-               long sendTime;
 
-               // send packet
-               transmit((byte[])sendQueue.removeFirst());
+               if (!sendQueue.isEmpty()) {
 
-               if(sendQueue.isEmpty()) {
-                   sendTime = 0; 
+                   // send packet
+                   transmit(sendQueue.poll());
+
+                   long sendTime = (long)(sendQueue.peek().length / 125.0 / getBandwidth());
+
+                   // schedule timer to send next packet
+                   sendTimer.reset(t, sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
                }
                else {
-                   sendTime = (new Double(((byte[])sendQueue.getFirst()).length / 125 / getBandwidth())).longValue();
+                   sendTimer.cancel();
                }
-
-               //reset timer              
-               sendTimer.reset(t, sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
-                
            }
         }, 0, TimeUnit.MICROSECONDS, 0, TimeUnit.MILLISECONDS);
     }
@@ -149,33 +151,26 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
 
 
     /** {@inheritDoc} */
-    public int transmitAsync(byte[] data) {
-
-        double timeToTx = data.length / 125.0 / getBandwidth();
-        int timerSuccess = 0;
+    public boolean transmitAsync(byte[] data) {
 
         //Check if queue is full
-        if(sendQueue.size() > SENDQUEUE_SIZE) {
-            return 0;
+        if (sendQueue.size() > SENDQUEUE_SIZE) {
+            return false;
         }
 
         // Queue not full - so add this packet to queue
         sendQueue.add(data);
 
-        // Check if timer is running for send
+        // check to see if the timer is scheduled to fire. if it idle, then schedule it
+        // to fire immdiately so this packet can be sent. otherwise it will be scheduled anyway
+        if (sendTimer.getNextFiringTime() == null) {
+            sendTimer.reset(clock.getCurrentTime(), 0, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
+        }
 
-        timerSuccess = checkTimer();        
-
-        if(timerSuccess == 0)
-            return 0;
-
-        txRxTime += timeToTx * TimeUnit.SECONDS.toMillis(1);
-
-        getAggregator().addValue("energy", "radio-tx", timeToTx * getTxEnergy());
-
-        return 1;
+        return true;
     }
 
+    
     /**
      * Gets the amount of energy used by the radio when it is receiving a
      * message. The return from this method may be dependent on the current
@@ -395,6 +390,12 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
         this.host = host;
     }
 
+    
+    @Inject
+    public final void setClockControl(@GlobalScope final ClockControl clock) {
+        this.clock = clock;
+    }
+
 
     /**
      * Sets the offset position of the antenna base, essentially where the antenna is
@@ -444,13 +445,5 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     @Inject
     public final void setAntennaPattern(final AntennaPattern pattern) {
         this.pattern = pattern;
-    }
-
-    protected int checkTimer() {
-        if(sendTimer.getNextFiringTime().getTime() == 0) {
-            long sendTime = (new Double(((byte[])sendQueue.getFirst()).length / 125.0 / getBandwidth())).longValue();
-            sendTimer.reset(/*((ClockControl)getSimEngine().findModelByType(ClockControl.class)).getCurrentTime()*/ getCurrTime(), sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
-        }
-        return 0;
     }
 }

@@ -85,6 +85,14 @@ public class TestRadio implements Radio {
 
 
     @Override
+    public boolean transmitAsync(byte[] data) {
+
+        transmit(data);
+        return true;
+    }
+
+
+    @Override
     public Band getOperatingBand() {
         return new Band(2442.5, 85);
     }
