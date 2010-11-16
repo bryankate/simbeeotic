@@ -42,6 +42,8 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     private Queue<byte[]> sendQueue = new LinkedList<byte[]>();
     private Timer sendTimer;
 
+    private Set<MessageListener> listeners = new HashSet<MessageListener>();
+
     // parameters
     private Vector3f offset = new Vector3f();
     private Vector3f pointing = new Vector3f(0, 0, 1);
@@ -50,7 +52,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     private AntennaPattern pattern;
     private int sendQueueSize = 100;
 
-    private Set<MessageListener> listeners = new HashSet<MessageListener>();
+    private static final double BYTES_PER_KILOBIT = 125;
 
 
     /** {@inheritDoc} */
@@ -97,7 +99,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
                    // send packet
                    transmit(sendQueue.poll());
 
-                   long sendTime = (long)(sendQueue.peek().length / 125.0 / getBandwidth());
+                   long sendTime = (long)(sendQueue.peek().length / BYTES_PER_KILOBIT / getBandwidth());
 
                    // schedule timer to send next packet
                    sendTimer.reset(t, sendTime, TimeUnit.MILLISECONDS, 0, TimeUnit.MILLISECONDS);
@@ -130,7 +132,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     /** {@inheritDoc} */
     public void receive(SimTime time, byte[] data, double rxPower, double frequency) {
 
-        double timeToRx = data.length / 125.0 / getBandwidth();
+        double timeToRx = data.length / BYTES_PER_KILOBIT / getBandwidth();
 
         txRxTime += timeToRx * TimeUnit.SECONDS.toMillis(1);
 
@@ -141,7 +143,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     /** {@inheritDoc} */
     public void transmit(byte[] data) {
 
-        double timeToTx = data.length / 125.0 / getBandwidth();
+        double timeToTx = data.length / BYTES_PER_KILOBIT / getBandwidth();
 
         txRxTime += timeToTx * TimeUnit.SECONDS.toMillis(1);
 
