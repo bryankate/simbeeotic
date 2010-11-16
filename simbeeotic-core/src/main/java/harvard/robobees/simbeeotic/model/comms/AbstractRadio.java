@@ -48,10 +48,9 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     private Vector3f pointingNormal = new Vector3f(1, 0, 0);
     private double rotation = 0;
     private AntennaPattern pattern;
+    private int sendQueueSize = 100;
 
     private Set<MessageListener> listeners = new HashSet<MessageListener>();
-
-    private static final int SENDQUEUE_SIZE = 100;
 
 
     /** {@inheritDoc} */
@@ -154,7 +153,7 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     public boolean transmitAsync(byte[] data) {
 
         //Check if queue is full
-        if (sendQueue.size() > SENDQUEUE_SIZE) {
+        if (sendQueue.size() > sendQueueSize) {
             return false;
         }
 
@@ -445,5 +444,11 @@ public abstract class AbstractRadio extends AbstractModel implements Radio {
     @Inject
     public final void setAntennaPattern(final AntennaPattern pattern) {
         this.pattern = pattern;
+    }
+
+
+    @Inject(optional = true)
+    public final void setSendQueueSize(@Named("send-queue-size") final int size) {
+        this.sendQueueSize = size;
     }
 }
