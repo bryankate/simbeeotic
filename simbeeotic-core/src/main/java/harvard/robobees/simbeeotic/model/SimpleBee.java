@@ -39,6 +39,9 @@ public abstract class SimpleBee extends GenericModel {
     private float mass = 0.128f;    // g
     private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
+    private float actuationErrTurnVar = 0;   // radians
+    private float actuationErrDirVar = 0;    // percent (0-1 scale)
+    private float actuationErrVelVar = 0;    // percent (0-1 scale)
     private boolean useWind = false;
     private boolean compensateForWind = true;
 
@@ -79,6 +82,32 @@ public abstract class SimpleBee extends GenericModel {
 
                         // desired final direction in body frame
                         Vector3f impulse = new Vector3f(desiredLinVel);
+                        float impulseMag = impulse.length();
+
+                        // apply some actation error to the direction of
+                        // the velocity vector to make it go off course
+                        if ((impulseMag > 0) && (actuationErrDirVar > 0)) {
+
+                            impulse.normalize();
+
+                            impulse.x += getRandom().nextGaussian() * actuationErrDirVar;
+                            impulse.y += getRandom().nextGaussian() * actuationErrDirVar;
+                            impulse.z += getRandom().nextGaussian() * actuationErrDirVar;
+
+                            impulse.normalize();
+                            impulse.scale(impulseMag);
+                        }
+
+                        // apply some actation error to the magnitude of the velocity so that
+                        // the bee may go further/shorter than expected
+                        if ((impulseMag > 0) && (actuationErrVelVar > 0)) {
+
+                            impulseMag += (impulseMag * getRandom().nextGaussian() * actuationErrVelVar);
+
+                            impulse.normalize();
+                            impulse.scale(impulseMag);
+                        }
+
                         Transform trans = new Transform();
 
                         // translate to world frame
@@ -90,7 +119,7 @@ public abstract class SimpleBee extends GenericModel {
                         impulse.sub(getTruthLinearVelocity());
 
                         // cap the translational force based on the max acceleration ability
-                        if (impulse.length() > maxAccel) {
+                        if (impulseMag > maxAccel) {
 
                             impulse.normalize();
                             impulse.scale(maxAccel);
@@ -225,7 +254,13 @@ public abstract class SimpleBee extends GenericModel {
         Vector3f unitX = new Vector3f(1, 0, 0);
         orient.transform(unitX);
 
-        float heading = (float)Math.atan2(unitX.y, unitX.x) + angle;
+        float ang = angle;
+
+        if (actuationErrTurnVar > 0) {
+            ang += getRandom().nextGaussian() * actuationErrTurnVar;
+        }
+
+        float heading = (float)Math.atan2(unitX.y, unitX.x) + ang;
         Quat4f quat = new Quat4f();
 
         MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM(0, 0, heading), quat);
@@ -267,6 +302,10 @@ public abstract class SimpleBee extends GenericModel {
 
         if (Float.isNaN(angle)) {
             return;
+        }
+
+        if (actuationErrTurnVar > 0) {
+            angle += getRandom().nextGaussian() * actuationErrTurnVar;
         }
 
         Transform trans = new Transform();
@@ -396,6 +435,33 @@ public abstract class SimpleBee extends GenericModel {
 
         if (!isInitialized()) {
             this.compensateForWind = use;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setActuationErrTurnVar(@Named("actuation-error-turn-var") final float err) {
+
+        if (!isInitialized()) {
+            this.actuationErrTurnVar = err;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setActuationDirTurnVar(@Named("actuation-error-dir-var") final float err) {
+
+        if (!isInitialized()) {
+            this.actuationErrDirVar = err;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setActuationVelTurnVar(@Named("actuation-error-vel-var") final float err) {
+
+        if (!isInitialized()) {
+            this.actuationErrVelVar = err;
         }
     }
 }
