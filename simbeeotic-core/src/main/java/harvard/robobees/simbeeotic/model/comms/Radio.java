@@ -26,6 +26,8 @@ public interface Radio {
      * Transmits a message asynchronously over the physical medium. The {@link PropagationModel}
      * in use will determine which radios receive the message.
      *
+     * @param data The data to be transmitted.
+     *
      * @return True on success and false on failure. Failure occurs if the massage buffer
      *         in the radio is full.
      */
