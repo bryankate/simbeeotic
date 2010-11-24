@@ -162,7 +162,7 @@ public class SimController {
                     bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
 
                     // scenario variation variable map
-                    bind(Variation.class).annotatedWith(Names.named("variation")).toInstance(variation);
+                    bind(Variation.class).toInstance(variation);
 
                     // the global access to sim engine executive
                     bind(SimEngine.class).annotatedWith(GlobalScope.class).toInstance(simEngine);

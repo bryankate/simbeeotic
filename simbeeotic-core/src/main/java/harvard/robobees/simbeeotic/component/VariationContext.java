@@ -23,7 +23,6 @@ public class VariationContext {
     private int variationNum;
 
     @Inject
-    @Named("variation")
     private Variation variation;
 
     @Inject
