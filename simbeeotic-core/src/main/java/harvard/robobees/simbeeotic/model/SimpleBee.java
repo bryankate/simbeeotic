@@ -39,6 +39,7 @@ public abstract class SimpleBee extends GenericModel {
     private float mass = 0.128f;    // g
     private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
+    private double actuationEnergy = 600;    // mA
     private float actuationErrTurnVar = 0;   // radians
     private float actuationErrDirVar = 0;    // percent (0-1 scale)
     private float actuationErrVelVar = 0;    // percent (0-1 scale)
@@ -75,6 +76,9 @@ public abstract class SimpleBee extends GenericModel {
                     updateKinematics(time);
 
                     if (hovering || (desiredLinVel.length() > 0)) {
+
+                        // todo: replace this with model based on the force applied?
+                        getAggregator().addValue("energy", "actuation", actuationEnergy * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
 
                         body.activate();
 
@@ -435,6 +439,15 @@ public abstract class SimpleBee extends GenericModel {
 
         if (!isInitialized()) {
             this.compensateForWind = use;
+        }
+    }
+
+
+    @Inject(optional = true)
+    public final void setActuationEnergy(@Named("actuation-energy") final double energy) {
+
+        if (!isInitialized()) {
+            this.actuationEnergy = energy;
         }
     }
 
