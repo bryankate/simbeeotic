@@ -121,6 +121,7 @@ public abstract class SimpleBee extends GenericModel {
 
                         // find the velocity change and determine the instantaneous acceleration required
                         impulse.sub(getTruthLinearVelocity());
+                        impulseMag = impulse.length();
 
                         // cap the translational force based on the max acceleration ability
                         if (impulseMag > maxAccel) {
