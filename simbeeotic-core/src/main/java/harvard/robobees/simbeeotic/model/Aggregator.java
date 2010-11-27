@@ -154,4 +154,45 @@ public class Aggregator {
         // todo: this would ideally be done with events between models
         this.parent = parent;
     }
+
+
+    /**
+     * Clears a key from the aggregator.
+     *
+     * @param key The key to clear.
+     */
+    public void clear(String key) {
+
+        if (key == null) {
+            throw new IllegalArgumentException("The aggregator key is null.");
+        }
+
+        aggregate.remove(key);
+        itemized.remove(key);
+    }
+
+
+    /**
+     * Clears an item belonging to a specific key in the aggregator.
+     *
+     * @param key The key to clear.
+     */
+    public void clear(String key, String item) {
+
+        if (key == null) {
+            throw new IllegalArgumentException("The aggregator key is null.");
+        }
+
+        if (item == null) {
+            throw new IllegalArgumentException("The aggregator item is null.");
+        }
+
+        if (aggregate.containsKey(key) && itemized.containsKey(key) && itemized.get(key).containsKey(item)) {
+
+            double val = itemized.get(key).get(item);
+
+            itemized.get(key).remove(item);
+            aggregate.put(key, aggregate.get(key) - val);
+        }
+    }
 }
