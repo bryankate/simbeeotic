@@ -627,7 +627,7 @@ public class WorldMap {
 
                     EntityInfo patchInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
                     Transform trans = new Transform();
-                    float halfHeight = (stemHeight + floraHeight / 2);
+                    float halfHeight = 0.01f;
 
                     trans.setIdentity();
                     trans.origin.set(new Vector3f(patch.getCenter().getX(),
