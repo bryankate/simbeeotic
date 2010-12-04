@@ -3,9 +3,7 @@ package harvard.robobees.simbeeotic.environment;
 
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.ConeShape;
 import com.bulletphysics.collision.shapes.ConeShapeZ;
-import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.CylinderShapeZ;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
@@ -18,6 +16,9 @@ import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.VectorUtil;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.configuration.world.Box;
 import harvard.robobees.simbeeotic.configuration.world.Cone;
 import harvard.robobees.simbeeotic.configuration.world.Cylinder;
@@ -42,6 +43,7 @@ import static harvard.robobees.simbeeotic.model.PhysicalEntity.COLLISION_TERRAIN
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
 import java.util.Random;
@@ -63,38 +65,26 @@ public class WorldMap {
 
     private World world;
     private Random rand;
-
     private DiscreteDynamicsWorld dynamicsWorld;
     private MotionRecorder recorder;
     private AtomicInteger nextId;
+
     private WorldObject ground;
     private Set<WorldObject> obstacles = new HashSet<WorldObject>();
     private Set<WorldObject> structures = new HashSet<WorldObject>();
     private Set<WorldObject> flowers = new HashSet<WorldObject>();
     private Set<WorldObject> people = new HashSet<WorldObject>();
+    private Map<Integer, Double> approxPatchDensity = new HashMap<Integer, Double>();
 
-    // todo: parameterize this?
+    // params
+    private boolean approximatePatches = false;
     private float stemHeight = 0.3f;   // m
     private float stemRadius = 0.01f;  // m
     private float floraHeight = 0.02f; // m
     private float floraRadius = 0.1f;  // m
 
 
-    public WorldMap(World world, DiscreteDynamicsWorld dynWorld,
-                    MotionRecorder recorder, AtomicInteger nextId, long seed) {
-
-        this.world = world;
-        this.rand = new Random(seed);
-
-        this.dynamicsWorld = dynWorld;
-        this.recorder = recorder;
-        this.nextId = nextId;
-
-        initialize();
-    }
-
-
-    private void initialize() {
+    public void initialize() {
 
         // setup the inifinite ground plane
         CollisionShape groundShape = new StaticPlaneShape(new Vector3f(0, 0, 1), 0);
@@ -579,55 +569,77 @@ public class WorldMap {
 
                 float radius = patch.getRadius();
                 float diam = radius * 2;
-                int numFlowers = (int)(Math.PI * (radius * radius) * patch.getDensity());
 
-                CollisionShape stemShape = new CylinderShapeZ(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
-                CollisionShape platShape = new CylinderShapeZ(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
+                Color color = new Color(192, 65, 23);
 
-                // make individual flowers and place them in the patch randomly
-                for (int i = 0; i < numFlowers; i++) {
+                if (patch.getColor() != null) {
 
-                    // todo: get the z loc once terrain is added
-                    float x = patch.getCenter().getX() + (rand.nextFloat() * diam) - radius;
-                    float y = patch.getCenter().getY() + (rand.nextFloat() * diam) - radius;
-                    float z = 0;
+                    color = new Color(patch.getColor().getRed(),
+                                      patch.getColor().getGreen(),
+                                      patch.getColor().getBlue(),
+                                      patch.getColor().getAlpha());
+                }
 
-                    EntityInfo flowerInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
+                if (!approximatePatches) {
 
-                    // make stem
-                    Transform stemTransform = new Transform();
-                    stemTransform.setIdentity();
+                    int numFlowers = (int)(Math.PI * (radius * radius) * patch.getDensity());
 
-                    stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
+                    CollisionShape stemShape = new CylinderShapeZ(new Vector3f(stemRadius, stemRadius, stemHeight / 2));
+                    CollisionShape platShape = new CylinderShapeZ(new Vector3f(floraRadius, floraRadius, floraHeight / 2));
 
-                    // make platform
-                    Transform platTransform = new Transform();
-                    platTransform.setIdentity();
+                    // make individual flowers and place them in the patch randomly
+                    for (int i = 0; i < numFlowers; i++) {
 
-                    platTransform.origin.set(new Vector3f(0, 0, stemHeight));
+                        // todo: get the z loc once terrain is added
+                        float x = patch.getCenter().getX() + (rand.nextFloat() * diam) - radius;
+                        float y = patch.getCenter().getY() + (rand.nextFloat() * diam) - radius;
+                        float z = 0;
 
-                    // put the flower together
+                        EntityInfo flowerInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
+
+                        // make stem
+                        Transform stemTransform = new Transform();
+                        stemTransform.setIdentity();
+
+                        stemTransform.origin.set(new Vector3f(0, 0, stemHeight / 2));
+
+                        // make platform
+                        Transform platTransform = new Transform();
+                        platTransform.setIdentity();
+
+                        platTransform.origin.set(new Vector3f(0, 0, stemHeight));
+
+                        // put the flower together
+                        Transform trans = new Transform();
+
+                        trans.setIdentity();
+                        trans.origin.set(new Vector3f(x, y, z));
+
+                        CompoundShape shape = new CompoundShape();
+
+                        shape.addChildShape(stemTransform, stemShape);
+                        shape.addChildShape(platTransform, platShape);
+
+                        addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, flowerInfo, flowers);
+                    }
+                }
+                else {
+
+                    EntityInfo patchInfo = new EntityInfo(nextId.getAndIncrement(), loadProperties(patch.getMeta()));
                     Transform trans = new Transform();
+                    float halfHeight = (stemHeight + floraHeight / 2);
 
                     trans.setIdentity();
-                    trans.origin.set(new Vector3f(x, y, z));
+                    trans.origin.set(new Vector3f(patch.getCenter().getX(),
+                                                  patch.getCenter().getY(),
+                                                  halfHeight));
 
-                    CompoundShape shape = new CompoundShape();
+                    CollisionShape shape = new CylinderShapeZ((new Vector3f(patch.getRadius(), patch.getRadius(), halfHeight)));
 
-                    shape.addChildShape(stemTransform, stemShape);
-                    shape.addChildShape(platTransform, platShape);
+                    color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 64);
 
-                    Color color = new Color(192, 65, 23);
-
-                    if (patch.getColor() != null) {
-
-                        color = new Color(patch.getColor().getRed(),
-                                          patch.getColor().getGreen(),
-                                          patch.getColor().getBlue(),
-                                          patch.getColor().getAlpha());
-                    }
-
-                    addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, flowerInfo, flowers);
+                    approxPatchDensity.put(patchInfo.getObjectId(), (double)patch.getDensity());
+                    addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, patchInfo, flowers);
                 }
             }
         }
@@ -748,6 +760,8 @@ public class WorldMap {
     /**
      * Gets the flowers that are contained within the given sphere. The
      * flower is determined to be in the sphere if its center is in the sphere.
+     * For approximate flower patches, the patch and intersecting area are modeled
+     * as circles.
      *
      * @param center The center of the query sphere.
      * @param radius The radius of the query sphere.
@@ -760,12 +774,59 @@ public class WorldMap {
 
         for (WorldObject obj : flowers) {
 
-            Vector3f diff = new Vector3f();
+            if (!approximatePatches) {
 
-            diff.sub(center, obj.getTruthPosition());
+                Vector3f diff = new Vector3f();
 
-            if (diff.length() <= radius) {
-                in.add(obj);
+                diff.sub(center, obj.getTruthPosition());
+
+                if (diff.length() <= radius) {
+                    in.add(obj);
+                }
+            }
+            else {
+
+                // we need to approximate detecting individual flowers using the
+                // size of the patch, the amount of overlap, and the density
+
+                Vector2f patchCenter = new Vector2f(obj.getTruthPosition().x, obj.getTruthPosition().y);
+                Vector2f queryCenter = new Vector2f(center.x, center.y);
+
+                Vector2f temp = new Vector2f();
+                temp.sub(queryCenter, patchCenter);
+
+                double dist = temp.length();
+                double distSq = temp.lengthSquared();
+                double patchRadius = obj.getTruthBoundingSphere().getRadius();
+                double patchRadiusSq = patchRadius * patchRadius;
+                double radiusSq = (float)(radius * radius);
+                double intersectedArea = 0;
+
+                if (dist >= (patchRadius + radius)) {
+
+                    // the query circle is outside the patch
+                    continue;
+                }
+                else if (dist + radius <= patchRadius) {
+
+                    // the query is inscribed
+                    intersectedArea = Math.PI * radiusSq;
+                }
+                else {
+
+                    // the circles partially intersect
+                    double theta1 = 2 * Math.acos((radiusSq + distSq - patchRadiusSq) / (2 * radius * dist));
+                    double theta2 = 2 * Math.acos((patchRadiusSq + distSq - radiusSq) / (2 * patchRadius * dist));
+
+                    intersectedArea = (0.5 * theta1 * radiusSq) - (0.5 * radiusSq * Math.sin(theta1)) +
+                                      (0.5 * theta2 * patchRadiusSq) - (0.5 * patchRadiusSq * Math.sin(theta2));
+                }
+
+                // use the density and the intersected area to determine how likely
+                // we are to see a flower. then do a random draw to see if a flower is seen
+                if (rand.nextDouble() <= (approxPatchDensity.get(obj.getObjectId()) * intersectedArea)) {
+                    in.add(obj);
+                }
             }
         }
 
@@ -910,5 +971,65 @@ public class WorldMap {
     	center.x = center.x + shift.x;
     	center.y = center.y + shift.y;
     	
+    }
+
+    
+    @Inject
+    public final void setRandomSeed(@Named("random-seed") final long seed) {
+        this.rand = new Random(seed);
+    }
+
+
+    @Inject
+    public final void setNextId(@Named("next-id") final AtomicInteger next) {
+        this.nextId = next;
+    }
+
+
+    @Inject
+    public final void setWorld(final World world) {
+        this.world = world;
+    }
+
+
+    @Inject
+    public final void setDynamicsWorld(@GlobalScope final DiscreteDynamicsWorld dynamicsWorld) {
+        this.dynamicsWorld = dynamicsWorld;
+    }
+
+
+    @Inject
+    public final void setMotionRecorder(@GlobalScope final MotionRecorder recorder) {
+        this.recorder = recorder;
+    }
+
+
+    @Inject(optional = true)
+    public final void setApproximatePatches(@Named("approximate-patches") final boolean use) {
+        approximatePatches = use;
+    }
+
+
+    @Inject(optional = true)
+    public final void setStemHeight(@Named("flower-stem-height") final float height) {
+        stemHeight = height;
+    }
+
+
+    @Inject(optional = true)
+    public final void setStemRadius(@Named("flower-stem-radius") final float rad) {
+        stemRadius = rad;
+    }
+
+
+    @Inject(optional = true)
+    public final void setFloraHeight(@Named("flower-flora-height") final float height) {
+        floraHeight = height;
+    }
+
+
+    @Inject(optional = true)
+    public final void setFloraRadius(@Named("flower-flora-radius") final float rad) {
+        floraRadius = rad;
     }
 }

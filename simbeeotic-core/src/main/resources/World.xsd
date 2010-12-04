@@ -11,6 +11,7 @@
     <xs:complexType name="World">
         <xs:sequence>
             <xs:element name="radius" type="xs:float" default="10000" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="properties" type="world:Meta" minOccurs="0" maxOccurs="1"/>
             <xs:element name="obstacles" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
@@ -32,7 +33,6 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            
             <xs:element name="structures" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
