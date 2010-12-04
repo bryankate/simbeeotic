@@ -29,6 +29,7 @@ import harvard.robobees.simbeeotic.configuration.scenario.SensorConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.RadioConfig;
 import harvard.robobees.simbeeotic.configuration.scenario.Vector;
 import harvard.robobees.simbeeotic.configuration.scenario.CustomClass;
+import harvard.robobees.simbeeotic.configuration.world.Meta;
 import harvard.robobees.simbeeotic.configuration.world.World;
 import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GRAVITY;
 import harvard.robobees.simbeeotic.environment.WorldMap;
@@ -235,7 +236,30 @@ public class SimController {
 
 
             // setup the simulated world (obstacle, flowers, etc)
-            final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, variationSeedGenerator.nextLong());
+            final Properties worldProps = new Properties();
+
+            if (world.getProperties() != null) {
+
+                for (Meta.Prop prop : world.getProperties().getProp()) {
+                    worldProps.setProperty(prop.getName(), prop.getValue());
+                }
+            }
+
+            baseInjector = baseInjector.createChildInjector(new AbstractModule() {
+
+                @Override
+                protected void configure() {
+
+                    Names.bindProperties(binder(), worldProps);
+
+                    bind(WorldMap.class);
+                    bind(World.class).toInstance(world);
+                    bind(AtomicInteger.class).annotatedWith(Names.named("next-id")).toInstance(nextMotionId);
+                }
+            });
+
+            final WorldMap map = baseInjector.getInstance(WorldMap.class);
+            map.initialize();
 
             baseInjector = baseInjector.createChildInjector(new AbstractModule() {
 
@@ -467,7 +491,30 @@ public class SimController {
 
 
         // setup the simulated world (obstacle, flowers, etc)
-        final WorldMap map = new WorldMap(world, dynamicsWorld, motionRecorder, nextMotionId, seedGenerator.nextLong());
+        final Properties worldProps = new Properties();
+
+        if (world.getProperties() != null) {
+
+            for (Meta.Prop prop : world.getProperties().getProp()) {
+                worldProps.setProperty(prop.getName(), prop.getValue());
+            }
+        }
+
+        Injector worldInjector = baseInjector.createChildInjector(new AbstractModule() {
+
+            @Override
+            protected void configure() {
+
+                Names.bindProperties(binder(), worldProps);
+
+                bind(WorldMap.class);
+                bind(World.class).toInstance(world);
+                bind(AtomicInteger.class).annotatedWith(Names.named("next-id")).toInstance(nextMotionId);
+            }
+        });
+
+        final WorldMap map = worldInjector.getInstance(WorldMap.class);
+        map.initialize();
 
         
         // do nothing until killed - there is no way to know that the components are done
