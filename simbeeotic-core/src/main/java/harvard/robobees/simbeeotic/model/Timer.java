@@ -20,6 +20,7 @@ public final class Timer {
     private SimTime lastFired = null;
     private SimTime nextFiringTime = null;
     private long period = 0;  // nanoseconds
+    private boolean canceled = false;
 
     private int modelId;
     private SimEngine simEngine;
@@ -63,7 +64,7 @@ public final class Timer {
 
         lastFired = time;
 
-        if (period > 0) {
+        if ((period > 0) && !canceled) {
             scheduleNextFiring(new SimTime(time, period, TimeUnit.NANOSECONDS));
         }
     }
@@ -82,6 +83,8 @@ public final class Timer {
      * @param periodUnit The time unit in which the period is measured.
      */
     public void reset(SimTime now, long offset, TimeUnit offsetUnit, long period, TimeUnit periodUnit) {
+
+        canceled = false;
 
         if (period > 0) {
             this.period = periodUnit.toNanos(period);
@@ -107,6 +110,7 @@ public final class Timer {
         }
 
         nextFiringTime = null;
+        canceled = true;
     }
 
 
@@ -114,6 +118,7 @@ public final class Timer {
 
         cancel();
 
+        canceled = false;
         nextFiringTime = next;
         nextEvent = simEngine.scheduleEvent(modelId, next, new TimerEvent(this));
     }
