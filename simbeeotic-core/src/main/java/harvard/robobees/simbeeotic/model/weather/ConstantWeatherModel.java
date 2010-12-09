@@ -30,6 +30,11 @@ public class ConstantWeatherModel extends AbstractModel implements WeatherModel 
     }
 
 
+    public Vector3f getConstantWindVector() {
+        return new Vector3f(windVel);
+    }
+
+
     @Inject(optional = true)
     public final void setWindX(@Named("wind-x") final float x) {
         windVel.x = x;
