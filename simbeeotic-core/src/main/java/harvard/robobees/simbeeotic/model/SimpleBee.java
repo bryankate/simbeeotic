@@ -165,10 +165,6 @@ public abstract class SimpleBee extends GenericModel {
                         // apply an instantaneous force to get the desired velocity change
                         impulse.scale(getMass());
 
-                        // energy accounting
-                        double expended = impulse.length() * (actuationEnergy / (mass * maxAccel));
-                        getAggregator().addValue("energy", "actuation", expended * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
-
                         totalNonHoverForce.add(impulse);
                     }
 
@@ -179,6 +175,11 @@ public abstract class SimpleBee extends GenericModel {
 
                         body.activate();
                         applyForce(totalNonHoverForce);
+
+                        // energy accounting
+                        double expended = totalNonHoverForce.length() * (actuationEnergy / (mass * maxAccel));
+                        getAggregator().addValue("energy", "actuation", expended * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
+
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS, kinematicUpdateRate, TimeUnit.MILLISECONDS);
