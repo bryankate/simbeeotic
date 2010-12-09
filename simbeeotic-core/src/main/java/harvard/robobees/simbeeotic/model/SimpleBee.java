@@ -39,12 +39,12 @@ public abstract class SimpleBee extends GenericModel {
     private float mass = 0.128f;    // g
     private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
-    private double actuationEnergy = 600;    // mA
+    private double hoverEnergy = 500;        // mA
+    private double actuationEnergy = 250;    // mA
     private float actuationErrTurnVar = 0;   // radians
     private float actuationErrDirVar = 0;    // percent (0-1 scale)
     private float actuationErrVelVar = 0;    // percent (0-1 scale)
     private boolean useWind = false;
-    private boolean compensateForWind = true;
 
     protected Timer kinematicTimer;
 
@@ -75,14 +75,40 @@ public abstract class SimpleBee extends GenericModel {
 
                     updateKinematics(time);
 
-                    if (hovering || (desiredLinVel.length() > 0)) {
+                    float availThrust = maxAccel * mass; // N
+                    Vector3f windForce = new Vector3f();
+                    Vector3f totalNonHoverForce = new Vector3f();
 
-                        // todo: replace this with model based on the force applied?
-                        getAggregator().addValue("energy", "actuation", actuationEnergy * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
+                    // account for gravity (or not)
+                    if (hovering) {
 
                         body.activate();
+                        applyForce(hoverForce);
 
-                        // apply changes to motion
+                        getAggregator().addValue("energy", "actuation", hoverEnergy * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
+                    }
+
+                    // apply wind effects
+                    if (useWind && (weather != null)) {
+
+                        Vector3f windVel = weather.getWindVelocity(time, getTruthPosition());
+                        windForce = new Vector3f(windVel);
+
+                        windForce.normalize();
+
+                        double speed = windVel.length();
+
+                        double area = length / 2;
+                        area *= area * Math.PI;
+
+                        // calculate wind force
+                        double force = 0.5 * PhysicalConstants.AIR_DENSITY * speed * speed * area;
+
+                        windForce.scale((float)force);
+                        totalNonHoverForce.add(windForce);
+                    }
+
+                    if (hovering || (desiredLinVel.length() > 0)) {
 
                         // desired final direction in body frame
                         Vector3f impulse = new Vector3f(desiredLinVel);
@@ -119,11 +145,17 @@ public abstract class SimpleBee extends GenericModel {
                         trans.setRotation(getTruthOrientation());
                         trans.transform(impulse);
 
+                        // adjust to compensate for external forces like wind
+                        impulse.scale(getMass());
+                        impulse.sub(totalNonHoverForce);
+                        impulse.scale(1 / getMass());
+
                         // find the velocity change and determine the instantaneous acceleration required
                         impulse.sub(getTruthLinearVelocity());
-                        impulseMag = impulse.length();
 
                         // cap the translational force based on the max acceleration ability
+                        impulseMag = impulse.length();
+
                         if (impulseMag > maxAccel) {
 
                             impulse.normalize();
@@ -133,39 +165,20 @@ public abstract class SimpleBee extends GenericModel {
                         // apply an instantaneous force to get the desired velocity change
                         impulse.scale(getMass());
 
-                        applyImpulse(impulse);
-                    }
+                        // energy accounting
+                        double expended = impulse.length() * (actuationEnergy / (mass * maxAccel));
+                        getAggregator().addValue("energy", "actuation", expended * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
 
-                    // apply wind effects
-                    if (useWind && (weather != null)) {
-
-                        Vector3f windVel = weather.getWindVelocity(time, getTruthPosition());
-                        Vector3f windForce = new Vector3f(windVel);
-
-                        windForce.normalize();
-
-                        double speed = windVel.length();
-
-                        double area = length / 2;
-                        area *= area * Math.PI;
-
-                        // calculate wind force
-                        double force = 0.5 * PhysicalConstants.AIR_DENSITY * speed * speed * area;
-
-                        windForce.scale((float)force);
-
-                        if (!compensateForWind) {
-                            applyForce(windForce);
-                        }
+                        totalNonHoverForce.add(impulse);
                     }
 
                     // todo: drag?
 
-                    // account for gravity (or not)
-                    if (hovering) {
+                    // make it so
+                    if (totalNonHoverForce.length() > 0) {
 
                         body.activate();
-                        applyForce(hoverForce);
+                        applyForce(totalNonHoverForce);
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS, kinematicUpdateRate, TimeUnit.MILLISECONDS);
@@ -374,6 +387,16 @@ public abstract class SimpleBee extends GenericModel {
     }
 
 
+    /**
+     * Indicates if this bee was setup to be influenced by forces coming from the wind model.
+     *
+     * @return True if wind effects are being modeled, false otherwise.
+     */
+    protected final boolean isUsingWind() {
+        return useWind;
+    }
+
+
     public final float getLength() {
         return length;
     }
@@ -428,24 +451,21 @@ public abstract class SimpleBee extends GenericModel {
 
     @Inject(optional = true)
     public final void setUseWind(@Named("use-wind") final boolean use) {
+        this.useWind = use;
+    }
+
+
+    @Inject(optional = true)
+    public final void setHoverEnergy(@Named("hover-energy") final double energy) {
 
         if (!isInitialized()) {
-            this.useWind = use;
+            this.hoverEnergy = energy;
         }
     }
 
 
     @Inject(optional = true)
-    public final void setUseWindCompensation(@Named("wind-compensation") final boolean use) {
-
-        if (!isInitialized()) {
-            this.compensateForWind = use;
-        }
-    }
-
-
-    @Inject(optional = true)
-    public final void setActuationEnergy(@Named("actuation-energy") final double energy) {
+    public final void setActuationEnergyRate(@Named("actuation-energy") final double energy) {
 
         if (!isInitialized()) {
             this.actuationEnergy = energy;
