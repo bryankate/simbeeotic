@@ -104,8 +104,11 @@ public abstract class SimpleBee extends GenericModel {
                         // calculate wind force
                         double force = 0.5 * PhysicalConstants.AIR_DENSITY * speed * speed * area;
 
-                        windForce.scale((float)force);
-                        totalNonHoverForce.add(windForce);
+                        if (force > 0) {
+
+                            windForce.scale((float)force);
+                            totalNonHoverForce.add(windForce);
+                        }
                     }
 
                     if (hovering || (desiredLinVel.length() > 0)) {
@@ -165,7 +168,9 @@ public abstract class SimpleBee extends GenericModel {
                         // apply an instantaneous force to get the desired velocity change
                         impulse.scale(getMass());
 
-                        totalNonHoverForce.add(impulse);
+                        if (!Float.isNaN(impulse.length())) {
+                            totalNonHoverForce.add(impulse);
+                        }
                     }
 
                     // todo: drag?
