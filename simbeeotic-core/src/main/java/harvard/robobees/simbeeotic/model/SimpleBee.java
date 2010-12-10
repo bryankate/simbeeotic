@@ -169,6 +169,11 @@ public abstract class SimpleBee extends GenericModel {
                         impulse.scale(getMass());
 
                         if (!Float.isNaN(impulse.length())) {
+
+                            // energy accounting
+                            double expended = impulse.length() * (actuationEnergy / (mass * maxAccel));
+                            getAggregator().addValue("energy", "actuation", expended * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
+
                             totalNonHoverForce.add(impulse);
                         }
                     }
@@ -180,11 +185,6 @@ public abstract class SimpleBee extends GenericModel {
 
                         body.activate();
                         applyForce(totalNonHoverForce);
-
-                        // energy accounting
-                        double expended = totalNonHoverForce.length() * (actuationEnergy / (mass * maxAccel));
-                        getAggregator().addValue("energy", "actuation", expended * kinematicUpdateRate / TimeUnit.SECONDS.toMillis(1));
-
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS, kinematicUpdateRate, TimeUnit.MILLISECONDS);
