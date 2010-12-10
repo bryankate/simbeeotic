@@ -80,7 +80,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private static final float SHININESS = 25;
     private static final int PRIM_FLAGS = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS;
 
-    private static final double BOUNDS = 1000;
+    private static final double BOUNDS = 3000;
 
     private static final Point3d ORIGIN = new Point3d(0, 0, 0);
     private static final Point3d DEFAULT_VIEW = new Point3d(-20, 12, 20);
