@@ -75,7 +75,7 @@ import java.util.concurrent.TimeUnit;
 public class SimController {
 
     private static final double DEFAULT_STEP = 0.1;               // s
-    private static final double DEFAULT_SUBSTEP = 1.0 / 240.0;    // s
+    private static final double DEFAULT_SUBSTEP = 1.0 / 60.0;     // s
 
     private static Logger logger = Logger.getLogger(SimController.class);
 
