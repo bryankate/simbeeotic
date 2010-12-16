@@ -2,6 +2,9 @@ package harvard.robobees.simbeeotic;
 
 
 import com.bulletphysics.collision.broadphase.AxisSweep3;
+import com.bulletphysics.collision.broadphase.BroadphaseInterface;
+import com.bulletphysics.collision.broadphase.Dbvt;
+import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
 import com.bulletphysics.collision.dispatch.CollisionObject;
@@ -137,16 +140,10 @@ public class SimController {
             // setup a new world in the physics engine
             CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
             CollisionDispatcher dispatcher = new CollisionDispatcher(collisionConfiguration);
-
-            float aabbDim = world.getRadius() / (float)Math.sqrt(3);
-
-            Vector3f worldAabbMin = new Vector3f(-aabbDim, -aabbDim, 0);
-            Vector3f worldAabbMax = new Vector3f(aabbDim, aabbDim, aabbDim * 2);
-
-            AxisSweep3 overlappingPairCache = new AxisSweep3(worldAabbMin, worldAabbMax);
+            BroadphaseInterface broadphase = new DbvtBroadphase();
             SequentialImpulseConstraintSolver solver = new SequentialImpulseConstraintSolver();
 
-            final DiscreteDynamicsWorld dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, overlappingPairCache,
+            final DiscreteDynamicsWorld dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase,
                                                                                   solver, collisionConfiguration);
 
             dynamicsWorld.setGravity(new Vector3f(0, 0, (float)EARTH_GRAVITY));
