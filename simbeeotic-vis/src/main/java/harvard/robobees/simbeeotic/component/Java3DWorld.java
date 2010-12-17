@@ -66,6 +66,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private SimpleUniverse universe;
     private TransformGroup rootTransformGroup;
 
+    private Map<Integer, BranchGroup> branchMap = new HashMap<Integer, BranchGroup>();
     private Map<Integer, TransformGroup> transformMap = new HashMap<Integer, TransformGroup>();
     private Map<Integer, Appearance> appearanceMap = new HashMap<Integer, Appearance>();
     private Map<Integer, ObjectView> objectViewMap = new ConcurrentHashMap<Integer, ObjectView>();
@@ -190,8 +191,9 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
 
     @Override
-    public void initializeObject(int objectId, CollisionShape shape) {
+    public void shapeUpdate(int objectId, CollisionShape shape) {
 
+        boolean exists = transformMap.containsKey(objectId);
         TransformGroup tg = null;
 
         if (shape instanceof SphereShape) {
@@ -240,11 +242,30 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
         if (tg != null) {
 
+            if (exists) {
+                rootTransformGroup.removeChild(branchMap.get(objectId));
+            }
+
             BranchGroup bg = new BranchGroup();
 
+            bg.setCapability(BranchGroup.ALLOW_DETACH);
             bg.addChild(tg);
+
+            branchMap.put(objectId, bg);
             rootTransformGroup.addChild(bg);
         }
+    }
+
+
+    @Override
+    public void scaleUpdate(int objectId, Vector3f scale) {
+
+        TransformGroup tg = transformMap.get(objectId);
+        Transform3D t3d = new Transform3D();
+
+        tg.getTransform(t3d);
+        t3d.setScale(new Vector3d(scale));
+        tg.setTransform(t3d);
     }
 
 
@@ -320,6 +341,11 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private TransformGroup createSphere(int objectId, float radius) {
 
         Appearance appear = createDefaultAppearance();
+
+        if (appearanceMap.containsKey(objectId)) {
+            appear = appearanceMap.get(objectId);
+        }
+
         TransformGroup tg = new TransformGroup();
 
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -337,6 +363,11 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private TransformGroup createBox(int objectId, float l, float w, float h) {
 
         Appearance appear = createDefaultAppearance();
+
+        if (appearanceMap.containsKey(objectId)) {
+            appear = appearanceMap.get(objectId);
+        }
+
         TransformGroup tg = new TransformGroup();
 
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -354,6 +385,11 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private TransformGroup createCone(int objectId, float r, float h) {
 
         Appearance appear = createDefaultAppearance();
+
+        if (appearanceMap.containsKey(objectId)) {
+            appear = appearanceMap.get(objectId);
+        }
+
         TransformGroup tg = new TransformGroup();
 
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -379,6 +415,11 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private TransformGroup createCylinder(int objectId, float r, float h) {
 
         Appearance appear = createDefaultAppearance();
+
+        if (appearanceMap.containsKey(objectId)) {
+            appear = appearanceMap.get(objectId);
+        }
+
         TransformGroup tg = new TransformGroup();
 
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -404,6 +445,11 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private TransformGroup createCompoundShape(int objectId, CompoundShape shape) {
 
         Appearance appear = createDefaultAppearance();
+
+        if (appearanceMap.containsKey(objectId)) {
+            appear = appearanceMap.get(objectId);
+        }
+        
         TransformGroup tg = new TransformGroup();
 
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);

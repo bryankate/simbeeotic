@@ -17,13 +17,22 @@ import java.awt.*;
 public interface MotionListener {
 
     /**
-     * Initializes an object by supplying a number of static details.
+     * Supplies the shape and size information for an object.
      *
      * @param objectId The unique identifier for this object.
      * @param shape The shape of the object. It can be queried to determine its
      *              specific type and then downcast.
      */
-    public void initializeObject(int objectId, CollisionShape shape);
+    public void shapeUpdate(int objectId, CollisionShape shape);
+
+
+    /**
+     * Supplies an update that scales the size of an object, relative to its original size.
+     *
+     * @param objectId The unique identifier for this object.
+     * @param scale The scale of the object.
+     */
+    public void scaleUpdate(int objectId, Vector3f scale);
 
 
     /**

@@ -3,7 +3,6 @@ package harvard.robobees.simbeeotic.component;
 
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CompoundShape;
-import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.CylinderShapeZ;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.linearmath.Transform;
@@ -29,6 +28,10 @@ import javax.vecmath.Vector3f;
 
 
 /**
+ * A visualization component used with the helicopter testbed. Position
+ * and orinetation information is supplied by the Vicon motion tracking
+ * cameras.
+ *
  * @author bkate
  */
 public class ViconVisComponent extends JFrame implements VariationComponent {
@@ -185,12 +188,12 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                         cs.addChildShape(trans, new CylinderShapeZ(new Vector3f(0.0925f, 0.0925f, 0.0001f)));
 
                         // add to world
-                        world.initializeObject(objectId, cs);
+                        world.shapeUpdate(objectId, cs);
                         world.metaUpdate(objectId, Color.GRAY, null, objectName);
                     }
                     else {
 
-                        world.initializeObject(objectId, new SphereShape(0.075f));
+                        world.shapeUpdate(objectId, new SphereShape(0.075f));
                         world.metaUpdate(objectId, Color.RED, null, objectName);
                     }
 

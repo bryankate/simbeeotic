@@ -214,7 +214,7 @@ public abstract class SimpleBee extends GenericModel {
 
         int id = getObjectId();
         
-        getMotionRecorder().initializeObject(id, colShape);
+        getMotionRecorder().updateShape(id, colShape);
         getMotionRecorder().updateMetadata(id, new Color(238, 201, 0), null, getName());
 
         MotionState myMotionState = new RecordedMotionState(id, getMotionRecorder(), startTransform);

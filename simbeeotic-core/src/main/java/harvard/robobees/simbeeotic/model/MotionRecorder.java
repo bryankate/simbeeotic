@@ -28,18 +28,39 @@ public class MotionRecorder {
 
 
     /**
-     * Set the details of the object. For the sake of any {@link MotionListener}s, this must be
-     * called at least prior to any call to {@link #updateKinematicState}.
+     * Set the details of the object shape and size. For the sake of any
+     * {@link MotionListener}s, this must be called at least once prior to 
+     * any call to {@link #updateKinematicState} or {@link #updateSize}.
      *
      * @param objectId The unique identifier of the object.
-     * @param shape The shape of the object.
+     * @param shape The shape and size of the object.
      */
-    public void initializeObject(int objectId, CollisionShape shape) {
+    public void updateShape(int objectId, CollisionShape shape) {
 
         for (MotionListener listener : listeners) {
 
             try {
-                listener.initializeObject(objectId, shape);
+                listener.shapeUpdate(objectId, shape);
+            }
+            catch(Exception e) {
+                logger.warn("Caught an exception when updating MotionListener.", e);
+            }
+        }
+    }
+
+
+    /**
+     * Set the details of the object's scale.
+     *
+     * @param objectId The unique identifier of the object.
+     * @param scale The new scale of the object.
+     */
+    public void updateScale(int objectId, Vector3f scale) {
+
+        for (MotionListener listener : listeners) {
+
+            try {
+                listener.scaleUpdate(objectId, scale);
             }
             catch(Exception e) {
                 logger.warn("Caught an exception when updating MotionListener.", e);

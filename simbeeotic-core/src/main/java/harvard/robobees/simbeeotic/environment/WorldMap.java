@@ -95,7 +95,7 @@ public class WorldMap {
 
         int groundId = nextId.getAndIncrement();
 
-        recorder.initializeObject(groundId, groundShape);
+        recorder.updateShape(groundId, groundShape);
         recorder.updateMetadata(groundId, new Color(20, 70, 30), ImageLoader.loadImageFromClasspath("/textures/grass_1.jpg"), null);
 
         // the plane is a static object, so it does not need mass properties
@@ -917,7 +917,7 @@ public class WorldMap {
 
         int id = info.getObjectId();
 
-        recorder.initializeObject(id, colShape);
+        recorder.updateShape(id, colShape);
         recorder.updateMetadata(id, color, texture, label);
 
     	MotionState myMotionState = new RecordedMotionState(id, recorder, startTransform);

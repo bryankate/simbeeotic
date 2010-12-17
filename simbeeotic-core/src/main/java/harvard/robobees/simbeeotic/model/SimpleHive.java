@@ -45,7 +45,7 @@ public class SimpleHive extends GenericModel {
 
         startTransform.origin.set(start);
 
-        getMotionRecorder().initializeObject(getObjectId(), colShape);
+        getMotionRecorder().updateShape(getObjectId(), colShape);
         getMotionRecorder().updateMetadata(getObjectId(), new Color(166, 128, 100), null, getName());
 
         int id = getObjectId();
