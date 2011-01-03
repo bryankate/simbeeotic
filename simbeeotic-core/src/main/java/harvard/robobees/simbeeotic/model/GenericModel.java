@@ -16,33 +16,19 @@ import java.util.Set;
  *
  * @author bkate
  */
-public abstract class GenericModel extends AbstractPhysicalEntity {
+public abstract class GenericModel extends AbstractPhysicalEntity implements Platform {
 
     private Map<String, AbstractSensor> sensors = new HashMap<String, AbstractSensor>();
     private AbstractRadio radio;
 
 
-    /**
-     * Gets the sensor with the given name.
-     *
-     * @param name The name of the sensor to retrieve.
-     *
-     * @return The sensor, or {@code null} if none exists for the given name.
-     */
+    @Override
     public final AbstractSensor getSensor(final String name) {
         return sensors.get(name);
     }
 
 
-    /**
-     * Gets the sensor with the given name. An attempt will be made to cast
-     * the sensor to the given type.
-     *
-     * @param name The name of the sensor to retrieve.
-     * @param type The type to which the sensor is cast prior to returning.
-     *
-     * @return The sensor, or {@code null} if none exists for the given name.
-     */
+    @Override
     public final <T> T getSensor(final String name, Class<T> type) {
 
         AbstractSensor sensor = sensors.get(name);
@@ -55,13 +41,7 @@ public abstract class GenericModel extends AbstractPhysicalEntity {
     }
 
 
-    /**
-     * Gets the sensor(s) of a given type attached to this model.
-     *
-     * @param type The type of sensor to search for.
-     *
-     * @return The sensor(s), or an empty set if none exists for the given type.
-     */
+    @Override
     public final <T> Set<T> getSensors(Class<T> type) {
 
         Set<T> found = new HashSet<T>();
@@ -77,11 +57,7 @@ public abstract class GenericModel extends AbstractPhysicalEntity {
     }
 
 
-    /**
-     * Gets all the sensors attached to this model.
-     *
-     * @return The set of sensors.
-     */
+    @Override
     public final Set<AbstractSensor> getSensors() {
         return new HashSet<AbstractSensor>(sensors.values());
     }
@@ -137,6 +113,7 @@ public abstract class GenericModel extends AbstractPhysicalEntity {
     }
 
 
+    @Override
     public final AbstractRadio getRadio() {
         return radio;
     }

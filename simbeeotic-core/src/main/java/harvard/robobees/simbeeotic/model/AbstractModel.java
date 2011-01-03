@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import harvard.robobees.simbeeotic.SimEngine;
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import org.w3c.dom.Document;
 
 
 /**
@@ -29,13 +30,14 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
  *
  * @author bkate
  */
-public abstract class AbstractModel implements Model {
+public abstract class AbstractModel implements Model, TimerFactory {
 
     private int modelId;
     private String name = "";
 
     private Random rand;
     private SimTime currTime = new SimTime(0);
+    private Document optionalConfig;
     private SimEngine simEngine;
     private Aggregator aggregator = new Aggregator();
 
@@ -75,7 +77,7 @@ public abstract class AbstractModel implements Model {
      *
      * @return The timer object, which can be used to reset or cancel the firing.
      */
-    protected final Timer createTimer(TimerCallback callback, long offset, TimeUnit offsetUnit) {
+    public final Timer createTimer(TimerCallback callback, long offset, TimeUnit offsetUnit) {
         return createTimer(callback, offset, offsetUnit, 0, TimeUnit.NANOSECONDS);
     }
 
@@ -93,7 +95,7 @@ public abstract class AbstractModel implements Model {
      *
      * @return The timer object, which can be used to reset or cancel the firing.
      */
-    protected final Timer createTimer(TimerCallback callback, long offset, TimeUnit offsetUnit, long period, TimeUnit periodUnit) {
+    public final Timer createTimer(TimerCallback callback, long offset, TimeUnit offsetUnit, long period, TimeUnit periodUnit) {
 
         if ((modelId < 0) || (simEngine == null)) {
             throw new RuntimeModelingException("The model is not properly initialized.");
@@ -365,6 +367,20 @@ public abstract class AbstractModel implements Model {
     @Override
     public void addChildModel(Model child) {
         children.add(child);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public Document getCustomConfig() {
+        return optionalConfig;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void setCustomConfig(Document doc) {
+        optionalConfig = doc;
     }
 
 

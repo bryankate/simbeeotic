@@ -181,7 +181,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     /** {@inheritDoc} */
     @Override
-    public final Vector3f getTruthLinearAcceleration() {
+    public Vector3f getTruthLinearAcceleration() {
 
         if (isActive()) {
             return new Vector3f(linearAccel);
@@ -193,7 +193,7 @@ public abstract class AbstractPhysicalEntity extends AbstractModel implements Ph
 
     /** {@inheritDoc} */
     @Override
-    public final Vector3f getTruthAngularAcceleration() {
+    public Vector3f getTruthAngularAcceleration() {
         return new Vector3f(angularAccel);
     }
 

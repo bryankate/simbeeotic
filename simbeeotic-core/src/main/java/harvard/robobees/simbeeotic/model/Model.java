@@ -2,6 +2,7 @@ package harvard.robobees.simbeeotic.model;
 
 
 import harvard.robobees.simbeeotic.SimTime;
+import org.w3c.dom.Document;
 
 
 /**
@@ -62,6 +63,23 @@ public interface Model {
      * @param child The model that is assgned as a child of this model.
      */
     public void addChildModel(Model child);
+
+
+    /**
+     * Gets the optional XML configuration document, which may be embedded in the model's
+     * configuration in the scenario document.
+     *
+     * @return doc The optional config document.
+     */
+    public Document getCustomConfig();
+
+
+    /**
+     * Sets the optional config doc.
+     *
+     * @param doc The document provided in the scenario config for this model.
+     */
+    public void setCustomConfig(Document doc);
 
 
     /**

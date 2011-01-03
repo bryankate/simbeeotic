@@ -3,7 +3,6 @@ package harvard.robobees.simbeeotic;
 
 import com.bulletphysics.collision.broadphase.AxisSweep3;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
-import com.bulletphysics.collision.broadphase.Dbvt;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
@@ -38,6 +37,7 @@ import static harvard.robobees.simbeeotic.environment.PhysicalConstants.EARTH_GR
 import harvard.robobees.simbeeotic.environment.WorldMap;
 import harvard.robobees.simbeeotic.model.Contact;
 import harvard.robobees.simbeeotic.model.EntityInfo;
+import harvard.robobees.simbeeotic.model.ExternalStateSync;
 import harvard.robobees.simbeeotic.model.Model;
 import harvard.robobees.simbeeotic.model.Event;
 import harvard.robobees.simbeeotic.model.PhysicalEntity;
@@ -50,6 +50,7 @@ import harvard.robobees.simbeeotic.model.comms.IsotropicAntenna;
 import harvard.robobees.simbeeotic.model.comms.AbstractRadio;
 import harvard.robobees.simbeeotic.component.VariationComponent;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
 
 import javax.vecmath.Vector3f;
 import java.util.HashSet;
@@ -149,6 +150,7 @@ public class SimController {
             dynamicsWorld.setGravity(new Vector3f(0, 0, (float)EARTH_GRAVITY));
 
             final MotionRecorder motionRecorder = new MotionRecorder();
+            final ExternalStateSync externalSync = new ExternalStateSync();
 
 
             // top level guice injector - all others are derived from this
@@ -173,6 +175,9 @@ public class SimController {
 
                     // motion recorder
                     bind(MotionRecorder.class).annotatedWith(GlobalScope.class).toInstance(motionRecorder);
+
+                    // external synchronizer
+                    bind(ExternalStateSync.class).annotatedWith(GlobalScope.class).toInstance(externalSync);
                 }
 
                 // todo: figure out how to get these providers to not be called for each child injector?
@@ -313,6 +318,9 @@ public class SimController {
 
                     while(diff > 0) {
 
+                        // update the kinematic state of any externally driven objects
+                        externalSync.updateStates();
+
                         double step = Math.min(DEFAULT_STEP, diff);
 
                         dynamicsWorld.stepSimulation((float)step,
@@ -421,7 +429,7 @@ public class SimController {
                 bindConstant().annotatedWith(Names.named("variation-number")).to(varId);
 
                 // scenario variation variable map
-                bind(Variation.class).annotatedWith(Names.named("variation")).toInstance(firstVariation);
+                bind(Variation.class).toInstance(firstVariation);
 
                 // dynamics world
                 bind(DiscreteDynamicsWorld.class).annotatedWith(GlobalScope.class).toInstance(dynamicsWorld);
@@ -595,6 +603,13 @@ public class SimController {
             }
         }
 
+        // optional config doc
+        Document optionalDoc = null;
+
+        if (config.getCustomConfig() != null) {
+            optionalDoc = DocUtil.createDocumentFromElement(config.getCustomConfig().getAny());
+        }
+
 
         // model injection config
         for (int i = 0; i < config.getCount(); i++) {
@@ -629,6 +644,8 @@ public class SimController {
             }
 
             models.add(m);
+
+            m.setCustomConfig(optionalDoc);
 
             // go through child models
             for (ModelConfig childConfig : config.getModel()) {
