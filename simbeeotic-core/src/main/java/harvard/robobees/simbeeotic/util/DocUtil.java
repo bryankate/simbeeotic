@@ -4,6 +4,9 @@ package harvard.robobees.simbeeotic.util;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -13,11 +16,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 /**
+ * Convenience methods for orking with XML documents.
+ *
  * @author bkate
  */
 public class DocUtil {
@@ -173,6 +179,78 @@ public class DocUtil {
         }
 
         return null;
+    }
+
+
+    /**
+     * Sets the namespace URI of the given document. Any non-w3c namespace URIs
+     * for elements and attributes will be set to the given namespace URI.
+     *
+     * @param doc The document to modify.
+     * @param newNS The new namespace URI.
+     *
+     * @return The document, modified to reflect the new namespace URI.
+     */
+    public static Document setDocumentNamespace(final Document doc, final String newNS) {
+
+        Stack<Node> nodes = new Stack<Node>();
+
+        nodes.push(doc.getDocumentElement());
+
+        while (!nodes.isEmpty()) {
+
+            Node node = nodes.pop();
+
+            switch (node.getNodeType()) {
+
+                case Node.ATTRIBUTE_NODE:
+                case Node.ELEMENT_NODE:
+
+                    // skip over XSD namespace
+                    if (node.getNamespaceURI().contains("www.w3.org")) {
+                        break;
+                    }
+
+                    // the reassignment to node is very important. as per javadoc renameNode will
+                    // try to modify node (first parameter) in place. If that is not possible it
+                    // will replace that node for a new created one and return it to the caller.
+                    // if we did not reassign node we will get no childs in the loop below.
+                    node = doc.renameNode(node, newNS, node.getNodeName());
+                    break;
+            }
+
+            // for attributes of this node
+            NamedNodeMap attributes = node.getAttributes();
+
+            if (!(attributes == null || attributes.getLength() == 0)) {
+
+                for (int i = 0, count = attributes.getLength(); i < count; ++i) {
+
+                    Node attribute = attributes.item(i);
+
+                    if (attribute != null) {
+                        nodes.push(attribute);
+                    }
+                }
+            }
+
+            // for child nodes of this node
+            NodeList childNodes = node.getChildNodes();
+
+            if (!(childNodes == null || childNodes.getLength() == 0)) {
+
+                for (int i = 0, count = childNodes.getLength(); i < count; ++i) {
+
+                    Node childNode = childNodes.item(i);
+
+                    if (childNode != null) {
+                        nodes.push(childNode);
+                    }
+                }
+            }
+        }
+
+        return doc;
     }
 
 
