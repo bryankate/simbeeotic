@@ -130,6 +130,7 @@
         <xs:sequence>
             <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
             <xs:element name="properties" type="scenario:ConfigProps" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="custom-config" type="scenario:CustomConfig" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="optional" default=""/>
     </xs:complexType>
@@ -143,6 +144,12 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CustomConfig">
+        <xs:choice>
+            <xs:any processContents="skip"/>
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="Looping">
