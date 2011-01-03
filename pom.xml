@@ -22,6 +22,7 @@
         <module>simbeeotic-core</module>
         <module>simbeeotic-env</module>
         <module>simbeeotic-vis</module>
+        <module>simbeeotic-testbed</module>
         <module>simbeeotic-examples</module>
         <module>simbeeotic-app</module>
     </modules>
@@ -38,6 +39,11 @@
             <dependency>
                 <groupId>harvard.robobees.simbeeotic</groupId>
                 <artifactId>simbeeotic-vis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>harvard.robobees.simbeeotic</groupId>
+                <artifactId>simbeeotic-testbed</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -75,7 +81,7 @@
             <dependency>
                 <groupId>cz.advel.jbullet</groupId>
                 <artifactId>jbullet</artifactId>
-                <version>20101010-BNK-1</version>
+                <version>20101010-BNK-2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- a schema that describes the heli document -->
+<xs:schema targetNamespace="http://harvard/robobees/simbeeotic/configuration/heli"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:heli="http://harvard/robobees/simbeeotic/configuration/heli"
+           elementFormDefault="qualified">
+
+    <xs:element name="behaviors" type="heli:Behaviors"/>
+
+    <xs:complexType name="Behaviors">
+        <xs:sequence>
+            <xs:element name="behavior" type="heli:BehaviorConfig" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="BehaviorConfig">
+        <xs:sequence>
+            <xs:element name="java-class" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="properties" type="heli:ConfigProps" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ConfigProps">
+        <xs:sequence>
+            <xs:element name="prop" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="value" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

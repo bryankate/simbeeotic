@@ -42,71 +42,78 @@ public final class KinematicState {
     public boolean hasFrameNum() { return hasFrameNum; }
     public int getFrameNum() { return frameNum_; }
     
-    // required double locX = 2;
-    public static final int LOCX_FIELD_NUMBER = 2;
+    // required bool occluded = 2;
+    public static final int OCCLUDED_FIELD_NUMBER = 2;
+    private boolean hasOccluded;
+    private boolean occluded_ = false;
+    public boolean hasOccluded() { return hasOccluded; }
+    public boolean getOccluded() { return occluded_; }
+    
+    // required double locX = 3;
+    public static final int LOCX_FIELD_NUMBER = 3;
     private boolean hasLocX;
     private double locX_ = 0D;
     public boolean hasLocX() { return hasLocX; }
     public double getLocX() { return locX_; }
     
-    // required double locY = 3;
-    public static final int LOCY_FIELD_NUMBER = 3;
+    // required double locY = 4;
+    public static final int LOCY_FIELD_NUMBER = 4;
     private boolean hasLocY;
     private double locY_ = 0D;
     public boolean hasLocY() { return hasLocY; }
     public double getLocY() { return locY_; }
     
-    // required double locZ = 4;
-    public static final int LOCZ_FIELD_NUMBER = 4;
+    // required double locZ = 5;
+    public static final int LOCZ_FIELD_NUMBER = 5;
     private boolean hasLocZ;
     private double locZ_ = 0D;
     public boolean hasLocZ() { return hasLocZ; }
     public double getLocZ() { return locZ_; }
     
-    // required double orientQuatX = 5;
-    public static final int ORIENTQUATX_FIELD_NUMBER = 5;
+    // required double orientQuatX = 6;
+    public static final int ORIENTQUATX_FIELD_NUMBER = 6;
     private boolean hasOrientQuatX;
     private double orientQuatX_ = 0D;
     public boolean hasOrientQuatX() { return hasOrientQuatX; }
     public double getOrientQuatX() { return orientQuatX_; }
     
-    // required double orientQuatY = 6;
-    public static final int ORIENTQUATY_FIELD_NUMBER = 6;
+    // required double orientQuatY = 7;
+    public static final int ORIENTQUATY_FIELD_NUMBER = 7;
     private boolean hasOrientQuatY;
     private double orientQuatY_ = 0D;
     public boolean hasOrientQuatY() { return hasOrientQuatY; }
     public double getOrientQuatY() { return orientQuatY_; }
     
-    // required double orientQuatZ = 7;
-    public static final int ORIENTQUATZ_FIELD_NUMBER = 7;
+    // required double orientQuatZ = 8;
+    public static final int ORIENTQUATZ_FIELD_NUMBER = 8;
     private boolean hasOrientQuatZ;
     private double orientQuatZ_ = 0D;
     public boolean hasOrientQuatZ() { return hasOrientQuatZ; }
     public double getOrientQuatZ() { return orientQuatZ_; }
     
-    // required double orientQuatW = 8;
-    public static final int ORIENTQUATW_FIELD_NUMBER = 8;
+    // required double orientQuatW = 9;
+    public static final int ORIENTQUATW_FIELD_NUMBER = 9;
     private boolean hasOrientQuatW;
     private double orientQuatW_ = 0D;
     public boolean hasOrientQuatW() { return hasOrientQuatW; }
     public double getOrientQuatW() { return orientQuatW_; }
     
-    // required double orientEulerX = 9;
-    public static final int ORIENTEULERX_FIELD_NUMBER = 9;
+    // required double orientEulerX = 10;
+    public static final int ORIENTEULERX_FIELD_NUMBER = 10;
     private boolean hasOrientEulerX;
     private double orientEulerX_ = 0D;
     public boolean hasOrientEulerX() { return hasOrientEulerX; }
     public double getOrientEulerX() { return orientEulerX_; }
     
-    // required double orientEulerY = 10;
-    public static final int ORIENTEULERY_FIELD_NUMBER = 10;
+    // required double orientEulerY = 11;
+    public static final int ORIENTEULERY_FIELD_NUMBER = 11;
     private boolean hasOrientEulerY;
     private double orientEulerY_ = 0D;
     public boolean hasOrientEulerY() { return hasOrientEulerY; }
     public double getOrientEulerY() { return orientEulerY_; }
     
-    // required double orientEulerZ = 11;
-    public static final int ORIENTEULERZ_FIELD_NUMBER = 11;
+    // required double orientEulerZ = 112;
+    public static final int ORIENTEULERZ_FIELD_NUMBER = 112;
     private boolean hasOrientEulerZ;
     private double orientEulerZ_ = 0D;
     public boolean hasOrientEulerZ() { return hasOrientEulerZ; }
@@ -116,6 +123,7 @@ public final class KinematicState {
     }
     public final boolean isInitialized() {
       if (!hasFrameNum) return false;
+      if (!hasOccluded) return false;
       if (!hasLocX) return false;
       if (!hasLocY) return false;
       if (!hasLocZ) return false;
@@ -135,35 +143,38 @@ public final class KinematicState {
       if (hasFrameNum()) {
         output.writeUInt32(1, getFrameNum());
       }
+      if (hasOccluded()) {
+        output.writeBool(2, getOccluded());
+      }
       if (hasLocX()) {
-        output.writeDouble(2, getLocX());
+        output.writeDouble(3, getLocX());
       }
       if (hasLocY()) {
-        output.writeDouble(3, getLocY());
+        output.writeDouble(4, getLocY());
       }
       if (hasLocZ()) {
-        output.writeDouble(4, getLocZ());
+        output.writeDouble(5, getLocZ());
       }
       if (hasOrientQuatX()) {
-        output.writeDouble(5, getOrientQuatX());
+        output.writeDouble(6, getOrientQuatX());
       }
       if (hasOrientQuatY()) {
-        output.writeDouble(6, getOrientQuatY());
+        output.writeDouble(7, getOrientQuatY());
       }
       if (hasOrientQuatZ()) {
-        output.writeDouble(7, getOrientQuatZ());
+        output.writeDouble(8, getOrientQuatZ());
       }
       if (hasOrientQuatW()) {
-        output.writeDouble(8, getOrientQuatW());
+        output.writeDouble(9, getOrientQuatW());
       }
       if (hasOrientEulerX()) {
-        output.writeDouble(9, getOrientEulerX());
+        output.writeDouble(10, getOrientEulerX());
       }
       if (hasOrientEulerY()) {
-        output.writeDouble(10, getOrientEulerY());
+        output.writeDouble(11, getOrientEulerY());
       }
       if (hasOrientEulerZ()) {
-        output.writeDouble(11, getOrientEulerZ());
+        output.writeDouble(112, getOrientEulerZ());
       }
       getUnknownFields().writeTo(output);
     }
@@ -178,45 +189,49 @@ public final class KinematicState {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, getFrameNum());
       }
+      if (hasOccluded()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, getOccluded());
+      }
       if (hasLocX()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(2, getLocX());
+          .computeDoubleSize(3, getLocX());
       }
       if (hasLocY()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(3, getLocY());
+          .computeDoubleSize(4, getLocY());
       }
       if (hasLocZ()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(4, getLocZ());
+          .computeDoubleSize(5, getLocZ());
       }
       if (hasOrientQuatX()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(5, getOrientQuatX());
+          .computeDoubleSize(6, getOrientQuatX());
       }
       if (hasOrientQuatY()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(6, getOrientQuatY());
+          .computeDoubleSize(7, getOrientQuatY());
       }
       if (hasOrientQuatZ()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(7, getOrientQuatZ());
+          .computeDoubleSize(8, getOrientQuatZ());
       }
       if (hasOrientQuatW()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(8, getOrientQuatW());
+          .computeDoubleSize(9, getOrientQuatW());
       }
       if (hasOrientEulerX()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(9, getOrientEulerX());
+          .computeDoubleSize(10, getOrientEulerX());
       }
       if (hasOrientEulerY()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(10, getOrientEulerY());
+          .computeDoubleSize(11, getOrientEulerY());
       }
       if (hasOrientEulerZ()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(11, getOrientEulerZ());
+          .computeDoubleSize(112, getOrientEulerZ());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -379,6 +394,9 @@ public final class KinematicState {
         if (other.hasFrameNum()) {
           setFrameNum(other.getFrameNum());
         }
+        if (other.hasOccluded()) {
+          setOccluded(other.getOccluded());
+        }
         if (other.hasLocX()) {
           setLocX(other.getLocX());
         }
@@ -438,43 +456,47 @@ public final class KinematicState {
               setFrameNum(input.readUInt32());
               break;
             }
-            case 17: {
-              setLocX(input.readDouble());
+            case 16: {
+              setOccluded(input.readBool());
               break;
             }
             case 25: {
-              setLocY(input.readDouble());
+              setLocX(input.readDouble());
               break;
             }
             case 33: {
-              setLocZ(input.readDouble());
+              setLocY(input.readDouble());
               break;
             }
             case 41: {
-              setOrientQuatX(input.readDouble());
+              setLocZ(input.readDouble());
               break;
             }
             case 49: {
-              setOrientQuatY(input.readDouble());
+              setOrientQuatX(input.readDouble());
               break;
             }
             case 57: {
-              setOrientQuatZ(input.readDouble());
+              setOrientQuatY(input.readDouble());
               break;
             }
             case 65: {
-              setOrientQuatW(input.readDouble());
+              setOrientQuatZ(input.readDouble());
               break;
             }
             case 73: {
-              setOrientEulerX(input.readDouble());
+              setOrientQuatW(input.readDouble());
               break;
             }
             case 81: {
-              setOrientEulerY(input.readDouble());
+              setOrientEulerX(input.readDouble());
               break;
             }
             case 89: {
+              setOrientEulerY(input.readDouble());
+              break;
+            }
+            case 897: {
               setOrientEulerZ(input.readDouble());
               break;
             }
@@ -501,7 +523,25 @@ public final class KinematicState {
         return this;
       }
       
-      // required double locX = 2;
+      // required bool occluded = 2;
+      public boolean hasOccluded() {
+        return result.hasOccluded();
+      }
+      public boolean getOccluded() {
+        return result.getOccluded();
+      }
+      public Builder setOccluded(boolean value) {
+        result.hasOccluded = true;
+        result.occluded_ = value;
+        return this;
+      }
+      public Builder clearOccluded() {
+        result.hasOccluded = false;
+        result.occluded_ = false;
+        return this;
+      }
+      
+      // required double locX = 3;
       public boolean hasLocX() {
         return result.hasLocX();
       }
@@ -519,7 +559,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double locY = 3;
+      // required double locY = 4;
       public boolean hasLocY() {
         return result.hasLocY();
       }
@@ -537,7 +577,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double locZ = 4;
+      // required double locZ = 5;
       public boolean hasLocZ() {
         return result.hasLocZ();
       }
@@ -555,7 +595,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientQuatX = 5;
+      // required double orientQuatX = 6;
       public boolean hasOrientQuatX() {
         return result.hasOrientQuatX();
       }
@@ -573,7 +613,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientQuatY = 6;
+      // required double orientQuatY = 7;
       public boolean hasOrientQuatY() {
         return result.hasOrientQuatY();
       }
@@ -591,7 +631,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientQuatZ = 7;
+      // required double orientQuatZ = 8;
       public boolean hasOrientQuatZ() {
         return result.hasOrientQuatZ();
       }
@@ -609,7 +649,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientQuatW = 8;
+      // required double orientQuatW = 9;
       public boolean hasOrientQuatW() {
         return result.hasOrientQuatW();
       }
@@ -627,7 +667,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientEulerX = 9;
+      // required double orientEulerX = 10;
       public boolean hasOrientEulerX() {
         return result.hasOrientEulerX();
       }
@@ -645,7 +685,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientEulerY = 10;
+      // required double orientEulerY = 11;
       public boolean hasOrientEulerY() {
         return result.hasOrientEulerY();
       }
@@ -663,7 +703,7 @@ public final class KinematicState {
         return this;
       }
       
-      // required double orientEulerZ = 11;
+      // required double orientEulerZ = 112;
       public boolean hasOrientEulerZ() {
         return result.hasOrientEulerZ();
       }
@@ -707,13 +747,14 @@ public final class KinematicState {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\013State.proto\022\020filterd.protocol\"\331\001\n\005Stat" +
-      "e\022\020\n\010frameNum\030\001 \002(\r\022\014\n\004locX\030\002 \002(\001\022\014\n\004loc" +
-      "Y\030\003 \002(\001\022\014\n\004locZ\030\004 \002(\001\022\023\n\013orientQuatX\030\005 \002" +
-      "(\001\022\023\n\013orientQuatY\030\006 \002(\001\022\023\n\013orientQuatZ\030\007" +
-      " \002(\001\022\023\n\013orientQuatW\030\010 \002(\001\022\024\n\014orientEuler" +
-      "X\030\t \002(\001\022\024\n\014orientEulerY\030\n \002(\001\022\024\n\014orientE" +
-      "ulerZ\030\013 \002(\001B\020B\016KinematicState"
+      "\n\013State.proto\022\020filterd.protocol\"\353\001\n\005Stat" +
+      "e\022\020\n\010frameNum\030\001 \002(\r\022\020\n\010occluded\030\002 \002(\010\022\014\n" +
+      "\004locX\030\003 \002(\001\022\014\n\004locY\030\004 \002(\001\022\014\n\004locZ\030\005 \002(\001\022" +
+      "\023\n\013orientQuatX\030\006 \002(\001\022\023\n\013orientQuatY\030\007 \002(" +
+      "\001\022\023\n\013orientQuatZ\030\010 \002(\001\022\023\n\013orientQuatW\030\t " +
+      "\002(\001\022\024\n\014orientEulerX\030\n \002(\001\022\024\n\014orientEuler" +
+      "Y\030\013 \002(\001\022\024\n\014orientEulerZ\030p \002(\001B\020B\016Kinemat" +
+      "icState"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -725,7 +766,7 @@ public final class KinematicState {
           internal_static_filterd_protocol_State_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_filterd_protocol_State_descriptor,
-              new java.lang.String[] { "FrameNum", "LocX", "LocY", "LocZ", "OrientQuatX", "OrientQuatY", "OrientQuatZ", "OrientQuatW", "OrientEulerX", "OrientEulerY", "OrientEulerZ", },
+              new java.lang.String[] { "FrameNum", "Occluded", "LocX", "LocY", "LocZ", "OrientQuatX", "OrientQuatY", "OrientQuatZ", "OrientQuatW", "OrientEulerX", "OrientEulerY", "OrientEulerZ", },
               filterd.protocol.KinematicState.State.class,
               filterd.protocol.KinematicState.State.Builder.class);
           return null;

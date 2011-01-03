@@ -19,6 +19,10 @@
             <groupId>harvard.robobees.simbeeotic</groupId>
             <artifactId>simbeeotic-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>harvard.robobees.simbeeotic</groupId>
+            <artifactId>simbeeotic-testbed</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

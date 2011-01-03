@@ -4,9 +4,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>harvard.robobees.simbeeotic</groupId>
-    <artifactId>simbeeotic-vis</artifactId>
-    <name>Colony Simulator Visualization Component</name>
-    <description>A 3D visualization for the Colony simulator.</description>
+    <artifactId>simbeeotic-testbed</artifactId>
+    <name>Colony Simulator Helicopter Testbed Integration</name>
+    <description>Tools for modeling and controlling testbed helicopters.</description>
 
     <parent>
         <groupId>harvard.robobees</groupId>
@@ -20,13 +20,25 @@
             <artifactId>simbeeotic-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.java3d</groupId>
-            <artifactId>j3d-core</artifactId>
+            <groupId>harvard.robobees.simbeeotic</groupId>
+            <artifactId>simbeeotic-vis</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.java3d</groupId>
-            <artifactId>j3d-utils</artifactId>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

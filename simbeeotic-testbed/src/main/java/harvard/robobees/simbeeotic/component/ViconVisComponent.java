@@ -54,7 +54,7 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
 
     @Inject(optional = true)
     @Named("server-port")
-    private int serverPort = 7777;
+    private int serverPort = 6789;
 
     @Inject(optional = true)
     @Named("use-background")
@@ -248,13 +248,6 @@ public class ViconVisComponent extends JFrame implements VariationComponent {
                                                (float)state.getOrientQuatY(),
                                                (float)state.getOrientQuatZ(),
                                                (float)state.getOrientQuatW());
-
-//                    Quat4f orient = new Quat4f();
-//
-//                    MatrixUtil.getRotation(MathUtil.eulerZYXtoDCM((float)state.getOrientEulerX(),
-//                                                                  (float)state.getOrientEulerY(),
-//                                                                  (float)state.getOrientEulerZ()),
-//                                           orient);
 
                     worldLock.lock();
 
