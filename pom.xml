@@ -81,7 +81,7 @@
             <dependency>
                 <groupId>cz.advel.jbullet</groupId>
                 <artifactId>jbullet</artifactId>
-                <version>20101010-BNK-2-SNAPSHOT</version>
+                <version>20101010-BNK-2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
