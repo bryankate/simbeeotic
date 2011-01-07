@@ -5,6 +5,8 @@ import javax.vecmath.Vector3f;
 
 
 /**
+ * A sensor that can determine the position of an entity.
+ *
  * @author bkate
  */
 public interface PositionSensor {
