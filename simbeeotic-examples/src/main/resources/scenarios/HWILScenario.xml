@@ -22,7 +22,7 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.HeliHover</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.HeliMove</java-class>
                     </behavior>
                 </behaviors>
             </custom-config>
