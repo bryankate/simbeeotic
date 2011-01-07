@@ -32,6 +32,12 @@
                     <prop name="sigma" value="0"/>
                 </properties>
             </sensor>
+            <sensor name="pose-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>
+                <properties>
+                    <prop name="sigma" value="0"/>
+                </properties>
+            </sensor>
         </model>
     </models>
 
