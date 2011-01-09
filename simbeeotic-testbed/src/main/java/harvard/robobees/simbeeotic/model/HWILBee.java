@@ -51,10 +51,10 @@ public class HWILBee extends AbstractHeli {
     private String serverHost = "192.168.7.11";
     private int serverPort = 8000;
     private boolean boundsCheckEnabled = true;
-    private float xBoundMin = -1.8f;  // m
-    private float xBoundMax = 1.8f;   // m
-    private float yBoundMin = -2;  // m
-    private float yBoundMax = 2;   // m
+    private float xBoundMin = -2.2f;  // m
+    private float xBoundMax = 2.3f;   // m
+    private float yBoundMin = -2.7f;  // m
+    private float yBoundMax = 2.4f;   // m
     private float zBoundMax = 2;   // m
 
     private static final short CMD_LOW  = 170;
