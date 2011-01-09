@@ -86,7 +86,7 @@ public class HeliHover implements HeliBehavior {
                 Double rollDiff = rollPID.update(time.getTime(), euler.y);
 
 
-                logger.info(pos + " " + throttle + " " + throttleDiff + " " + pitchDiff + " " + euler);
+                logger.info(time + " " + pos);
 
                 if (throttleDiff != null) {
 
