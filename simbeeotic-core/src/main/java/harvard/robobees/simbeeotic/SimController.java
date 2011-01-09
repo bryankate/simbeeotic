@@ -63,8 +63,11 @@ import java.util.Queue;
 import java.util.PriorityQueue;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -298,6 +301,54 @@ public class SimController {
             // of when they collide
             ContactHandler contactHandler = new ContactHandler(dynamicsWorld, simEngine);
 
+            // add a shutdown hook
+            final AtomicBoolean cleaned = new AtomicBoolean(false);
+            final Lock cleanupLock = new ReentrantLock();
+
+            Thread hook = new Thread() {
+
+                @Override
+                public void run() {
+
+                    cleanupLock.lock();
+
+                    try {
+
+                        if (!cleaned.get()) {
+
+                            // clean out any events
+                            simEngine.requestScenarioTermination();
+
+                            // breakdown services, models, and components
+                            map.destroy();
+
+                            for (Model m : models) {
+
+                                m.finish();
+
+                                if (m instanceof PhysicalEntity) {
+                                    ((PhysicalEntity)m).destroy();
+                                }
+                            }
+
+                            for (VariationComponent comp : varComponents) {
+                                comp.shutdown();
+                            }
+
+                            motionRecorder.shutdown();
+
+                            cleaned.set(true);
+                        }
+                    }
+                    finally {
+                        cleanupLock.unlock();
+                    }
+                }
+            };
+
+            Runtime.getRuntime().addShutdownHook(hook);
+
+
             // run it
             long variationStartTime = System.currentTimeMillis();
 
@@ -351,22 +402,8 @@ public class SimController {
             }
 
             // cleanup
-            map.destroy();
-
-            for (Model m : models) {
-
-                m.finish();
-
-                if (m instanceof PhysicalEntity) {
-                    ((PhysicalEntity)m).destroy();
-                }
-            }
-
-            for (VariationComponent comp : varComponents) {
-                comp.shutdown();
-            }
-
-            motionRecorder.shutdown();
+            hook.run();
+            Runtime.getRuntime().removeShutdownHook(hook);
 
             double runTime = (double)(System.currentTimeMillis() - variationStartTime) / TimeUnit.SECONDS.toMillis(1);
 
@@ -532,6 +569,14 @@ public class SimController {
                 break;
             }
         }
+    }
+
+
+    /**
+     * Properly shuts down the simulation.
+     */
+    private void breakdownSim() {
+
     }
 
 
@@ -1080,7 +1125,7 @@ public class SimController {
         /** {@inheritDoc} */
         public void requestScenarioTermination() {
 
-            logger.info("A model has requested scenario termination.");
+            logger.info("Scenario termination is requested.");
 
             terminated = true;
 
