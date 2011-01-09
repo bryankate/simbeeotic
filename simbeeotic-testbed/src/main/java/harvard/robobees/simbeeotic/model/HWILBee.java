@@ -10,6 +10,7 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import org.apache.log4j.Logger;
 
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -43,9 +45,17 @@ public class HWILBee extends AbstractHeli {
     // current command - 2 bytes each for thrust, roll, pitch, and yaw
     private byte[] commands = new byte[8];
 
+    private Timer boundsTimer;
+
     // params
     private String serverHost = "192.168.7.11";
     private int serverPort = 8000;
+    private boolean boundsCheckEnabled = true;
+    private float xBoundMin = -1.8f;  // m
+    private float xBoundMax = 1.8f;   // m
+    private float yBoundMin = -2;  // m
+    private float yBoundMax = 2;   // m
+    private float zBoundMax = 2;   // m
 
     private static final short CMD_LOW  = 170;
     private static final short CMD_MID  = 511;
@@ -64,12 +74,42 @@ public class HWILBee extends AbstractHeli {
 
             sock = new DatagramSocket();
             server = InetAddress.getByName(serverHost);
-
-            // start out by zeroing the heli
-            sendCommands();
         }
         catch(Exception e) {
             logger.error("Could not establish connection to heli_server.", e);
+        }
+
+        // start out by zeroing the heli
+        sendCommands();
+
+        // setup a timer that checks for boundary violations
+        if (boundsCheckEnabled) {
+
+            boundsTimer = createTimer(new TimerCallback() {
+
+                @Override
+                public void fire(SimTime time) {
+
+                    Vector3f currPos = getTruthPosition();
+
+                    if ((currPos.x < xBoundMin) || (currPos.x > xBoundMax) ||
+                        (currPos.y < yBoundMin) || (currPos.y > yBoundMax) ||
+                        (currPos.z > zBoundMax)) {
+
+                        // out of bounds, shutdown behaviors and heli
+                        logger.warn("Heli (" + getName() + ") is out of bounds, shutting down.");
+
+                        for (HeliBehavior b : getBehaviors().values()) {
+                            b.stop();
+                        }
+
+                        setThrust(0);
+
+                        // no need to check anymore
+                        boundsTimer.cancel();
+                    }
+                }
+            }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -121,6 +161,10 @@ public class HWILBee extends AbstractHeli {
     public void finish() {
 
         super.finish();
+
+        if (boundsTimer != null) {
+            boundsTimer.cancel();
+        }
 
         // try to shutdown the heli gently
         commands = new byte[8];
@@ -232,5 +276,41 @@ public class HWILBee extends AbstractHeli {
     @Inject(optional = true)
     public final void setServerPort(@Named("server-port") final int port) {
         this.serverPort = port;
+    }
+
+
+    @Inject(optional = true)
+    public final void setBoundsCheckEnabled(@Named("enable-bounds-check") final boolean check) {
+        this.boundsCheckEnabled = check;
+    }
+
+
+    @Inject(optional = true)
+    public final void setXBoundMin(@Named("x-bound-min") final float val) {
+        this.xBoundMin = val;
+    }
+
+
+    @Inject(optional = true)
+    public final void setXBoundMax(@Named("x-bound-max") final float val) {
+        this.xBoundMax = val;
+    }
+
+
+    @Inject(optional = true)
+    public final void setYBoundMin(@Named("y-bound-min") final float val) {
+        this.yBoundMin = val;
+    }
+
+
+    @Inject(optional = true)
+    public final void setYBoundMax(@Named("y-bound-max") final float val) {
+        this.yBoundMax = val;
+    }
+
+
+    @Inject(optional = true)
+    public final void setZBoundMax(@Named("z-bound-max") final float val) {
+        this.zBoundMax = val;
     }
 }
