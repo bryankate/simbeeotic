@@ -317,7 +317,7 @@ public class SimController {
                         if (!cleaned.get()) {
 
                             // clean out any events
-                            simEngine.requestScenarioTermination();
+                            simEngine.shutdown();
 
                             // breakdown services, models, and components
                             map.destroy();
@@ -1125,7 +1125,17 @@ public class SimController {
         /** {@inheritDoc} */
         public void requestScenarioTermination() {
 
-            logger.info("Scenario termination is requested.");
+            logger.info("A model has requested scenario termination.");
+
+            // for now we will just shutdown on the first request
+            shutdown();
+        }
+
+
+        /**
+         * Shuts down the sim engine by clearing all events and setting the terminated flag.
+         */
+        public void shutdown() {
 
             terminated = true;
 
