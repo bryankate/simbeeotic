@@ -10,12 +10,14 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.sun.xml.internal.ws.message.ByteArrayAttachment;
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
 import java.awt.Color;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -46,6 +48,9 @@ public class HWILBee extends AbstractHeli {
     private byte[] commands = new byte[8];
 
     private Timer boundsTimer;
+    private long landingTime = 2;        // seconds, duration of soft landing command
+    private double landingThrust = 0.3;  // thrust command for soft landing
+    private double landingHeight = 0.75; // m, above which a soft landing should be attempted
 
     // params
     private String serverHost = "192.168.7.11";
@@ -55,7 +60,7 @@ public class HWILBee extends AbstractHeli {
     private float xBoundMax = 2.3f;   // m
     private float yBoundMin = -2.7f;  // m
     private float yBoundMax = 2.4f;   // m
-    private float zBoundMax = 2;   // m
+    private float zBoundMax = 1;   // m
 
     private static final short CMD_LOW  = 170;
     private static final short CMD_MID  = 511;
@@ -103,7 +108,24 @@ public class HWILBee extends AbstractHeli {
                             b.stop();
                         }
 
-                        setThrust(0);
+                        // if we are too high try a soft landing
+                        if (currPos.z >= landingHeight) {
+                            
+                            // reduce rotor speed for soft landing
+                            setThrust(landingThrust);
+
+                            // set a timer a few seconds in the future to shutdown completely
+                            createTimer(new TimerCallback() {
+
+                                @Override
+                                public void fire(SimTime time) {
+                                    setThrust(0);
+                                }
+                            }, landingTime, TimeUnit.SECONDS);
+                        }
+                        else {
+                            setThrust(0);
+                        }
 
                         // no need to check anymore
                         boundsTimer.cancel();
@@ -175,6 +197,16 @@ public class HWILBee extends AbstractHeli {
 
 
     @Override
+    public double getThrust() {
+
+        short val = (short)((0xff & commands[1]) << 8 |
+                            (0xff & commands[0]));
+
+        return (val - CMD_LOW) / (double)CMD_RANGE;
+    }
+
+
+    @Override
     public final void setThrust(double level) {
 
         short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
@@ -183,6 +215,16 @@ public class HWILBee extends AbstractHeli {
         commands[1] = (byte)((curr & 0xff00) >> 8);
 
         sendCommands();
+    }
+
+
+    @Override
+    public double getRoll() {
+
+        short val = (short)((0xff & commands[3]) << 8 |
+                            (0xff & commands[2]));
+
+        return (val - CMD_LOW) / (double)CMD_RANGE;
     }
 
 
@@ -199,6 +241,16 @@ public class HWILBee extends AbstractHeli {
 
 
     @Override
+    public double getPitch() {
+
+        short val = (short)((0xff & commands[5]) << 8 |
+                            (0xff & commands[4]));
+
+        return (val - CMD_LOW) / (double)CMD_RANGE;
+    }
+
+
+    @Override
     public final void setPitch(double level) {
 
         short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
@@ -207,6 +259,16 @@ public class HWILBee extends AbstractHeli {
         commands[5] = (byte)((curr & 0xff00) >> 8);
 
         sendCommands();
+    }
+
+
+    @Override
+    public double getYaw() {
+
+        short val = (short)((0xff & commands[7]) << 8 |
+                            (0xff & commands[6]));
+
+        return (val - CMD_LOW) / (double)CMD_RANGE;
     }
 
 

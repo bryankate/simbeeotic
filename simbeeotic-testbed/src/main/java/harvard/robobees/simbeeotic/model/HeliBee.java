@@ -64,22 +64,45 @@ public class HeliBee extends AbstractHeli {
 
 
     @Override
-    public final void setPitch(double level) {
+    public double getYaw() {
+        return 0;
     }
 
 
     @Override
-    public final void setYaw(double level) {
+    public void setYaw(double level) {
     }
 
 
     @Override
-    public final void setRoll(double level) {
+    public double getPitch() {
+        return 0;
     }
 
 
     @Override
-    public final void setThrust(double level) {
+    public void setPitch(double level) {
     }
 
+
+    @Override
+    public double getRoll() {
+        return 0;
+    }
+
+
+    @Override
+    public void setRoll(double level) {
+    }
+
+
+    @Override
+    public double getThrust() {
+        return 0;
+    }
+
+
+    @Override
+    public void setThrust(double level) {
+    }
 }
