@@ -17,7 +17,6 @@ public class PIDController {
     private double dGain;
 
     private long lastTime;
-    private double lastValue = 0;
     private double lastError = 0;
     private double integral = 0;
 
@@ -32,7 +31,8 @@ public class PIDController {
      */
     public PIDController(double set, double p, double i, double d) {
 
-        setPoint = set;
+        reset(set);
+
         pGain = p;
         iGain = i;
         dGain = d;
@@ -52,7 +52,6 @@ public class PIDController {
         if (lastTime == 0) {
 
             lastTime = currTime;
-            lastValue = currValue;
             lastError = setPoint - currValue;
 
             return null;
@@ -69,7 +68,6 @@ public class PIDController {
 
         integral += error * dt;
         lastTime = currTime;
-        lastValue = currValue;
         lastError = error;
 
         return (pGain * error) + (iGain * integral) + (dGain * deriv);
@@ -82,6 +80,22 @@ public class PIDController {
      * @param set The new target point.
      */
     public void setSetpoint(double set) {
+        reset(set);
+    }
+
+
+    /**
+     * Resets the PID controller to target a new setpoint. This includes
+     * zeroing the accumulated integral and historical error value.
+     *
+     * @param set The new setpoint.
+     */
+    private void reset(double set) {
+
         setPoint = set;
+
+        lastTime = 0;
+        lastError = 0;
+        integral = 0;
     }
 }
