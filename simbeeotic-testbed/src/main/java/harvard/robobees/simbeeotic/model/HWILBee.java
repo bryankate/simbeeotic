@@ -45,7 +45,7 @@ public class HWILBee extends AbstractHeli {
     private InetAddress server;
 
     // current command - 2 bytes each for thrust, roll, pitch, and yaw
-    private byte[] commands = new byte[8];
+    private byte[] commands = new byte[] {0x00, 0x00, (byte)0xff, 0x01, (byte)0xff, 0x01, (byte)0xff, 0x01};
 
     private Timer boundsTimer;
     private long landingTime = 2;        // seconds, duration of soft landing command
@@ -60,7 +60,7 @@ public class HWILBee extends AbstractHeli {
     private float xBoundMax = 2.3f;   // m
     private float yBoundMin = -2.7f;  // m
     private float yBoundMax = 2.4f;   // m
-    private float zBoundMax = 1;   // m
+    private float zBoundMax = 2;   // m
 
     private static final short CMD_LOW  = 170;
     private static final short CMD_MID  = 511;
@@ -84,7 +84,7 @@ public class HWILBee extends AbstractHeli {
             logger.error("Could not establish connection to heli_server.", e);
         }
 
-        // start out by zeroing the heli
+        // start out by zeroing the heli (thrust to zero, yaw, pitch and roll to 0.5)
         sendCommands();
 
         // setup a timer that checks for boundary violations
