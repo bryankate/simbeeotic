@@ -45,7 +45,7 @@ public class HWILBee extends AbstractHeli {
     private InetAddress server;
 
     // current command - 2 bytes each for thrust, roll, pitch, and yaw
-    private byte[] commands = new byte[] {0x00, 0x00, (byte)0xff, 0x01, (byte)0xff, 0x01, (byte)0xff, 0x01};
+    private byte[] commands = new byte[] {(byte)0xaa, 0x00, (byte)0xff, 0x01, (byte)0xff, 0x01, (byte)0xff, 0x01};
 
     private Timer boundsTimer;
     private long landingTime = 2;        // seconds, duration of soft landing command
@@ -56,10 +56,10 @@ public class HWILBee extends AbstractHeli {
     private String serverHost = "192.168.7.11";
     private int serverPort = 8000;
     private boolean boundsCheckEnabled = true;
-    private float xBoundMin = -2.2f;  // m
-    private float xBoundMax = 2.3f;   // m
-    private float yBoundMin = -2.7f;  // m
-    private float yBoundMax = 2.4f;   // m
+    private float xBoundMin = -2f;  // m
+    private float xBoundMax = 2f;   // m
+    private float yBoundMin = -2f;  // m
+    private float yBoundMax = 2f;   // m
     private float zBoundMax = 2;   // m
 
     private static final short CMD_LOW  = 170;
