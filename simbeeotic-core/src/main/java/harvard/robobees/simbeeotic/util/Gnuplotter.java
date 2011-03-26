@@ -184,7 +184,10 @@ public class Gnuplotter {
 
         try {
 
-            FileWriter writer = new FileWriter(outFile);
+            File file = new File(outFile);
+            file.getParentFile().mkdirs();
+
+            FileWriter writer = new FileWriter(file);
 
             writer.write(commandLog.toString());
             writer.write(lastPlotCommand);
