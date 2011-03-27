@@ -37,8 +37,8 @@ public class HeliSquare extends BaseHeliBehavior {
         super.start(platform, control);
 
         // before the path starts, takeoff
-        takeoff();
-
+        //takeoff();
+        logger.info("Starting program.");
         // a loop that checks to see if a segment of the scripted path is complete
         // and assigns new waypoints. once all segments are complete the heli idles.
         navTimer = platform.createTimer(new TimerCallback() {
