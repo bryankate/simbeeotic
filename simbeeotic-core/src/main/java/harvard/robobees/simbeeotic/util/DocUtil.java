@@ -206,6 +206,10 @@ public class DocUtil {
                 case Node.ATTRIBUTE_NODE:
                 case Node.ELEMENT_NODE:
 
+                    if (node.getNamespaceURI() == null) {
+                        break;
+                    }
+
                     // skip over XSD namespace
                     if (node.getNamespaceURI().contains("www.w3.org")) {
                         break;
@@ -249,6 +253,8 @@ public class DocUtil {
                 }
             }
         }
+
+        doc.normalizeDocument();
 
         return doc;
     }
