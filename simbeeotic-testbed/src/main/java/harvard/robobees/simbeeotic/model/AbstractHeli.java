@@ -160,6 +160,12 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
     }
 
 
+    @Override
+    public final int getHeliId() {
+        return getModelId();
+    }
+
+
     protected final Map<String, HeliBehavior> getBehaviors() {
         return Collections.unmodifiableMap(behaviors);
     }

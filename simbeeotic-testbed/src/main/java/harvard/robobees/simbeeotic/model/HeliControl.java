@@ -10,6 +10,14 @@ package harvard.robobees.simbeeotic.model;
 public interface HeliControl {
 
     /**
+     * Gets the ID of the helicopter that is being controlled.
+     *
+     * @return The ID of the heli being controlled.
+     */
+    public int getHeliId();
+
+    
+    /**
      * Gets the currently set yaw command.
      *
      * @return The level that is currently set, as a value in the range (0,1)
