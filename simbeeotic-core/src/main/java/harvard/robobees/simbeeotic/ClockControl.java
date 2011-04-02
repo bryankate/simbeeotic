@@ -3,6 +3,8 @@ package harvard.robobees.simbeeotic;
 
 import org.apache.log4j.Logger;
 
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
@@ -21,6 +23,7 @@ public class ClockControl {
     private Lock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
 
+    private long epoch = 0;   // ms since standard epoch
     private SimTime currTime;
     private SimTime endTime;
     private Set<ClockListener> listeners = new HashSet<ClockListener>();
@@ -28,8 +31,10 @@ public class ClockControl {
     private Logger logger = Logger.getLogger(ClockControl.class);
 
 
-    public ClockControl(SimTime end) {
+    public ClockControl(SimTime end, long dateEpoch) {
+
         endTime = end;
+        epoch = dateEpoch;
     }
 
 
@@ -123,6 +128,19 @@ public class ClockControl {
      */
     public SimTime getCurrentTime() {
         return currTime;
+    }
+
+
+    /**
+     * Gets the date that is associated with the current virtual time. Since the units
+     * of the date are less precise than the units of virtual time, multiple
+     * events with different virtual times may correspond to the same Date. As such, the
+     * Date should not be sued to distinguish between events (use the SimTime).
+     *
+     * @return The current virtual time as a Date.
+     */
+    public Date getCurrentDate() {
+        return new Date(epoch + TimeUnit.NANOSECONDS.toMillis(currTime.getTime()));
     }
 
 

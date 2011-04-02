@@ -79,7 +79,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SimController {
 
     private static final double DEFAULT_STEP = 0.1;               // s
-    private static final double DEFAULT_SUBSTEP = 1.0 / 60.0;     // s
+    private static final double DEFAULT_SUBSTEP = 1.0 / 10.0;     // s
 
     private static Logger logger = Logger.getLogger(SimController.class);
 
@@ -135,7 +135,8 @@ public class SimController {
 
             // sim engine setup
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
-            final ClockControl clockControl = new ClockControl(new SimTime((long)scenario.getSimulation().getEndTime() * 1000));
+            final ClockControl clockControl = new ClockControl(new SimTime((long)scenario.getSimulation().getEndTime() * TimeUnit.SECONDS.toMicros(1)),
+                                                               (scenario.getSimulation().getEpoch() != null) ? scenario.getSimulation().getEpoch() : TimeUnit.HOURS.toMillis(8));
 
             if (startPaused) {
                 clockControl.pause();

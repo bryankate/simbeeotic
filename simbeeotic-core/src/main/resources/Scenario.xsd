@@ -70,6 +70,7 @@
     <xs:complexType name="Simulation">
         <xs:sequence>
             <xs:element name="end-time" type="xs:double" minOccurs="1" maxOccurs="1" default="1200.0"/>
+            <xs:element name="epoch" type="xs:long" minOccurs="0" maxOccurs="1" default="28800000"/>
         </xs:sequence>
     </xs:complexType>
 
