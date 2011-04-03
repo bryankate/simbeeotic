@@ -61,7 +61,6 @@ public class HWILBee extends AbstractHeli {
     private float zBoundMax = 2;   // m
 
     private static final short CMD_LOW  = 170;
-    private static final short CMD_MID  = 511;
     private static final short CMD_HIGH = 852;
     private static final short CMD_RANGE = CMD_HIGH - CMD_LOW;
 
@@ -295,7 +294,7 @@ public class HWILBee extends AbstractHeli {
     }
 
 
-    private double cap(double in) {
+    private static double cap(double in) {
 
         if (in < 0) {
             return 0;
@@ -318,6 +317,19 @@ public class HWILBee extends AbstractHeli {
     @Override
     public final Vector3f getTruthLinearAcceleration() {
         return body.getLinearAcceleration(new Vector3f());
+    }
+
+
+    /**
+     * Gets the normalized command that corresponds to the raw heli
+     * command value.
+     *
+     * @param cmd The heli command value (in the range of CMD_LOW to CMD_HIGH).
+     *
+     * @return A normalized command in the range (0,1).
+     */
+    public static double normCommand(int cmd) {
+        return cap((cmd - CMD_LOW) / (double)CMD_RANGE);
     }
 
 

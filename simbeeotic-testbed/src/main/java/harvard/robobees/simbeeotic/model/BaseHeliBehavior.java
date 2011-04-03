@@ -1,7 +1,11 @@
 package harvard.robobees.simbeeotic.model;
 
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import harvard.robobees.simbeeotic.SimEngine;
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.sensor.PoseSensor;
 import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
 import harvard.robobees.simbeeotic.util.MathUtil;
@@ -9,7 +13,12 @@ import harvard.robobees.simbeeotic.util.PIDController;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.floor;
+import static java.lang.Math.round;
 
 
 /**
@@ -23,37 +32,125 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private Timer controlTimer;
 
+    @Inject
+    @GlobalScope
+    private SimEngine simEngine;
+
     // state
     private MoveState currState = MoveState.IDLE;
     private Vector3f currTarget = new Vector3f();
     private double currEpsilon = 0.1;   // m
     private MoveCallback currMoveCallback;
+    private List<AbstractHeli> allHelis;
+    private Vector3f calcTarget;
+    private Vector3f rVec; // repulsive vector for obst. avoidance
+    private int myHeliId;
 
     // controllers and set points
     private PIDController throttlePID;
-    private PIDController pitchPID;
-    private PIDController rollPID;
     private double yawSetpoint = 0;  // rad
 
     // trim values for a helicoptor
-    // todo -- make this a per helicopter parameter
-    private double throttle_trim = (483-170.0)/682;
-    private double roll_trim =0.5;
-    private double pitch_trim = 0.6;
-    private double yaw_trim = 0.5;
+    private double throttleTrim = 0.5;
+    private double rollTrim = 0.5;
+    private double pitchTrim = 0.5;
+    private double yawTrim = 0.5;
 
-    // params
+    private PositionSensor posSensor;
+    private PoseSensor orientSensor;
+
+    private HeliControl control; // handle to helicopter control
 
     private enum MoveState {IDLE, HOVER, MOVE}
 
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
+    private void showState() {
+        System.out.println("State: " + currState + " Location " +  posSensor.getPosition() +
+                           "Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget));
+    }
+
+    private double getDistfromPosition2d(Vector3f value) {
+        Vector3f pos = posSensor.getPosition();
+        Vector3f temp = new Vector3f(value);
+        temp.sub(pos);
+        return(Math.sqrt(temp.x*temp.x + temp.y*temp.y));
+
+    }
+
+    private double getDistfromPosition3d(Vector3f value) {
+        Vector3f pos = posSensor.getPosition();
+        Vector3f temp = new Vector3f(value);
+        temp.sub(pos);
+        return(temp.length());
+    }
+
+    private void updateThrottle(long time, Vector3f pos) {
+
+        Double currThrottle = control.getThrust();
+        Double throttleDiff = throttlePID.update(time, pos.z);
+
+        // pid update can return null
+        if (throttleDiff == null) {
+            throttleDiff = 0.0;
+        }
+
+        // Make sure we don't exceed min and max throttle
+        Double newThrottle = currThrottle + throttleDiff;
+        if (newThrottle > throttleTrim + 0.25) {
+            newThrottle = throttleTrim + 0.25;
+        }
+        if (newThrottle < throttleTrim - 0.07) {
+            newThrottle = throttleTrim - 0.07;
+        }
+        control.setThrust(newThrottle);
+    }
+
+    private void updateYaw(Vector3f pos, Vector3f euler) {
+        //yawSetpoint = Math.atan2(currTarget.y - pos.y, currTarget.x - pos.x);
+        yawSetpoint = Math.atan2(calcTarget.y - pos.y, calcTarget.x - pos.x);
+
+//        for(AbstractHeli h: allHelis) {
+//            System.out.println(h.getTruthPosition());
+//            h.getHeliId()
+//        }
+        // System.out.println("Yaw setpoint: " + yawSetpoint);
+        Double yaw = yawTrim + (-0.3 * Math.sin(euler.z - yawSetpoint));
+        if (yaw > 0.75) {
+            yaw = 0.75;
+        }
+        if (yaw < 0.19) {
+            yaw = 0.19;
+        }
+        control.setYaw(yaw);
+    }
+
+    /**
+     * Convert a raw heli command value (170-852) and return the normalized command (0.0 - 1.0)
+     * @param value raw heli command
+     * @return sim heli command
+     */
+    private double heliToSim(int value) {
+        return ((value-170)/682.0);
+    }
+
+    /**
+     * Convert a sim heli command value (0.0 - 1.0) to a raw heli command (170 - 852)
+     * @param value sim heli command
+     * @return raw heli command
+     */
+    private int simToHeli(double value) {
+        return (170 + (int)round((value * 682)));
+    }
 
     @Override
     public void start(final Platform platform, final HeliControl control) {
 
-        final PositionSensor posSensor = platform.getSensor("position-sensor", PositionSensor.class);
-        final PoseSensor orientSensor = platform.getSensor("pose-sensor", PoseSensor.class);
+
+        allHelis = simEngine.findModelsByType(AbstractHeli.class);
+        posSensor = platform.getSensor("position-sensor", PositionSensor.class);
+        orientSensor = platform.getSensor("pose-sensor", PoseSensor.class);
+        this.control = control;
 
         if (posSensor == null) {
             throw new RuntimeModelingException("A position sensor is needed for BaseHeliBehavior.");
@@ -68,11 +165,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(0.0);
-        control.setPitch(pitch_trim);
-        control.setRoll(roll_trim);
-        control.setYaw(yaw_trim);
+        control.setPitch(pitchTrim);
+        control.setRoll(rollTrim);
+        control.setYaw(yawTrim);
 
-
+        myHeliId = control.getHeliId();
 
         // a timer that implements the low level control of the heli altitude and bearing
         controlTimer = platform.createTimer(new TimerCallback() {
@@ -85,32 +182,24 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                 Vector3f pos = posSensor.getPosition();
                 Vector3f euler = MathUtil.quaternionToEulerZYX(orientSensor.getPose());
-                boolean updateCommands = true;
+                Vector3f attractiveForce;
+                Vector3f repulsiveForce;
 
                 // logger.info("In baseHeli fire with state:" + currState);
-
+                // showState();
                 switch(currState) {
                     case IDLE:
-                        if (pos.z > 0.1) {
-                            currTarget.z -= 0.003048; // about 6in per sec @ 50 Hz
-                            if (currTarget.z < 0) {
-                                currTarget.z = 0;
-                            }
+                        if (control.getThrust() > 0.0) {
+                            control.setThrust(0.0);
                         }
                         break;
 
-
                     case MOVE:
 
-                        // get distance from desired location
-                        Vector3f temp = new Vector3f(currTarget);
-                        temp.sub(pos);
-                        double dist = temp.length();
-
-                        //logger.info("MOVE: target: " + temp + " Position: " + pos);
+                        double dist = getDistfromPosition2d(currTarget);
                         if (dist <= currEpsilon) {
                             
-                            // made it! default to hovering
+                            // made it! go to the hovering state
                             hover();
 
                             if (currMoveCallback != null) {
@@ -120,87 +209,56 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                             currMoveCallback = null;
                         }
 
+
+                        calcTarget = new Vector3f(currTarget);
+                        // Make the walls repulsive
+
+
+
+                        //if (abs(pos.x - 2f) < 1.0) {
+                        //    float scale = 1/(pos.x - 2f + 0.25f);
+                        //    calcTarget.add((1/(pos.x - 2f + 0.25f)), 0,0)
+                        //}
+                        for(AbstractHeli h: allHelis) {
+                            if (h.getHeliId() != myHeliId) {
+                                dist = getDistfromPosition3d(h.getTruthPosition());
+                                if (dist < 1.0) {
+                                    rVec = new Vector3f(pos);
+                                    rVec.sub(h.getTruthPosition());
+                                    rVec.scale(1/(float)(dist + 0.25));
+                                    calcTarget.add(rVec);
+                                    // System.out.println("ID: " + myHeliId + " pos " + pos + currTarget + " " + calcTarget);
+                                }
+                            }
+                        }
+
+                        // System.out.println("Target vector: " + calcTarget );
+
+                        updateThrottle(time.getTime(), pos);
+                        updateYaw(pos, euler);
+                        control.setPitch(pitchTrim + 0.3);
+
+                        //double dist = temp.length();
+                        //double dist = Math.sqrt(temp.x*temp.x + temp.y*temp.y);
+                        //double newPitch = pitchTrim + (0.3 * Math.atan(dist));
                         break;
 
+                    case HOVER:
+                        updateThrottle(time.getTime(), pos);
+                        updateYaw(pos, euler);
+                        control.setPitch(pitchTrim + 0.05);
 
                     default:
 
                         // do nothing
                 }
 
-                if (updateCommands) {
-                    Double currThrottle = control.getThrust();
-
-                    // Handle the idle case
-                    if (currState == MoveState.IDLE && currTarget.z == 0) {
-
-                        if (currThrottle> 0) {
-                            control.setThrust(0);
-                        }
-                    }
-                    // Moving or Hovering
-                    else {
-                        // adjust the throttle
-                        logger.info("Time is: " + time.getTime());
-                        Float Diff = currTarget.z - pos.z;
-                        Double throttleDiff = throttlePID.update(time.getTime(), pos.z);
-                        if (throttleDiff == null) {
-                            throttleDiff = 0.0;
-                        }
-
-                        Double newThrottle = currThrottle + throttleDiff;
-                        if (newThrottle > throttle_trim + 0.25) {
-                            newThrottle = throttle_trim + 0.25;
-                        }
-                        if (newThrottle < throttle_trim - 0.07) {
-                            newThrottle = throttle_trim - 0.07;
-                        }
-                        control.setThrust(newThrottle);
-
-                        // adjust the yaw
-                        yawSetpoint = Math.atan2(currTarget.y - pos.y, currTarget.x - pos.x);
-                        Double yaw = yaw_trim + (-0.3 * Math.sin(euler.z - yawSetpoint));
-                        if (yaw > 0.75) {
-                            yaw = 0.75;
-                        }
-                        if (yaw < 0.19) {
-                            yaw = 0.19;
-                        }
-                        control.setYaw(yaw);
-
-                        // adjust the pitch
-                        if (currState == MoveState.MOVE) {
-                            control.setPitch(pitch_trim + 0.3);
-                        }
-
-                        if (currState == MoveState.HOVER) {
-                            control.setPitch(pitch_trim + 0.4);
-                        }
-
-
-                        //logger.info("height: " + pos.z + " Desired: " + currTarget.z + " Diff: " + Diff +
-                        //        " Throttle: " +
-                        //        ((newThrottle)*682+170) + " NewThrottle " + newThrottle);
-
-
-                    }
-
-
-
-
-                }
-
                 if (logger.isDebugEnabled()) {
 
-                    //logger.debug(time + " " + currState + " " + pos + " " + euler + " " +
-                    //             throttle + " " + yaw + " " + pitch + " " + roll);
                     logger.debug(time + " " + currState + " " + pos + " " + euler + " " +
                                  throttle + " " + pitch + " " );
 
                 }
-
-                //control.setPitch(pitch);
-                //control.setThrust(throttle);
             }
         }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
     }
@@ -209,16 +267,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     @Override
     public void stop() {
         controlTimer.cancel();
-    }
-
-    /**
-     * Updates the throttle controllor
-     *
-     * @param desiredHeight The desired height of the heli (m).
-     */
-    protected void updateThrottle(double desiredHeight) {
-
-
     }
 
     /**
@@ -289,6 +337,31 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         currState = MoveState.IDLE;
     }
 
+
+
+    @Inject(optional = true)
+    public final void setThrottleTrim(@Named("trim-throttle") final int trim) {
+        this.throttleTrim = HWILBee.normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setYawTrim(@Named("trim-yaw") final int trim) {
+        this.yawTrim = HWILBee.normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setRollTrim(@Named("trim-roll") final int trim) {
+        this.rollTrim = HWILBee.normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setPitchTrim(@Named("trim-pitch") final int trim) {
+        this.pitchTrim = HWILBee.normCommand(trim);
+    }
+    
 
     /**
      * A callback that can be implemented by derived classes to be informed when the
