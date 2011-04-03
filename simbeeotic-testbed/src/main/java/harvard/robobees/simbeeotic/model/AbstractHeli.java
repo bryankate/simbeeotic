@@ -12,7 +12,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import harvard.robobees.simbeeotic.SimEngine;
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.configuration.heli.BehaviorConfig;
 import harvard.robobees.simbeeotic.configuration.heli.Behaviors;
 import harvard.robobees.simbeeotic.configuration.heli.ConfigProps;
@@ -119,6 +121,8 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
 
                         @Override
                         protected void configure() {
+
+                            bind(SimEngine.class).annotatedWith(GlobalScope.class).toInstance(getSimEngine());
 
                             bind(HeliBehavior.class).to(bClass);
                             Names.bindProperties(binder(), props);
