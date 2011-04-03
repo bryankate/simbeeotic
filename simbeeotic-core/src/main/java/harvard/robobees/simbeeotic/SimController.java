@@ -135,7 +135,7 @@ public class SimController {
 
             // sim engine setup
             final SimEngineImpl simEngine = new SimEngineImpl(realTimeScale);
-            final ClockControl clockControl = new ClockControl(new SimTime((long)scenario.getSimulation().getEndTime() * TimeUnit.SECONDS.toMicros(1)),
+            final ClockControl clockControl = new ClockControl(new SimTime((long)scenario.getSimulation().getEndTime() * TimeUnit.SECONDS.toMillis(1)),
                                                                (scenario.getSimulation().getEpoch() != null) ? scenario.getSimulation().getEpoch() : TimeUnit.HOURS.toMillis(8));
 
             if (startPaused) {
