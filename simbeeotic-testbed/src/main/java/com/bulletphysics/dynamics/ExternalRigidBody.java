@@ -140,7 +140,7 @@ public class ExternalRigidBody extends RigidBody {
             angAccel = new Vector3f();
         }
 
-        lastTime = time;
+//        lastTime = time;
 
         // set the transform
         super.setWorldTransform(worldTransform);
