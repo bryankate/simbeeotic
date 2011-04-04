@@ -159,8 +159,8 @@ public class HWILBee extends AbstractHeli {
 
         // modify the thresholds for deactivating the bee
         // because it moves at a much smaller scale
-        rbInfo.linearSleepingThreshold = 0.0000008f;  // m/s
-        rbInfo.angularSleepingThreshold = 0.000001f;  // rad/s
+        rbInfo.linearSleepingThreshold = 0;  // m/s
+        rbInfo.angularSleepingThreshold = 0;  // rad/s
 
         // NOTE: EXTERNAL RIGID BODY!
         body = new ExternalRigidBody(rbInfo);
