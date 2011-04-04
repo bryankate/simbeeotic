@@ -72,6 +72,8 @@ public class ExternalStateSync {
             Transform trans = states.get(id);
 
             if (trans != null) {
+
+                objects.get(id).activate();
                 objects.get(id).setWorldTransform(states.get(id));
             }
         }
