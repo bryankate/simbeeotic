@@ -16,9 +16,7 @@ import javax.vecmath.Vector3f;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.floor;
-import static java.lang.Math.round;
+import static java.lang.Math.*;
 
 
 /**
@@ -45,6 +43,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private Vector3f calcTarget;
     private Vector3f rVec; // repulsive vector for obst. avoidance
     private int myHeliId;
+    private Vector3f hiveLocation; // where this helicopter should land
+    private double hiveRadius = 0.5; // in meters
 
     // controllers and set points
     private PIDController throttlePID;
@@ -61,7 +61,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private HeliControl control; // handle to helicopter control
 
-    private enum MoveState {IDLE, HOVER, MOVE}
+    private enum MoveState {IDLE, HOVER, MOVE, LAND}
 
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
@@ -70,15 +70,45 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                            "Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget));
     }
 
-    private double getDistfromPosition2d(Vector3f value) {
+    private Vector3f calcHiveLocation() {
+        int numHelis = allHelis.size();
+        Vector3f hive = null;
+
+        if (numHelis < 1) {
+           return null;
+        }
+
+        if (numHelis == 1) {
+            hive =  new Vector3f(0,0,0);
+        }
+
+        else {
+            double angle = 0; // in radians
+            float x,y;
+            for(AbstractHeli h: allHelis) {
+                if (h.getHeliId() == myHeliId) {
+                    x = (float)(hiveRadius*Math.sin(angle));
+                    y = (float)(hiveRadius*Math.cos(angle));
+                    hive = new Vector3f(x,y,0);
+                }
+                else {
+                    angle += 2*Math.PI/numHelis;
+                }
+            }
+        }
+        System.out.println("Heli: " + myHeliId + " Num Helis: " + numHelis + " Hive: " + hive);
+        return hive;
+    }
+
+    private float getDistfromPosition2d(Vector3f value) {
         Vector3f pos = posSensor.getPosition();
         Vector3f temp = new Vector3f(value);
         temp.sub(pos);
-        return(Math.sqrt(temp.x*temp.x + temp.y*temp.y));
+        return((float)Math.sqrt(temp.x*temp.x + temp.y*temp.y));
 
     }
 
-    private double getDistfromPosition3d(Vector3f value) {
+    private float getDistfromPosition3d(Vector3f value) {
         Vector3f pos = posSensor.getPosition();
         Vector3f temp = new Vector3f(value);
         temp.sub(pos);
@@ -143,6 +173,42 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         return (170 + (int)round((value * 682)));
     }
 
+
+
+    private AbstractHeli findClosestHeli(List<AbstractHeli> helis, float threshold) {
+        AbstractHeli closestHeli = null;
+        float dist;
+        float minDist = Float.MAX_VALUE;
+        
+        for(AbstractHeli h: helis) {
+            if (h.getHeliId() != myHeliId) {
+                dist = getDistfromPosition2d(h.getTruthPosition());
+                if (dist < minDist && dist <= threshold) {
+                    closestHeli = h;
+                    minDist = dist;
+                }
+            }
+        }
+        return closestHeli;
+    }
+
+    private AbstractHeli findClosestHeli(List<AbstractHeli> helis) {
+        return findClosestHeli(helis, -1.0f);
+    }
+
+    protected void landHeli() {
+        moveToPoint(hiveLocation.x, hiveLocation.y, 0.05, 0.2,
+                    new MoveCallback() {
+
+                        @Override
+                        public void reachedDestination() {
+                            idle();
+                            logger.info("Heli: " + myHeliId + " Reached Hive.");
+                        }
+                    });
+
+    }
+
     @Override
     public void start(final Platform platform, final HeliControl control) {
 
@@ -171,6 +237,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         myHeliId = control.getHeliId();
 
+        hiveLocation = calcHiveLocation();
+
+
         // a timer that implements the low level control of the heli altitude and bearing
         controlTimer = platform.createTimer(new TimerCallback() {
 
@@ -186,57 +255,70 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                 Vector3f repulsiveForce;
 
                 // logger.info("In baseHeli fire with state:" + currState);
-                // showState();
+                //showState();
                 switch(currState) {
                     case IDLE:
                         if (control.getThrust() > 0.0) {
                             control.setThrust(0.0);
                         }
+                        System.out.println("IDLE: " + myHeliId + " locaton: " + pos);
+                        break;
+                    case LAND:
                         break;
 
                     case MOVE:
 
                         double dist = getDistfromPosition2d(currTarget);
+                        System.out.println("Heli: " + myHeliId + " Dist to target: " + dist + " pos: " + pos +
+                                          " Target: " + currTarget);
                         if (dist <= currEpsilon) {
                             
                             // made it! go to the hovering state
                             hover();
 
+                            MoveCallback tmp = null;
+
                             if (currMoveCallback != null) {
+
+                                tmp = currMoveCallback;
                                 currMoveCallback.reachedDestination();
                             }
 
-                            currMoveCallback = null;
-                        }
-
-
-                        calcTarget = new Vector3f(currTarget);
-                        // Make the walls repulsive
-
-
-
-                        //if (abs(pos.x - 2f) < 1.0) {
-                        //    float scale = 1/(pos.x - 2f + 0.25f);
-                        //    calcTarget.add((1/(pos.x - 2f + 0.25f)), 0,0)
-                        //}
-                        for(AbstractHeli h: allHelis) {
-                            if (h.getHeliId() != myHeliId) {
-                                dist = getDistfromPosition3d(h.getTruthPosition());
-                                if (dist < 1.0) {
-                                    rVec = new Vector3f(pos);
-                                    rVec.sub(h.getTruthPosition());
-                                    rVec.scale(1/(float)(dist + 0.25));
-                                    calcTarget.add(rVec);
-                                    // System.out.println("ID: " + myHeliId + " pos " + pos + currTarget + " " + calcTarget);
-                                }
+                            if ((tmp != null) && (currMoveCallback != null) && (tmp.equals(currMoveCallback))) {
+                                currMoveCallback = null;
                             }
                         }
 
-                        // System.out.println("Target vector: " + calcTarget );
+                        // give the walls a repulsive force
+                        calcTarget = new Vector3f(currTarget);
+                        if (pos.x > 1.75) {
+                            calcTarget.x -= 1.0/(2.0 - min(pos.x, 2.0f) + 0.2);
+                        }
+                        if (pos.x < -1.75) {
+                            calcTarget.x += 1.0/(2.0 + max(pos.x, -2.0f) + 0.2);
+                        }
+                        if (pos.y > 1.75) {
+                            calcTarget.y -= 1.0/(2.0 - min(pos.y, 2.0f) + 0.2);
+                        }
+                        if (pos.y < -1.75) {
+                            calcTarget.y += 1.0/(2.0 + max(pos.y, -2.0f) + 0.2);
+
+                        }
+
+                        AbstractHeli closestHeli = findClosestHeli(allHelis, 1.2f);
+                        if (closestHeli != null) {
+                            dist = getDistfromPosition2d(closestHeli.getTruthPosition());
+                            rVec = new Vector3f(pos);
+                            rVec.sub(closestHeli.getTruthPosition());
+                            rVec.scale(1/(float)(dist + 0.1));
+                            calcTarget.add(rVec);
+                            //System.out.println("Heli: " + myHeliId + " closest: " + closestHeli.getHeliId() +
+                            //                   " Dist " + dist);
+                        }
 
                         updateThrottle(time.getTime(), pos);
                         updateYaw(pos, euler);
-                        control.setPitch(pitchTrim + 0.3);
+                        control.setPitch(pitchTrim + 0.15);
 
                         //double dist = temp.length();
                         //double dist = Math.sqrt(temp.x*temp.x + temp.y*temp.y);
@@ -301,6 +383,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         throttlePID.setSetpoint(z);
     }
 
+    protected void land() {
+        currState = MoveState.LAND;
+    }
 
     /**
      * Turns the helicopter counter-clockwise about the body Z axis (yaw).
