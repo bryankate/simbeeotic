@@ -44,7 +44,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private Vector3f rVec; // repulsive vector for obst. avoidance
     private int myHeliId;
     private Vector3f hiveLocation; // where this helicopter should land
-    private double hiveRadius = 0.5; // in meters
+    private double hiveRadius = 0.45; // in meters
 
     // controllers and set points
     private PIDController throttlePID;
@@ -306,7 +306,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         }
 
                         AbstractHeli closestHeli = findClosestHeli(allHelis, 1.2f);
-                        if (closestHeli != null) {
+                        if (closestHeli != null && pos.z > 0.25) {
                             dist = getDistfromPosition2d(closestHeli.getTruthPosition());
                             rVec = new Vector3f(pos);
                             rVec.sub(closestHeli.getTruthPosition());
