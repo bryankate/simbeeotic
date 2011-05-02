@@ -69,7 +69,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 /**
  * The entry point to the simulation. The controller takes descriptions of the scenario and world
  * and executes the variations.

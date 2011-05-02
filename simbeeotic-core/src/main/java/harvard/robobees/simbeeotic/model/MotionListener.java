@@ -3,6 +3,8 @@ package harvard.robobees.simbeeotic.model;
 
 import com.bulletphysics.collision.shapes.CollisionShape;
 
+import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
 import java.awt.*;
@@ -55,4 +57,8 @@ public interface MotionListener {
      */
     public void metaUpdate(int objectId, Color color, Image texture, String label);
 
+    //Add description
+    public void spawnCameraView (int cameraId, ImageComponent2D buf, Transform3D trans, int w, int h, float focalLength);
+    public void renderCameraView(int cameraId);
 }
+

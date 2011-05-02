@@ -3,6 +3,8 @@ package harvard.robobees.simbeeotic.model;
 
 import com.bulletphysics.collision.shapes.CollisionShape;
 
+import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Quat4f;
 import java.util.HashSet;
@@ -11,7 +13,6 @@ import java.awt.Color;
 import java.awt.Image;
 
 import org.apache.log4j.Logger;
-
 
 /**
  * A class that coordinates the dissemination of motion information for the
@@ -22,7 +23,8 @@ import org.apache.log4j.Logger;
  */
 public class MotionRecorder {
 
-    private Set<MotionListener> listeners = new HashSet<MotionListener>();
+    private Set<MotionListener> listeners =
+            new HashSet<MotionListener>();
 
     private static Logger logger = Logger.getLogger(MotionRecorder.class);
 
@@ -30,11 +32,12 @@ public class MotionRecorder {
     /**
      * Set the details of the object shape and size. For the sake of any
      * {@link MotionListener}s, this must be called at least once prior to 
-     * any call to {@link #updateKinematicState} or {@link #updateSize}.
+     * any call to {@link #updateKinematicState} or {@link #updateScale}.
      *
      * @param objectId The unique identifier of the object.
      * @param shape The shape and size of the object.
      */
+
     public void updateShape(int objectId, CollisionShape shape) {
 
         for (MotionListener listener : listeners) {
@@ -144,6 +147,28 @@ public class MotionRecorder {
         }
     }
 
+    public void addView(int cameraID, ImageComponent2D buf, Transform3D trans, int h, int w, float fl) {
+        for (MotionListener listener : listeners) {
+
+            try {
+                listener.spawnCameraView(cameraID, buf, trans, w, h, fl);
+            }
+            catch(Exception e) {
+                logger.warn("Caught an exception when updating MotionListener.", e);
+            }
+        }
+    }
+    public void updateView(int cameraID){
+        for (MotionListener listener : listeners) {
+
+            try {
+                listener.renderCameraView(cameraID);
+            }
+            catch(Exception e) {
+                logger.warn("Caught an exception when updating MotionListener.", e);
+            }
+        }
+    }
 
     /**
      * Adds a listener to the recorder.
