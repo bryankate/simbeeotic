@@ -57,8 +57,10 @@ public interface MotionListener {
      */
     public void metaUpdate(int objectId, Color color, Image texture, String label);
 
-    //Add description
+    //Create representation of camera in 3DWorld
     public void spawnCameraView (int cameraId, ImageComponent2D buf, Transform3D trans, int w, int h, float focalLength);
+
+    //Render camera's view, and write image to camera's buffer
     public void renderCameraView(int cameraId);
 }
 

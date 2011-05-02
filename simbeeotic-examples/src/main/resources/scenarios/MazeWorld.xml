@@ -8,7 +8,7 @@
 
     <obstacles>
         <obstacle>
-            <box height="20" length="56" width="1">
+            <box height="20" length="56" width="1" color="145">
                 <position x="0" y="-27.5"/>
             </box>
         </obstacle>

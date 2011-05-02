@@ -25,26 +25,31 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
     private int height;
     private int width;
     private float focalLength;
-    private double aperture; //how do we use this?
     Matrix3d rotation;
     Vector3d offset;
     Transform3D trans;
 
+    //Return the CameraView's View object
     public CameraView getView(){
         motionRecorder.updateView(getCameraID());
         return view;
     }
+
+    //Return the Camera's ID (which is its host's ID)
     public int getCameraID() {
         return getHost().getObjectId();
 
     }
     public void initialize() {
-//        setOffset(offset);
-//        setPointing(rotation);
+        //Create Transform for Camera
         trans = new Transform3D();
         trans.setRotation(rotation);
         trans.setTranslation(offset);
+
+        //Set properties
         view = new CameraView(width,height);
+
+        //Have motionRecorder add camera to 3DWorld
         motionRecorder.addView(getCameraID(), view.getBuf(), trans, height, width, focalLength);
 
         super.initialize();
@@ -77,6 +82,7 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
             this.focalLength = l;
         }
     }
+
     @Inject(optional = true)
     public final void setRotation(@Named("rotx") final double x, @Named("roty") final double y, @Named("rotz") final double z) {
         if (!isInitialized()) {
@@ -86,7 +92,6 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
             maty.mul(matx,maty);
             matz.mul(maty,matz);
             this.rotation = matz;
-            System.out.println("Rotation matrix:"+rotation);
         }
     }
     @Inject(optional = true)
@@ -95,5 +100,4 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
             this.offset = new Vector3d(x,y,z);
         }
     }
-
 }

@@ -11,22 +11,26 @@ import java.awt.image.BufferedImage;
  * To change this template use File | Settings | File Templates.
  */
 public class CameraView {
-    //make sure BufferedImage size etc match in all references
+
     private ImageComponent2D buf;
+
     public CameraView(int w, int h){
         buf = new ImageComponent2D(ImageComponent2D.FORMAT_RGB, w, h);
     }
+
+    //Return Buffered image from camera's view
     public BufferedImage getImg() {
         return buf.getImage();
     }
+
+    //Return buffer to which images are written
     public ImageComponent2D getBuf() {
         return buf;
     }
+
+    //Given a BufferedImage, return another with only edges visible (Vision algorithm)
     public BufferedImage findEdges(){
-        CannyEdgeDetector d = new CannyEdgeDetector (1.0, 0.05, buf.getImage(), 5.0, 10.0);
-		return d.findEdges();
+        CannyEdgeDetector d = new CannyEdgeDetector (2.0, 3, 160.0, 50.0);
+		return d.getEdgesImage(buf.getImage());
     }
-
-
-
 }

@@ -26,6 +26,7 @@ public class CameraBee extends SimpleBee{
 
         super.initialize();
 
+        //Have bee sit in place (can be overridden later)
         setHovering(true);
 
         camera = getSensor("camera", CameraSensor.class);
@@ -36,12 +37,16 @@ public class CameraBee extends SimpleBee{
 
         Vector3f pos = getTruthPosition();
         Vector3f vel = getTruthLinearVelocity();
-        turn(1);
+
+        //Log information
         logger.info("ID: " + getModelId() + "  " +
                     "time: " + time.getImpreciseTime() + "  " +
                     "pos: " + pos + "  " +
                     "vel: " + vel + " ");
+
         double cur_time = time.getImpreciseTime();
+
+        //Write image to file every second (for testing purposes)
         if(Math.abs(cur_time-(int)cur_time)<0.01){
             BufferedImage img = camera.getView().getImg();
             try{
@@ -49,7 +54,6 @@ public class CameraBee extends SimpleBee{
                 ImageIO.write(img, "png", output);
             }
             catch (IOException e) {
-
             }
 
         }

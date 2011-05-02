@@ -146,7 +146,7 @@ public class MotionRecorder {
             }
         }
     }
-
+    //For each listener, create CameraView representation
     public void addView(int cameraID, ImageComponent2D buf, Transform3D trans, int h, int w, float fl) {
         for (MotionListener listener : listeners) {
 
@@ -158,6 +158,8 @@ public class MotionRecorder {
             }
         }
     }
+
+    //For each listener, update specified view
     public void updateView(int cameraID){
         for (MotionListener listener : listeners) {
 

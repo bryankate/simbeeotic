@@ -23,6 +23,7 @@ import com.sun.j3d.utils.universe.ViewingPlatform;
 import harvard.robobees.simbeeotic.model.MotionListener;
 import harvard.robobees.simbeeotic.model.sensor.camera.CameraView;
 import harvard.robobees.simbeeotic.util.ImageLoader;
+import org.apache.commons.math.geometry.Vector3D;
 import org.apache.log4j.Logger;
 
 import javax.media.j3d.*;
@@ -73,6 +74,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
     private static final Point3d ORIGIN = new Point3d(0, 0, 0);
     private static final Point3d DEFAULT_VIEW = new Point3d(-20, 12, 20);
     private static final Vector3d UP = new Vector3d(0, 1, 0);
+//      private static final Vector3d UP = new Vector3d(0, 0, 1);
 
 
     public Java3DWorld(boolean useSkyBackground) {
@@ -656,8 +658,10 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
         objectViewMap.put(objectId, new ObjectView(objectId, canvas, vp));
     }
+
+    //Create a CameraView within the 3D world
     public void spawnCameraView(int cameraId, ImageComponent2D buf, Transform3D trans, int w, int h, float focalLength) {
-//        spawnObjectView(cameraId);         //for demonstration purposes
+        spawnObjectView(cameraId);         //for demonstration purposes
         if (cameraViewMap.containsKey(cameraId)) {
             return;
         }
@@ -667,23 +671,28 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
         canvas.setSize(w,h);
         canvas.setFocusable(true);
 
+        //Set canvas properties
         canvas.getScreen3D().setPhysicalScreenHeight(h);
         canvas.getScreen3D().setPhysicalScreenWidth(w);
         canvas.getScreen3D().setSize(w, h);
         canvas.setOffScreenBuffer(buf);
 
+        //Set ViewingPlatform properties
         ViewingPlatform vp = new ViewingPlatform(1);
         vp.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         vp.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 
+        //Set ViewPlatform properties
         ViewPlatform viewPlatform = new ViewPlatform();
         viewPlatform.setViewAttachPolicy(View.NOMINAL_HEAD);
         viewPlatform.setActivationRadius(focalLength);
         vp.setViewPlatform(viewPlatform);
 
+        //Set Viewer Properties
         Viewer viewer = new Viewer(canvas);
         viewer.setViewingPlatform(vp);
 
+        //Add CameraView to map
         universe.getLocale().addBranchGraph(vp);
         CameraView view = new CameraView(canvas, vp, trans);
         cameraViewMap.put(cameraId, view);
@@ -742,37 +751,20 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
             Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(new WindowEvent(v, WindowEvent.WINDOW_CLOSING));
         }
     }
-
+    //Class which represents CameraView within 3DWorld
     private class CameraView {
         Transform3D trans;
         Canvas3D canvas;
         ViewingPlatform vp;
-        //add addition varables to store relative position/orientation
+
         public CameraView(Canvas3D can, ViewingPlatform plat, Transform3D trans){
             this.canvas = can;
             this.vp = plat;
             this.trans = trans;
         }
         public void update(Transform3D t3d) {
-//            System.out.println("t3d: " + t3d.toString() + "\ntrans: " + trans.toString());
+            // Apply camera's transformation to bee's transformation
             t3d.mul(trans);
-
-
-//            double mat[] = new double[16];
-//            t3d.get(mat);
-//            mat[15] = 1;
-//            t3d.set(mat);
-            /*I believe we do not want any of this
-
-            Vector3f pos = new Vector3f();
-            t3d.get(pos);
-
-            Point3d camPos = new Point3d(pos);
-
-            t3d.lookAt(camPos, new Point3d(camPos.x, camPos.y, -10), UP);
-            t3d.invert();
-            */
-//            vp.getViewPlatformTransform().setTransform(t3d);
             vp.getViewPlatformTransform().setTransform(t3d);
         }
         public void render(){
