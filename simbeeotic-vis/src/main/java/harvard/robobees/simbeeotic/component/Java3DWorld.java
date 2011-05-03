@@ -661,7 +661,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
     //Create a CameraView within the 3D world
     public void spawnCameraView(int cameraId, ImageComponent2D buf, Transform3D trans, int w, int h, float focalLength) {
-        spawnObjectView(cameraId);         //for demonstration purposes
+ //       spawnObjectView(cameraId);         //for demonstration purposes
         if (cameraViewMap.containsKey(cameraId)) {
             return;
         }
@@ -691,7 +691,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
         //Set Viewer Properties
         Viewer viewer = new Viewer(canvas);
         viewer.setViewingPlatform(vp);
-
+        viewer.getView().setBackClipDistance(BOUNDS);//Make smaller
         //Add CameraView to map
         universe.getLocale().addBranchGraph(vp);
         CameraView view = new CameraView(canvas, vp, trans);
@@ -765,7 +765,9 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
         public void update(Transform3D t3d) {
             // Apply camera's transformation to bee's transformation
             t3d.mul(trans);
+//          //Geometry needs adjusting to fix coordinate system issue
             vp.getViewPlatformTransform().setTransform(t3d);
+
         }
         public void render(){
             canvas.renderOffScreenBuffer();
@@ -801,15 +803,7 @@ public class Java3DWorld extends JPanel implements ViewPanel, MotionListener {
 
 
         public void update(Transform3D t3d) {
-
-            Vector3f pos = new Vector3f();
-            t3d.get(pos);
-
-            Point3d camPos = new Point3d(pos);
-
-            t3d.lookAt(camPos, new Point3d(camPos.x, camPos.y, -10), UP);
-            t3d.invert();
-
+            //Geometry needs adjusting to fix coordinate system issue
             vp.getViewPlatformTransform().setTransform(t3d);
         }
 

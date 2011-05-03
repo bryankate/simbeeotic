@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 public class CameraView {
 
     private ImageComponent2D buf;
+    CircleDetector d = new CircleDetector(0.1, 3, 21, 6);
 
     public CameraView(int w, int h){
         buf = new ImageComponent2D(ImageComponent2D.FORMAT_RGB, w, h);
@@ -29,8 +30,16 @@ public class CameraView {
     }
 
     //Given a BufferedImage, return another with only edges visible (Vision algorithm)
-    public BufferedImage findEdges(){
-        CannyEdgeDetector d = new CannyEdgeDetector (2.0, 3, 160.0, 50.0);
-		return d.getEdgesImage(buf.getImage());
+    public void writeEdges(String pathout){
+		d.writeEdges(getImg(), pathout);
     }
+    //Given a BufferedImage, return another with circles of radius r detected
+    public void writeCircle(String pathout, int r){
+        d.writeCircle(getImg(), pathout, r);
+    }
+    //Given a BufferedImage, return an array of BufferedImages with cirlces ranging
+    //from radius r1 to r2 detected
+    public void writeCircles(String pathout, int r1, int r2) {
+        d.writeCircles(getImg(), pathout, r1, r2);
+     }
 }

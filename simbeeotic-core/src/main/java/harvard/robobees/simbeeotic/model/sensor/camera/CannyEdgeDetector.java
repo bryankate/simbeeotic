@@ -465,7 +465,7 @@ public class CannyEdgeDetector {
     */
     public void writeEdges(BufferedImage input, String pathout) {
         try {
-            File outputfile = new File(pathout);
+            File outputfile = new File(pathout+".png");
             ImageIO.write(getEdgesImage(input), "png", outputfile);
         } catch (IOException ex) {
             System.out.println ("write error");
@@ -479,7 +479,7 @@ public class CannyEdgeDetector {
     */
     public void writeEdges(File f, String pathout) {
         try {
-            File outputfile = new File(pathout);
+            File outputfile = new File(pathout+".png");
             ImageIO.write(getEdgesImage(f), "png", outputfile);
         } catch (IOException ex) {
             System.out.println ("write error");
@@ -493,7 +493,7 @@ public class CannyEdgeDetector {
     */
     public void writeEdges(String pathin, String pathout) {
         try {
-            File outputfile = new File(pathout);
+            File outputfile = new File(pathout+".png");
             ImageIO.write(getEdgesImage(pathin), "png", outputfile);
         } catch (IOException ex) {
             System.out.println ("write error");

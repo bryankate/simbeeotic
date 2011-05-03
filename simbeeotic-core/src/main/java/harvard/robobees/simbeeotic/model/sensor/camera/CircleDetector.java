@@ -13,9 +13,7 @@ import javax.imageio.*;
  */
 
 public class CircleDetector extends CannyEdgeDetector {
-	/** radius of circle to be detected
-	 */
-    int radius;
+
     /** RGB value of color to mark circle.
      */
     int color;
@@ -25,11 +23,9 @@ public class CircleDetector extends CannyEdgeDetector {
      *  @param o = offset
      *  @param h = hi hysteresis threshold
      *  @param l = lo hysteresis threshold
-     *  @param r = radius to be detected
      */
-    public CircleDetector(double s, int o, double h, double l, int r) {
+    public CircleDetector(double s, int o, double h, double l) {
     	super(s,o,h,l);
-        radius = r;
         color = ColorInt.convert(255,0,0,255);
 
     }
@@ -39,43 +35,50 @@ public class CircleDetector extends CannyEdgeDetector {
      *  @param o = offset
      *  @param h = hi hysteresis threshold
      *  @param l = lo hysteresis threshold
-     *  @param r = radius to be detected
      *  @param c = color to mark circle
      */
-    public CircleDetector(double s, int o, double h, double l, int r, int c) {
+    public CircleDetector(double s, int o, double h, double l, int c) {
     	super(s,o,h,l);
-        radius = r;
         color = c;
 
     }
     /** Draws a pixel of radius r around the point pt in red color.
      *  @param data Array which carries the RGB values of each pixel
-     *  @param pt Point which carries the x and y values of the center of the circle
+     *  @param p Point which carries the x and y values of the center of the circle
+     *  @param r Radius of the circle to draw
      *  @return a modified data array which carries the RGB values of the original input 
      *   with the newly drawn circle
      */
-    private int[][] drawCircle (int[][] data, Point p) {
-        for (int d = 0; d <= radius; d++) {
-            int x1 = p.x + d;
-            int x2 = p.x - d;
-            int ydisp = (int)Math.round(Math.sqrt(radius*radius-d*d));
-            int y1 = p.y + ydisp;
-            int y2 = p.y - ydisp;
-            data[x1][y1] = color;
-            data[x2][y2] = color;
-            data[x1][y2] = color;
-            data[x2][y1] = color;
+    private int[][] drawCircle (int[][] data, Point p, int r) {
+       for (int d = 0; d <= r; d++) {
+           int x1 = p.x + d;
+           int x2 = p.x - d;
+           int ydisp = (int)Math.round(Math.sqrt(r*r-d*d));
+           int y1 = p.y + ydisp;
+           int y2 = p.y - ydisp;
+           if (x1>= 0 && x1<data.length){
+                   if (y1>=0 && y1<data[x1].length)
+                           data[x1][y1]=color;
+                   if (y2>=0 && y2<data[x1].length)
+                           data[x1][y2]=color;
+           }
+           if (x2>= 0 && x2<data.length){
+                   if (y1>=0 && y1<data[x1].length)
+                           data[x2][y1]=color;
+                   if (y2>=0 && y2<data[x1].length)
+                           data[x2][y2]=color;
+           }
 
-        }
-        return data;
-    	
-    }
+       }
+       return data;
+   }
     /**
     *    Generates a BufferedImage of the edges of a given input image.
     *    @param input original image
+    *    @param r Radius of the circle to draw
     *    @return A buffered image of the edges of input.
     */
-    public BufferedImage getEdgesImage(BufferedImage input) {
+    public BufferedImage getCircleImage(BufferedImage input, int r) {
         int[][] a = applyGaussianKernel(toArray(input));
         Gradient[][] g = findNormGradient(a);
         boolean[][] e = findEdgePoints(g);
@@ -87,27 +90,55 @@ public class CircleDetector extends CannyEdgeDetector {
             }
         }
         int[][] edges = removeNonEdgePoints(a, e2);
-        Point pt = CircleHoughTransform.getCircle(list, radius, edges.length, edges[0].length);
-        edges = drawCircle(edges, pt);
+        Point pt = CircleHoughTransform.getCircle(list, r, edges.length, edges[0].length);
+        edges = drawCircle(edges, pt, r);
         return genImage(edges,input.getType());
     }
 
-  /**
-    *    Given an image's path, writes an image of its edges to a file after instantiating a
-    *    CircleDetector
-    *    @param pathin The path at which the image is located
-    *    @param pathout The path to which to write edge image
-	*
+     /**
+    *    Generates a BufferedImage array with circle detection run on the input image for
+    *    circles with radii ranging from r1 to r2
+    *    @param input original image
+    *    @param r1 minimum radius to detect; should be <= r2
+    *    @param r2 maximum radius to detect; should be >= r1
+    *    @return A buffered image of the input after circle detection with radius r is run on it.
     */
-
-    public static void testImg(String pathin, String pathout) {
-        CircleDetector d = new CircleDetector (2.0, 3, 160.0, 50.0, 60);
-        d.writeEdges(pathin, pathout);
+    public BufferedImage[] getCircleImages(BufferedImage input, int r1, int r2) {
+        BufferedImage c[] = new BufferedImage [r2-r1+1];
+        for(int i = r1; i <= r2; ++i){
+            c[i-r1] = getCircleImage(input, i);
+        }
+        return c;
+    }
+    /**
+    *    Given an image, writes an image with circles of radius r detected to a given file.
+    *    @param input original image
+    *    @param pathout The path to which to write edge image
+    *    @param r The radius of circles to detect
+    *
+    */
+    public void writeCircle(BufferedImage input, String pathout, int r) {
+        try {
+            File outputfile = new File(pathout+".png");
+            ImageIO.write(getCircleImage(input, r), "png", outputfile);
+        } catch (IOException ex) {
+            System.out.println ("write error");
+        }
     }
 
-    public static void main (String[] args) {
-        testImg("circle.jpg", "circle.png");
+    /**
+    *    Given an image, writes images with circles of radii ranging from r1 to r2
+    *    detected to files, with the file prefix given by pathout and the radius
+    *    appended to this prefix
+    *    @param input original image
+    *    @param pathout The path to which to write edge image
+    *    @param r1 The minimum radius of circles to detect
+    *    @param r2 The maximum radius of circles to detect
+    *
+    */
+    public void writeCircles(BufferedImage input, String pathout, int r1, int r2) {
+        for(int i = r1; i < r2; ++i) {
+            writeCircle(input, pathout+Integer.toString(i), i);
+        }
     }
-    
-    
 }

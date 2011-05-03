@@ -30,6 +30,7 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
     Transform3D trans;
 
     //Return the CameraView's View object
+
     public CameraView getView(){
         motionRecorder.updateView(getCameraID());
         return view;
@@ -43,8 +44,8 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
     public void initialize() {
         //Create Transform for Camera
         trans = new Transform3D();
-        trans.setRotation(rotation);
         trans.setTranslation(offset);
+        trans.setRotation(rotation);
 
         //Set properties
         view = new CameraView(width,height);
@@ -82,7 +83,7 @@ public class DefaultCameraSensor extends AbstractSensor implements CameraSensor 
             this.focalLength = l;
         }
     }
-
+    //Uses ZXY transform
     @Inject(optional = true)
     public final void setRotation(@Named("rotx") final double x, @Named("roty") final double y, @Named("rotz") final double z) {
         if (!isInitialized()) {

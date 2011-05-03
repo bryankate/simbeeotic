@@ -59,7 +59,6 @@ public class CircleHoughTransform{
     		}
             	
     	}
-    	System.out.println("Global max: " +x + ", " + y);
     	return new Point(x,y);
     }
     /** getCircle is the publically callable method, and integrates the helper methods together

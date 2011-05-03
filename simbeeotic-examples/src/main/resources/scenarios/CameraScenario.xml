@@ -9,25 +9,25 @@
     </master-seed>
 
     <simulation>
-        <end-time>200.0</end-time>
+        <end-time>20.0</end-time>
     </simulation>
 
     <models>
         <model>
             <java-class>harvard.robobees.simbeeotic.example.CameraBee</java-class>
-            <start-position x="0" y="0" z="20"/>
+            <start-position x="1" y="1" z="0"/>
             <sensor name="camera">
                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultCameraSensor</java-class>
                 <properties>
                     <prop name="width" value="400"/>
                     <prop name="height" value="400"/>
                     <prop name="length" value="100"/>
-                    <prop name="rotx" value="0"/>
+                    <prop name="rotx" value="-0.5"/>
                     <prop name="roty" value="0"/>
                     <prop name="rotz" value="0"/>
                     <prop name="offx" value="0"/>
                     <prop name="offy" value="0"/>
-                    <prop name="offz" value="-0.2"/>
+                    <prop name="offz" value="0"/>
                 </properties>
             </sensor>
         </model>
