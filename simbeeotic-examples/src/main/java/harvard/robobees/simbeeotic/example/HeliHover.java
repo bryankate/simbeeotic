@@ -72,7 +72,7 @@ public class HeliHover implements HeliBehavior {
             public void fire(SimTime time) {
 
                 // takeoff
-                if (time.getImpreciseTime() < 3) {
+                if (time.getImpreciseTime() < 1.5) {
 
                     control.setThrust(throttle);
                     return;
