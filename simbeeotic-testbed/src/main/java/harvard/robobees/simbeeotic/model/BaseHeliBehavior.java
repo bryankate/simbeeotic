@@ -63,12 +63,18 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
     private void showState() {
-        System.out.println("State: " + currState + " Location " +  posSensor.getPosition() +
-                           " Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget) +
-                           " PitchTrim: " + simToHeli(pitchTrim));
+
+        if (logger.isDebugEnabled()) {
+
+            logger.debug("State: " + currState + " Location " +  posSensor.getPosition() +
+                         " Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget) +
+                         " PitchTrim: " + simToHeli(pitchTrim));
+        }
     }
 
+
     private Vector3f calcHiveLocation() {
+
         int numHelis = allHelis.size();
         Vector3f hive = null;
 
@@ -81,9 +87,12 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         }
 
         else {
+
             double angle = 0; // in radians
             float x,y;
+
             for(AbstractHeli h: allHelis) {
+
                 if (h.getHeliId() == myHeliId) {
                     x = (float)(hiveRadius*Math.sin(angle));
                     y = (float)(hiveRadius*Math.cos(angle));
@@ -94,11 +103,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                 }
             }
         }
-        System.out.println("Heli: " + myHeliId + " Num Helis: " + numHelis + " Hive: " + hive);
+
+        logger.debug("Heli: " + myHeliId + " Num Helis: " + numHelis + " Hive: " + hive);
+
         return hive;
     }
 
     private float getDistfromPosition2d(Vector3f value) {
+
         Vector3f pos = posSensor.getPosition();
         Vector3f temp = new Vector3f(value);
         temp.sub(pos);
@@ -106,12 +118,15 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     }
 
+
     private float getDistfromPosition3d(Vector3f value) {
+
         Vector3f pos = posSensor.getPosition();
         Vector3f temp = new Vector3f(value);
         temp.sub(pos);
         return(temp.length());
     }
+
 
     private void updateThrottle(long time, Vector3f pos) {
 
@@ -135,24 +150,27 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     }
 
     private void updateYaw(Vector3f pos, Vector3f euler) {
-        //yawSetpoint = Math.atan2(currTarget.y - pos.y, currTarget.x - pos.x);
         yawSetpoint = Math.atan2(calcTarget.y - pos.y, calcTarget.x - pos.x);
 
 //        for(AbstractHeli h: allHelis) {
-//            System.out.println(h.getTruthPosition());
+//            logger.debug(h.getTruthPosition());
 //            h.getHeliId()
 //        }
-        // System.out.println("Yaw setpoint: " + yawSetpoint);
+
         Double yaw = yawTrim + (-0.3 * Math.sin(euler.z - yawSetpoint));
+
         if (yaw > 0.75) {
             yaw = 0.75;
         }
+
         if (yaw < 0.19) {
             yaw = 0.19;
         }
+
         control.setYaw(yaw);
     }
 
+    
     /**
      * Convert a raw heli command value (170-852) and return the normalized command (0.0 - 1.0)
      * @param value raw heli command
@@ -162,6 +180,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         return ((value-170)/682.0);
     }
 
+
     /**
      * Convert a sim heli command value (0.0 - 1.0) to a raw heli command (170 - 852)
      * @param value sim heli command
@@ -170,7 +189,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private int simToHeli(double value) {
         return (170 + (int)round((value * 682)));
     }
-
 
 
     private AbstractHeli findClosestHeli(List<AbstractHeli> helis, float threshold) {
@@ -195,13 +213,13 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     }
 
     protected void landHeli() {
+
         moveToPoint(hiveLocation.x, hiveLocation.y, 0.05, 0.2,
                     new MoveCallback() {
 
                         @Override
                         public void reachedDestination() {
                             idle();
-                            logger.info("Heli: " + myHeliId + " Reached Hive.");
                         }
                     });
 
@@ -216,7 +234,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         @Override
                         public void reachedDestination() {
                             idle();
-                            logger.info("Heli: " + myHeliId + " Reached Hive.");
                             callback.reachedDestination();
                         }
                     });
@@ -274,25 +291,30 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                 // logger.info("In baseHeli fire with state:" + currState);
                 showState();
+
                 switch(currState) {
+
                     case IDLE:
+
                         if (control.getThrust() > 0.0) {
                             control.setThrust(0.0);
                         }
-                        System.out.println("IDLE: " + myHeliId + " locaton: " + pos);
+
                         break;
+
                     case LAND:
                         break;
 
                     case MOVE:
 
                         double dist = getDistfromPosition2d(currTarget);
-                        System.out.println("Heli: " + myHeliId + " Dist to target: " + dist + " pos: " + pos +
-                                          " Target: " + currTarget);
+
+//                        logger.debug("Heli: " + myHeliId + " Dist to target: " + dist + " pos: " + pos +
+//                                     " Target: " + currTarget);
+
                         if (dist <= currEpsilon) {
                             
                             // made it! go to the hovering state
-                            System.out.println("Arrived at destination, calling hover()");
                             hover();
 
                             MoveCallback tmp = null;
@@ -324,14 +346,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         }
 
                         AbstractHeli closestHeli = findClosestHeli(allHelis, 1.2f);
+
                         if (closestHeli != null && pos.z > 0.25) {
+
                             dist = getDistfromPosition2d(closestHeli.getTruthPosition());
                             rVec = new Vector3f(pos);
                             rVec.sub(closestHeli.getTruthPosition());
                             rVec.scale(1/(float)(dist + 0.1));
                             calcTarget.add(rVec);
-                            //System.out.println("Heli: " + myHeliId + " closest: " + closestHeli.getHeliId() +
-                            //                   " Dist " + dist);
                         }
 
                         updateThrottle(time.getTime(), pos);
@@ -344,6 +366,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         break;
 
                     case HOVER:
+
                         updateThrottle(time.getTime(), pos);
                         updateYaw(pos, euler);
                         control.setPitch(pitchTrim + 0.05);
@@ -352,13 +375,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                         // do nothing
                 }
-
-                if (logger.isDebugEnabled()) {
-
-                    logger.debug(time + " " + currState + " " + pos + " " + euler + " " +
-                                 throttle + " " + pitch + " " );
-
-                }
             }
         }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
     }
@@ -366,11 +382,12 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     @Override
     public void stop() {
-        System.out.println("Calling stop");
+
         control.setThrust(0.0);
         controlTimer.cancel();
     }
 
+    
     /**
      * Moves the helicopter to a point in space.
      *
@@ -380,7 +397,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @param epsilon The radius around the desired point that is considered acceptable (m).
      */
     protected void moveToPoint(double x, double y, double z, double epsilon) {
-        System.out.println("In moveToPoint without callback");
         moveToPoint(x, y, z, epsilon, null);
     }
 
@@ -396,8 +412,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void moveToPoint(double x, double y, double z, double epsilon, MoveCallback callback) {
 
-        System.out.println("In moveToPoint with callback" + callback);
-
         currState = MoveState.MOVE;
 
         currTarget = new Vector3f((float)x, (float)y, (float)z);
@@ -406,9 +420,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         throttlePID.setSetpoint(z);
     }
 
+
     protected void land() {
         currState = MoveState.LAND;
     }
+
 
     /**
      * Turns the helicopter counter-clockwise about the body Z axis (yaw).
@@ -424,7 +440,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * Indicates that the helicopter should hover at the current altitude setpoint.
      */
     protected void hover() {
-        System.out.println("In hover()");
         currState = MoveState.HOVER;
     }
 
@@ -435,20 +450,18 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @param altitude The hover altitude (m).
      */
     protected void hover(double altitude) {
-        System.out.println("In hover() with altitude " + altitude);
         currTarget.z = (float)altitude;
         hover();
     }
+
 
     /**
      * Indicates that the helicopter should land and idle until given another command.
      */
     protected void idle() {
-        System.out.println("In idle");
         currState = MoveState.IDLE;
         control.setThrust(0.0);
     }
-
 
 
     @Inject(optional = true)
@@ -476,8 +489,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
 
     @Inject
-    @GlobalScope
-    public final void setSimEngine(final SimEngine engine) {
+    public final void setSimEngine(@GlobalScope final SimEngine engine) {
         this.simEngine = engine;
     }
 
