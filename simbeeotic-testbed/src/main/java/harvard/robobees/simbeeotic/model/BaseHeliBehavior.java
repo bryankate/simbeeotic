@@ -29,9 +29,6 @@ import static java.lang.Math.*;
 public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private Timer controlTimer;
-
-    @Inject
-    @GlobalScope
     private SimEngine simEngine;
 
     // state
@@ -67,7 +64,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private void showState() {
         System.out.println("State: " + currState + " Location " +  posSensor.getPosition() +
-                           "Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget));
+                           " Target: " + currTarget + " Dist " + getDistfromPosition3d(currTarget) +
+                           " PitchTrim: " + simToHeli(pitchTrim));
     }
 
     private Vector3f calcHiveLocation() {
@@ -209,6 +207,22 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     }
 
+
+    protected void landHeli(final MoveCallback callback) {
+
+        moveToPoint(hiveLocation.x, hiveLocation.y, 0.05, 0.2,
+                    new MoveCallback() {
+
+                        @Override
+                        public void reachedDestination() {
+                            idle();
+                            logger.info("Heli: " + myHeliId + " Reached Hive.");
+                            callback.reachedDestination();
+                        }
+                    });
+
+    }
+
     @Override
     public void start(final Platform platform, final HeliControl control) {
 
@@ -217,6 +231,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
         orientSensor = platform.getSensor("pose-sensor", PoseSensor.class);
         this.control = control;
+        boolean init = false;
 
         if (posSensor == null) {
             throw new RuntimeModelingException("A position sensor is needed for BaseHeliBehavior.");
@@ -230,6 +245,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         throttlePID = new PIDController(1, 100.0, 0.0, 100.0);
 
         // send an inital command to the heli to put in a neutral state
+
         control.setThrust(0.0);
         control.setPitch(pitchTrim);
         control.setRoll(rollTrim);
@@ -254,8 +270,10 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                 Vector3f attractiveForce;
                 Vector3f repulsiveForce;
 
+                calcTarget = new Vector3f(currTarget);
+
                 // logger.info("In baseHeli fire with state:" + currState);
-                //showState();
+                showState();
                 switch(currState) {
                     case IDLE:
                         if (control.getThrust() > 0.0) {
@@ -274,6 +292,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         if (dist <= currEpsilon) {
                             
                             // made it! go to the hovering state
+                            System.out.println("Arrived at destination, calling hover()");
                             hover();
 
                             MoveCallback tmp = null;
@@ -290,7 +309,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         }
 
                         // give the walls a repulsive force
-                        calcTarget = new Vector3f(currTarget);
                         if (pos.x > 1.75) {
                             calcTarget.x -= 1.0/(2.0 - min(pos.x, 2.0f) + 0.2);
                         }
@@ -348,6 +366,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     @Override
     public void stop() {
+        System.out.println("Calling stop");
+        control.setThrust(0.0);
         controlTimer.cancel();
     }
 
@@ -360,6 +380,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @param epsilon The radius around the desired point that is considered acceptable (m).
      */
     protected void moveToPoint(double x, double y, double z, double epsilon) {
+        System.out.println("In moveToPoint without callback");
         moveToPoint(x, y, z, epsilon, null);
     }
 
@@ -374,6 +395,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @param callback An optional callback to be executed once the helicopter reaches the specified point.
      */
     protected void moveToPoint(double x, double y, double z, double epsilon, MoveCallback callback) {
+
+        System.out.println("In moveToPoint with callback" + callback);
 
         currState = MoveState.MOVE;
 
@@ -401,6 +424,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * Indicates that the helicopter should hover at the current altitude setpoint.
      */
     protected void hover() {
+        System.out.println("In hover()");
         currState = MoveState.HOVER;
     }
 
@@ -411,6 +435,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @param altitude The hover altitude (m).
      */
     protected void hover(double altitude) {
+        System.out.println("In hover() with altitude " + altitude);
         currTarget.z = (float)altitude;
         hover();
     }
@@ -419,7 +444,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * Indicates that the helicopter should land and idle until given another command.
      */
     protected void idle() {
+        System.out.println("In idle");
         currState = MoveState.IDLE;
+        control.setThrust(0.0);
     }
 
 
@@ -446,7 +473,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     public final void setPitchTrim(@Named("trim-pitch") final int trim) {
         this.pitchTrim = HWILBee.normCommand(trim);
     }
-    
+
+
+    @Inject
+    @GlobalScope
+    public final void setSimEngine(final SimEngine engine) {
+        this.simEngine = engine;
+    }
+
 
     /**
      * A callback that can be implemented by derived classes to be informed when the
