@@ -41,7 +41,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private Vector3f rVec; // repulsive vector for obst. avoidance
     private int myHeliId;
     private Vector3f hiveLocation; // where this helicopter should land
-    private double hiveRadius = 0.45; // in meters
+    private double hiveRadius = 0.55; // in meters
 
     // controllers and set points
     private PIDController throttlePID;
@@ -104,7 +104,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             }
         }
 
-        logger.debug("Heli: " + myHeliId + " Num Helis: " + numHelis + " Hive: " + hive);
+//        logger.debug("Heli: " + myHeliId + " Num Helis: " + numHelis + " Hive: " + hive);
 
         return hive;
     }
@@ -143,13 +143,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (newThrottle > throttleTrim + 0.25) {
             newThrottle = throttleTrim + 0.25;
         }
-        if (newThrottle < throttleTrim - 0.07) {
-            newThrottle = throttleTrim - 0.07;
+        if (newThrottle < throttleTrim - 0.1) {
+            newThrottle = throttleTrim - 0.1;
         }
         control.setThrust(newThrottle);
     }
 
     private void updateYaw(Vector3f pos, Vector3f euler) {
+        
         yawSetpoint = Math.atan2(calcTarget.y - pos.y, calcTarget.x - pos.x);
 
 //        for(AbstractHeli h: allHelis) {
@@ -233,6 +234,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                         @Override
                         public void reachedDestination() {
+                            
                             idle();
                             callback.reachedDestination();
                         }
@@ -263,7 +265,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         // send an inital command to the heli to put in a neutral state
 
-        control.setThrust(0.0);
+        control.setThrust(control.getThrust());
         control.setPitch(pitchTrim);
         control.setRoll(rollTrim);
         control.setYaw(yawTrim);
@@ -309,9 +311,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                         double dist = getDistfromPosition2d(currTarget);
 
-//                        logger.debug("Heli: " + myHeliId + " Dist to target: " + dist + " pos: " + pos +
-//                                     " Target: " + currTarget);
-
                         if (dist <= currEpsilon) {
                             
                             // made it! go to the hovering state
@@ -328,6 +327,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                             if ((tmp != null) && (currMoveCallback != null) && (tmp.equals(currMoveCallback))) {
                                 currMoveCallback = null;
                             }
+
+                            // we reached the destination, so break out of this iteration of the loop
+                            break;
                         }
 
                         // give the walls a repulsive force
@@ -451,6 +453,18 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void hover(double altitude) {
         currTarget.z = (float)altitude;
+        hover();
+    }
+
+
+    /**
+     * Indicates that the helicopter should hover about a given target point.
+     *
+     * @param target The point at which the heli should hover.
+     */
+    protected void hover(Vector3f target) {
+        
+        currTarget = target;
         hover();
     }
 
