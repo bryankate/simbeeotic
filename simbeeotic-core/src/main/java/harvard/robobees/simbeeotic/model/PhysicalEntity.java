@@ -109,7 +109,7 @@ public interface PhysicalEntity {
 
 
     /**
-     * Gets the identifier that is to distinguish this pyhsical object in the virtual world.
+     * Gets the identifier that is to distinguish this physical object in the virtual world.
      * This identifier should be used when sending updates to the {@link MotionRecorder}. This
      * identifier should not be confused with the model ID, which is assigned to abstract
      * entities in the simulation. A class that implements {@link Model} and {@link PhysicalEntity}
@@ -191,7 +191,7 @@ public interface PhysicalEntity {
 
 
     /**
-     * Indicates that a model is intersted in collisions involving this entity. When
+     * Indicates that a model is interested in collisions involving this entity. When
      * a collision is detected, a {@link CollisionEvent} will be generated on the
      * given model.
      *

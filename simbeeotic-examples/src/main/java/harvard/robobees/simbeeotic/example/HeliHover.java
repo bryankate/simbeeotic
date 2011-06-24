@@ -63,7 +63,7 @@ public class HeliHover implements HeliBehavior {
             private double roll = 0.5;
 
             // initialize PID controllers
-            private PIDController throttlePID = new PIDController(0.8, 0.004, 1.5e-9, 0.01);
+            private PIDController throttlePID = new PIDController(0.8, 0.4, 1.5e-9, 0.1);
             private PIDController pitchPID = new PIDController(0.125, 0.003, 1.0e-9, 0.01);
             private PIDController rollPID = new PIDController(0, 0.00005, 1.0e-9, 0.01);
 
@@ -117,7 +117,7 @@ public class HeliHover implements HeliBehavior {
                 }
 
                 // set yaw using a proportional response to the error
-                double yaw = 0.5 + (-0.3*Math.sin(euler.z-yawSetPoint));
+                double yaw = 0.5 + (-0.3 * Math.sin(euler.z - yawSetPoint));
 
                 control.setThrust(throttle);
                 control.setYaw(yaw);

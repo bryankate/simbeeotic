@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="112181"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>120</end-time>
+    </simulation>
+
+    <models>
+        <model name="heli1">
+            <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>
+            <properties>
+                <prop name="server-host" value="192.168.7.11"/>
+                <prop name="server-port" value="8001"/>
+            </properties>
+            <custom-config>
+                <behaviors>
+                    <behavior>
+                        <java-class>harvard.robobees.simbeeotic.example.HeliCircle</java-class>
+                        <properties>
+                            <prop name="trim-throttle" value="430"/>
+                            <prop name="trim-roll" value="511"/>
+                            <prop name="trim-pitch" value="503"/>
+                            <prop name="trim-yaw" value="511"/>
+                            <prop name="radius" value="1.0"/>
+                            <prop name="revolutions" value="5"/>
+                        </properties>
+                    </behavior>
+                </behaviors>
+            </custom-config>
+            <sensor name="position-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class>
+                <properties>
+                    <prop name="sigma" value="0"/>
+                </properties>
+            </sensor>
+            <sensor name="pose-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>
+                <properties>
+                    <prop name="sigma" value="0"/>
+                </properties>
+            </sensor>
+        </model>
+    </models>
+
+    <components>
+        <variation>
+            <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
+            <properties>
+                <prop name="server-host" value="192.168.7.11"/>
+                <prop name="object-names" value="heli1"/>
+            </properties>
+        </variation>
+        
+<!--         <variation> -->
+<!--             <java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class> -->
+<!--         </variation> -->
+    </components>
+</scenario>

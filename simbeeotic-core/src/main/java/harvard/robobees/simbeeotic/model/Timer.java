@@ -31,10 +31,10 @@ public final class Timer {
      * Establishes a new Timer with the given parameters.
      *
      * @param modelId The model upon which an event will be scheduled to trigger the timer.
-     * @param engine The discrete event sime engine managing the model.
+     * @param engine The discrete event sim engine managing the model.
      * @param callback The method to be called when the timer fires.
      * @param start The first firing time. Must be at or later than the time of the current event being executed.
-     * @param period The period at which this timer fires. A value less than or equal to zero indicates no recurrance.
+     * @param period The period at which this timer fires. A value less than or equal to zero indicates no recurrence.
      * @param periodUnit The time unit in which the period is measured.
      */
     public Timer(int modelId, SimEngine engine, TimerCallback callback, SimTime start, long period, TimeUnit periodUnit) {

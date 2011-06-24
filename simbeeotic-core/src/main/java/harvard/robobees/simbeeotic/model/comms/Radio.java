@@ -83,7 +83,7 @@ public interface Radio {
     /**
      * Gets the RF band in which this radio operates. This method must return the full
      * range of possible frequencies, not just the channel in which it is currently
-     * operating. The return from this methid is expected to be static over time.
+     * operating. The return from this method is expected to be static over time.
      * 
      * @return The full operating range of the radio.
      */
