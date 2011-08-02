@@ -28,8 +28,6 @@
                             <prop name="trim-roll" value="511"/>
                             <prop name="trim-pitch" value="503"/>
                             <prop name="trim-yaw" value="511"/>
-                            <prop name="radius" value="1.0"/>
-                            <prop name="revolutions" value="5"/>
                         </properties>
                     </behavior>
                 </behaviors>

@@ -13,7 +13,7 @@
     </simulation>
 
     <models>
-        <model name="heli0">
+          <model name="heli0">
             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
@@ -22,14 +22,13 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.HeliCircle</java-class>
+                        <java-class>harvard.robobees.simbeeotic.model.LQIHeliBehavior</java-class>
                         <properties>
                             <prop name="trim-throttle" value="460"/>
                             <prop name="trim-roll" value="511"/>
                             <prop name="trim-pitch" value="515"/>
                             <prop name="trim-yaw" value="507"/>
-                            <prop name="radius" value="1.0"/>
-                            <prop name="revolutions" value="5"/>
+                            <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/>
                         </properties>
                     </behavior>
                 </behaviors>

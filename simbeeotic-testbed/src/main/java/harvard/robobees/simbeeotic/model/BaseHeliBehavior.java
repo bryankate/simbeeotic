@@ -35,7 +35,7 @@ import static java.lang.Math.*;
 public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private Timer controlTimer;
-    private SimEngine simEngine;
+    protected SimEngine simEngine;
     
     // data logging parameters
     private boolean logData = false;
@@ -267,7 +267,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      * @return sim heli command
      */
     private double heliToSim(int value) {
-        return ((value-170)/682.0);
+        return HWILBee.normCommand(value);
     }
 
 
@@ -416,7 +416,13 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         break;
 
                     case LAND:
-                    	if (pos.z < 0.05)
+                    	Vector3f landTarget = new Vector3f(currTarget);
+                    	landTarget.z = pos.z;
+                    	Vector3f eps = new Vector3f();
+                    	eps.sub(pos, landTarget);
+                    	logger.info(eps.length());
+                    	
+                    	if (pos.z < 0.15 && pos.epsilonEquals(landTarget, 0.04f))
                     		currState = MoveState.IDLE;
                     	else
                     	{
@@ -489,7 +495,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                         updateThrottle(time.getTime(), pos);
                         updateYaw(pos, euler);
-                        control.setPitch(pitchTrim + 0.15);
+                        control.setPitch(pitchTrim + 0.25);
                         break;
 
                     case HOVER:
@@ -562,9 +568,17 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     protected void land()
     {
     	control.setThrust(throttleTrim - 0.08);
-    	control.setPitch(pitchTrim);
-    	control.setYaw(yawTrim);
-    	control.setRoll(rollTrim);
+    	currTarget = posSensor.getPosition();
+    	currTarget.z = 0;
+    	yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
+        currState = MoveState.LAND;
+    }
+    
+    protected void landAtPoint(float x, float y)
+    {
+    	control.setThrust(throttleTrim + 0.04);
+    	currTarget = new Vector3f(x, y, 0.0f);
+    	yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
         currState = MoveState.LAND;
     }
 

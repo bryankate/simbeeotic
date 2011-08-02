@@ -328,7 +328,7 @@ public class HWILBee extends AbstractHeli {
      *
      * @return A normalized command in the range (0,1).
      */
-    public static double normCommand(int cmd) {
+    public static double normCommand(long cmd) {
         return cap((cmd - CMD_LOW) / (double)CMD_RANGE);
     }
 
