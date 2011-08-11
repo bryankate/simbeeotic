@@ -24,16 +24,14 @@ public class HeliSquare extends BaseHeliBehavior {
     private Timer navTimer;
     private int heliID;
     
-    private Vector3f[] waypoints =
-    	new Vector3f[] {
-    		new Vector3f(1, 1, 1),
-            new Vector3f(1, -1, 1),
-            new Vector3f(-1, -1, 1),
-            new Vector3f(-1, 1, 1),
-    		new Vector3f(1, 1, 1)
-    	};
+    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(1, 1, 1),
+                                                   new Vector3f(1, -1, 1),
+                                                   new Vector3f(-1, -1, 1),
+                                                   new Vector3f(-1, 1, 1),
+                                                   new Vector3f(1, 1, 1)};
     
     private PositionSensor posSensor;
+
     private static Logger logger = Logger.getLogger(HeliSquare.class);
 
 
@@ -49,6 +47,7 @@ public class HeliSquare extends BaseHeliBehavior {
         moveToPoint(pos.x, pos.y, 1, 0.1, null);
 
         logger.info("Starting program.");
+
         heliID = control.getHeliId();
 
        // a loop that checks to see if a segment of the scripted path is complete
@@ -71,7 +70,7 @@ public class HeliSquare extends BaseHeliBehavior {
                         logger.info("Heli: " + heliID + " Finished scripted path, idling.");
 
                         // done the script, land the heli at the hive
-                        landHeli();
+                        landAtHive();
                     }
                     else
                     {
@@ -98,8 +97,8 @@ public class HeliSquare extends BaseHeliBehavior {
 
 
     @Override
-    public void stop()
-    {
+    public void stop() {
+        
         super.stop();
         
         navTimer.cancel();

@@ -80,7 +80,7 @@ public class TestbedExperiment extends BaseHeliBehavior {
                             public void reachedDestination() {
 
                             logger.info("Heli: " + heliID + " Reached waypoint.");
-                            landHeli();
+                            landAtHive();
                     }
                 });
                 }

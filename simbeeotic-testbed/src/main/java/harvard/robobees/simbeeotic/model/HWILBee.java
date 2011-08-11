@@ -22,6 +22,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.round;
+
 
 /**
  * A model that acts as a proxy for a physical helicopter flying in the
@@ -330,6 +332,18 @@ public class HWILBee extends AbstractHeli {
      */
     public static double normCommand(long cmd) {
         return cap((cmd - CMD_LOW) / (double)CMD_RANGE);
+    }
+
+
+    /**
+     * Gets the raw helic ommand that corresponds to a normalized command value.
+     *
+     * @param cmd The normalize command value, in the range of (0,1).
+     *
+     * @return The heli command value (in the range of CMD_LOW to CMD_HIGH).
+     */
+    public static short rawCommand(double cmd) {
+        return (short)(170 + (int)round(cmd * 682));
     }
 
 
