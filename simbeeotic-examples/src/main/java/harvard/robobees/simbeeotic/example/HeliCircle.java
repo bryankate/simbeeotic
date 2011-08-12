@@ -12,12 +12,9 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.SimTime;
-import harvard.robobees.simbeeotic.model.HWILBee;
 import harvard.robobees.simbeeotic.model.HeliBehavior;
-import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
-import harvard.robobees.simbeeotic.model.sensor.Accelerometer;
 import harvard.robobees.simbeeotic.model.sensor.PoseSensor;
 import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
 import harvard.robobees.simbeeotic.model.TimerCallback;
@@ -67,12 +64,6 @@ public class HeliCircle implements HeliBehavior
 	private PIDController thrustPID;
 	private PIDController rollPID;
 	
-	// trim values for a helicopter
-    private double throttleTrim = 0.5;
-    private double rollTrim = 0.5;
-    private double pitchTrim = 0.5;
-    private double yawTrim = 0.5;
-    
 	private static Logger logger = Logger.getLogger(HeliCircle.class);
     FileWriter stream;
     BufferedWriter out;
@@ -109,10 +100,10 @@ public class HeliCircle implements HeliBehavior
 	    	Vector3f dEulerApprox = new Vector3f(dQ.x, dQ.y, dQ.z);
 	    	dEulerApprox.scale(2/dt);
 	    	
-	    	int thrust = simToHeli(control.getThrust()) - simToHeli(throttleTrim);
-	    	int roll = simToHeli(control.getRoll()) - simToHeli(rollTrim);
-	    	int pitch = simToHeli(control.getPitch()) - simToHeli(pitchTrim);
-	    	int yaw = simToHeli(control.getYaw()) - simToHeli(yawTrim);
+	    	int thrust = simToHeli(control.getThrust()) - simToHeli(control.getThrustTrim());
+	    	int roll = simToHeli(control.getRoll()) - simToHeli(control.getRollTrim());
+	    	int pitch = simToHeli(control.getPitch()) - simToHeli(control.getPitchTrim());
+	    	int yaw = simToHeli(control.getYaw()) - simToHeli(control.getYawTrim());
 	    	
 	    	try
 	    	{
@@ -171,10 +162,10 @@ public class HeliCircle implements HeliBehavior
 		rollPID = new PIDController(targetRadius, -0.4, -1e-2, -0.1);
 		
 		// send initial neutral commands to the heli to initialize takeoff
-        control.setThrust(throttleTrim);
-        control.setPitch(pitchTrim);
-        control.setRoll(rollTrim);
-        control.setYaw(yawTrim);
+        control.setThrust(control.getThrustTrim());
+        control.setPitch(control.getPitchTrim());
+        control.setRoll(control.getRollTrim());
+        control.setYaw(control.getYawTrim());
 		
 		logger.info("Taking off!");
 		takeoff();
@@ -261,7 +252,7 @@ public class HeliCircle implements HeliBehavior
 			logger.info("\nSwitching to HOVER mode.");
 		}
 		
-		Double thrust = throttleTrim;
+		Double thrust = control.getThrustTrim();
 		Double delta = 0.0;
 		
 		switch(state)
@@ -273,7 +264,7 @@ public class HeliCircle implements HeliBehavior
 			delta = thrustPID.update(t, z);
 			break;
 		case LAND:
-			thrust = throttleTrim - 0.05;
+			thrust = control.getThrustTrim() - 0.05;
 			break;
 		case TOUCHDOWN:
 			thrust = 0.0;
@@ -288,10 +279,10 @@ public class HeliCircle implements HeliBehavior
 		thrust += delta;
 		
 		// thrust may not vary too widely in hover mode
-		if (state == State.HOVER && thrust > throttleTrim + 0.25)
-            thrust = throttleTrim + 0.25;
-		if (state == State.HOVER && thrust < throttleTrim - 0.1)
-			thrust = throttleTrim - 0.1;
+		if (state == State.HOVER && thrust > control.getThrustTrim() + 0.25)
+            thrust = control.getThrustTrim() + 0.25;
+		if (state == State.HOVER && thrust < control.getThrustTrim() - 0.1)
+			thrust = control.getThrustTrim() - 0.1;
         
 		control.setThrust(thrust);
 	}
@@ -304,7 +295,7 @@ public class HeliCircle implements HeliBehavior
 			 * (this method is not really necessary, but is maintained
 			 * in case we want to add more interesting pitch control)
 			 */
-			control.setPitch(pitchTrim + 0.3);
+			control.setPitch(control.getPitchTrim() + 0.3);
 		}
 	}
 	
@@ -313,7 +304,7 @@ public class HeliCircle implements HeliBehavior
 		if(state == State.HOVER)
 		{
 			// adjust yaw using proportional control
-			control.setYaw(yawTrim + 0.3 * Math.sin(a));
+			control.setYaw(control.getYawTrim() + 0.3 * Math.sin(a));
 		}
 	}
 	
@@ -326,7 +317,7 @@ public class HeliCircle implements HeliBehavior
 			if (delta == null)
 				delta = 0.0;
 			
-			control.setRoll(rollTrim + delta);
+			control.setRoll(control.getRollTrim() + delta);
 		}
 	}
 
@@ -338,32 +329,13 @@ public class HeliCircle implements HeliBehavior
 	private void land(HeliControl control)
 	{
 		// reset all commands before initiating landing sequence
-		control.setPitch(pitchTrim);
-        control.setRoll(rollTrim);
-        control.setYaw(yawTrim);
+		control.setPitch(control.getThrustTrim());
+        control.setRoll(control.getRollTrim());
+        control.setYaw(control.getYawTrim());
 		state = State.LAND;
 	}
 	
-	@Inject(optional = true)
-    public final void setThrottleTrim(@Named("trim-throttle") final int trim) {
-        this.throttleTrim = HWILBee.normCommand(trim);
-    }
 
-    @Inject(optional = true)
-    public final void setYawTrim(@Named("trim-yaw") final int trim) {
-        this.yawTrim = HWILBee.normCommand(trim);
-    }
-    
-    @Inject(optional = true)
-    public final void setRollTrim(@Named("trim-roll") final int trim) {
-        this.rollTrim = HWILBee.normCommand(trim);
-    }
-
-    @Inject(optional = true)
-    public final void setPitchTrim(@Named("trim-pitch") final int trim) {
-        this.pitchTrim = HWILBee.normCommand(trim);
-    }
-    
     @Inject(optional = true)
     public final void setRevolutions(@Named("revolutions") final int revolutions) {
         this.revolutions = revolutions;

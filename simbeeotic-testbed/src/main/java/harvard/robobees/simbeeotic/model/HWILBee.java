@@ -55,6 +55,10 @@ public class HWILBee extends AbstractHeli {
     // params
     private String serverHost = "192.168.7.11";
     private int serverPort = 8000;
+    private double throttleTrim = normCommand(511);
+    private double rollTrim = normCommand(511);
+    private double pitchTrim = normCommand(511);
+    private double yawTrim = normCommand(511);
     private boolean boundsCheckEnabled = true;
     private float xBoundMin = -2.1f;  // m
     private float xBoundMax = 2.1f;   // m
@@ -283,6 +287,26 @@ public class HWILBee extends AbstractHeli {
     }
 
 
+    public final double getPitchTrim() {
+        return pitchTrim;
+    }
+
+
+    public final double getRollTrim() {
+        return rollTrim;
+    }
+
+
+    public final double getThrustTrim() {
+        return throttleTrim;
+    }
+
+
+    public final double getYawTrim() {
+        return yawTrim;
+    }
+
+
     private void sendCommands() {
 
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
@@ -398,5 +422,29 @@ public class HWILBee extends AbstractHeli {
     @Inject(optional = true)
     public final void setZBoundMax(@Named("z-bound-max") final float val) {
         this.zBoundMax = val;
+    }
+
+
+    @Inject(optional = true)
+    public final void setThrottleTrim(@Named("trim-throttle") final int trim) {
+        this.throttleTrim = normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setYawTrim(@Named("trim-yaw") final int trim) {
+        this.yawTrim = normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setRollTrim(@Named("trim-roll") final int trim) {
+        this.rollTrim = normCommand(trim);
+    }
+
+
+    @Inject(optional = true)
+    public final void setPitchTrim(@Named("trim-pitch") final int trim) {
+        this.pitchTrim = normCommand(trim);
     }
 }

@@ -18,17 +18,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8001"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="511"/>
+                <prop name="trim-pitch" value="503"/>
+                <prop name="trim-yaw" value="511"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="511"/>
-                            <prop name="trim-pitch" value="503"/>
-                            <prop name="trim-yaw" value="511"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>

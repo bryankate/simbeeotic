@@ -27,6 +27,14 @@ public interface HeliControl {
 
 
     /**
+     * Gets the trim value (center value) for the yaw command on this helicopter.
+     *
+     * @return The trim value in the range (0,1).
+     */
+    public double getYawTrim();
+
+
+    /**
      * Sets the yaw command to be executed by the heli.
      *
      * @param level A value in the range of (0,1) that corresponds to the
@@ -42,6 +50,14 @@ public interface HeliControl {
      *         correspnding to the percentage of total possible output.
      */
     public double getPitch();
+
+
+    /**
+     * Gets the trim value (center value) for the pitch command on this helicopter.
+     *
+     * @return The trim value in the range (0,1).
+     */
+    public double getPitchTrim();
 
 
     /**
@@ -63,6 +79,14 @@ public interface HeliControl {
 
 
     /**
+     * Gets the trim value (center value) for the roll command on this helicopter.
+     *
+     * @return The trim value in the range (0,1).
+     */
+    public double getRollTrim();
+
+
+    /**
      * Sets the roll command to be executed by the heli.
      *
      * @param level A value in the range of (0,1) that corresponds to the
@@ -78,6 +102,14 @@ public interface HeliControl {
      *         correspnding to the percentage of total possible output.
      */
     public double getThrust();
+
+
+    /**
+     * Gets the trim value (center value) for the thrust command on this helicopter.
+     *
+     * @return The trim value in the range (0,1).
+     */
+    public double getThrustTrim();
 
 
     /**

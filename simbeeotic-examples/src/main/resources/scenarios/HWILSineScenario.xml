@@ -13,91 +13,22 @@
     </simulation>
 
     <models>
-<!--         <model name="heli0"> -->
-<!--             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class> -->
-<!--             <properties> -->
-<!--                 <prop name="server-host" value="192.168.7.11"/> -->
-<!--                 <prop name="server-port" value="8000"/> -->
-<!--             </properties> -->
-<!--             <custom-config> -->
-<!--                 <behaviors> -->
-<!--                     <behavior> -->
-<!--                         <java-class>harvard.robobees.simbeeotic.example.HeliSine</java-class> -->
-<!--                         <properties> -->
-<!--                             <prop name="trim-throttle" value="460"/> -->
-<!--                             <prop name="trim-roll" value="511"/> -->
-<!--                             <prop name="trim-pitch" value="515"/> -->
-<!--                             <prop name="trim-yaw" value="507"/> -->
-<!--                             <prop name="logging" value = "true"/> -->
-<!--                             <prop name="log-path" value = "/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis/heli_data.txt"/> -->
-<!--                             <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/> -->
-<!--                         </properties> -->
-<!--                     </behavior> -->
-<!--                 </behaviors> -->
-<!--             </custom-config> -->
-<!--             <sensor name="position-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--             <sensor name="pose-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--         </model> -->
-<!--         <model name="heli1"> -->
-<!--             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class> -->
-<!--             <properties> -->
-<!--                 <prop name="server-host" value="192.168.7.11"/> -->
-<!--                 <prop name="server-port" value="8001"/> -->
-<!--             </properties> -->
-<!--             <custom-config> -->
-<!--                 <behaviors> -->
-<!--                     <behavior> -->
-<!--                         <java-class>harvard.robobees.simbeeotic.example.HeliSine</java-class> -->
-<!--                         <properties> -->
-<!--                             <prop name="trim-throttle" value="430"/> -->
-<!--                             <prop name="trim-roll" value="511"/> -->
-<!--                             <prop name="trim-pitch" value="503"/> -->
-<!--                             <prop name="trim-yaw" value="511"/> -->
-<!--                             <prop name="logging" value = "true"/> -->
-<!--                             <prop name="log-path" value = "/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis/heli_data.txt"/> -->
-<!--                             <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/> -->
-<!--                         </properties> -->
-<!--                     </behavior> -->
-<!--                 </behaviors> -->
-<!--             </custom-config> -->
-<!--             <sensor name="position-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--             <sensor name="pose-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--         </model> -->
         <model name="heli2">
             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8002"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="495"/>
+                <prop name="trim-pitch" value="511"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.HeliSine</java-class>
                         <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="495"/>
-                            <prop name="trim-pitch" value="511"/>
-                            <prop name="trim-yaw" value="507"/>
                             <prop name="logging" value = "true"/>
                             <prop name="log-path" value = "/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis/heli_data.txt"/>
                             <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/>
@@ -118,41 +49,6 @@
                 </properties>
             </sensor>
         </model>
-<!--         <model name="heli3"> -->
-<!--             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class> -->
-<!--             <properties> -->
-<!--                 <prop name="server-host" value="192.168.7.11"/> -->
-<!--                 <prop name="server-port" value="8003"/> -->
-<!--             </properties> -->
-<!--             <custom-config> -->
-<!--                 <behaviors> -->
-<!--                     <behavior> -->
-<!--                         <java-class>harvard.robobees.simbeeotic.example.HeliSine</java-class> -->
-<!--                         <properties> -->
-<!--                             <prop name="trim-throttle" value="430"/> -->
-<!--                             <prop name="trim-roll" value="495"/> -->
-<!--                             <prop name="trim-pitch" value="507"/> -->
-<!--                             <prop name="trim-yaw" value="507"/> -->
-<!--                             <prop name="logging" value = "true"/> -->
-<!--                             <prop name="log-path" value = "/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis/heli_data.txt"/> -->
-<!--                             <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/> -->
-<!--                         </properties> -->
-<!--                     </behavior> -->
-<!--                 </behaviors> -->
-<!--             </custom-config> -->
-<!--             <sensor name="position-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--             <sensor name="pose-sensor"> -->
-<!--                 <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class> -->
-<!--                 <properties> -->
-<!--                     <prop name="sigma" value="0"/> -->
-<!--                 </properties> -->
-<!--             </sensor> -->
-<!--         </model> -->
     </models>
 
     <components>

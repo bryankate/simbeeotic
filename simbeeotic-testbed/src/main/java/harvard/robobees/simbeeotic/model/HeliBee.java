@@ -75,6 +75,12 @@ public class HeliBee extends AbstractHeli {
 
 
     @Override
+    public double getYawTrim() {
+        return 0.5;
+    }
+
+
+    @Override
     public double getPitch() {
         return 0;
     }
@@ -82,6 +88,12 @@ public class HeliBee extends AbstractHeli {
 
     @Override
     public void setPitch(double level) {
+    }
+
+
+    @Override
+    public double getPitchTrim() {
+        return 0.5;
     }
 
 
@@ -97,6 +109,12 @@ public class HeliBee extends AbstractHeli {
 
 
     @Override
+    public double getRollTrim() {
+        return 0.5;
+    }
+
+
+    @Override
     public double getThrust() {
         return 0;
     }
@@ -104,5 +122,11 @@ public class HeliBee extends AbstractHeli {
 
     @Override
     public void setThrust(double level) {
+    }
+
+
+    @Override
+    public double getThrustTrim() {
+        return 0.5;
     }
 }

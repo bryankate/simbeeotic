@@ -18,17 +18,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8000"/>
+
+                <prop name="trim-throttle" value="460"/>
+                <prop name="trim-roll" value="511"/>
+                <prop name="trim-pitch" value="515"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.TestbedExperiment</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="460"/>
-                            <prop name="trim-roll" value="511"/>
-                            <prop name="trim-pitch" value="515"/>
-                            <prop name="trim-yaw" value="507"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -50,17 +49,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8001"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="511"/>
+                <prop name="trim-pitch" value="503"/>
+                <prop name="trim-yaw" value="511"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.TestbedExperiment</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="511"/>
-                            <prop name="trim-pitch" value="503"/>
-                            <prop name="trim-yaw" value="511"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -82,17 +80,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8002"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="495"/>
+                <prop name="trim-pitch" value="518"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.TestbedExperiment</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="495"/>
-                            <prop name="trim-pitch" value="518"/>
-                            <prop name="trim-yaw" value="507"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -114,17 +111,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8003"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="495"/>
+                <prop name="trim-pitch" value="507"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.TestbedExperiment</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="495"/>
-                            <prop name="trim-pitch" value="507"/>
-                            <prop name="trim-yaw" value="507"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -146,17 +142,16 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8004"/>
+
+                <prop name="trim-throttle" value="430"/>
+                <prop name="trim-roll" value="511"/>
+                <prop name="trim-pitch" value="503"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.TestbedExperiment</java-class>
-                        <properties>
-                            <prop name="trim-throttle" value="430"/>
-                            <prop name="trim-roll" value="511"/>
-                            <prop name="trim-pitch" value="503"/>
-                            <prop name="trim-yaw" value="507"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -180,10 +175,6 @@
             <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <!--<prop name="object-names" value="heli0"/>-->
-                <!--<prop name="object-names" value="heli0,heli1"/>-->
-                <!--<prop name="object-names" value="heli0,heli1,heli2"/>-->
-                <!--<prop name="object-names" value="heli0,heli1,heli2,heli3"/>-->
                 <prop name="object-names" value="heli0,heli1,heli2,heli3,heli4"/>
 
             </properties>

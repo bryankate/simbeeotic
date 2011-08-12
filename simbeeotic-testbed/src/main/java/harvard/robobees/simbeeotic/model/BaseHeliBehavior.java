@@ -41,14 +41,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private long lastTime = 0;
     private MoveState currState = MoveState.IDLE;
     private Vector3f currTarget = new Vector3f();
-    private double currEpsilon = 0.1;   // in meters
+    private double currEpsilon = 0.1;        // in meters
     private MoveCallback currMoveCallback;
     private List<AbstractHeli> allHelis;
     private Vector3f calcTarget;
-    private Vector3f rVec; // repulsive vector for obst. avoidance
+    private Vector3f rVec;                   // repulsive vector for obst. avoidance
     private int myHeliId;
-    private Vector3f hiveLocation; // where this helicopter should land
-    private double hiveRadius = 0.55; // in meters; calculated later
+    private Vector3f hiveLocation;           // where this helicopter should land
+    private double hiveRadius = 0.55;        // in meters; calculated later
     private BufferedWriter logWriter;
 
     private HeliControl control;
@@ -60,13 +60,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private PIDController throttlePID;
     private PIDController pitchPID;
     private PIDController rollPID;
-    private double yawSetpoint = 0;  // radians
-
-    // trim values for a helicopter
-    private double throttleTrim = 0.5;
-    private double rollTrim = 0.5;
-    private double pitchTrim = 0.5;
-    private double yawTrim = 0.5;
+    private double yawSetpoint = 0;          // radians
 
     // data logging parameters
     private boolean logData = false;
@@ -125,9 +119,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrust());
-        control.setPitch(pitchTrim);
-        control.setRoll(rollTrim);
-        control.setYaw(yawTrim);
+        control.setPitch(control.getPitchTrim());
+        control.setRoll(control.getRollTrim());
+        control.setYaw(control.getYawTrim());
 
 
         // a timer that implements the low level control of the heli altitude and bearing
@@ -178,7 +172,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                     case LAND:
 
                         // throttle down to land
-                        control.setThrust(throttleTrim - 0.05);
+                        control.setThrust(control.getThrustTrim() - 0.05);
 
                     	if (pos.z < LANDING_ALTITUDE) {
 
@@ -257,7 +251,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
                         updateThrottle(time.getTime(), pos);
                         updateYaw(pos, euler);
-                        control.setPitch(pitchTrim + pitchAdjustment);
+                        control.setPitch(control.getPitchTrim() + pitchAdjustment);
 
                         break;
 
@@ -490,14 +484,14 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (throttleDelta == null)
             throttleDelta = 0.0;
 
-        double newThrottle = throttleTrim + throttleDelta;
+        double newThrottle = control.getThrustTrim() + throttleDelta;
 
         // Make sure we don't exceed min and max throttle
-        if (newThrottle > throttleTrim + 0.25)
-            newThrottle = throttleTrim + 0.25;
+        if (newThrottle > control.getThrustTrim() + 0.25)
+            newThrottle = control.getThrustTrim() + 0.25;
 
-        if (newThrottle < throttleTrim - 0.1)
-            newThrottle = throttleTrim - 0.1;
+        if (newThrottle < control.getThrustTrim() - 0.1)
+            newThrottle = control.getThrustTrim() - 0.1;
 
         control.setThrust(newThrottle);
     }
@@ -510,7 +504,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (pitchDelta == null)
             pitchDelta = 0.0;
 
-        double newPitch = pitchTrim + pitchDelta;
+        double newPitch = control.getPitchTrim() + pitchDelta;
 
         control.setPitch(newPitch);
     }
@@ -523,7 +517,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (rollDelta == null)
             rollDelta = 0.0;
 
-        double newRoll = rollTrim + rollDelta;
+        double newRoll = control.getRollTrim() + rollDelta;
 
         control.setRoll(newRoll);
     }
@@ -533,7 +527,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (currState == MoveState.MOVE)
             yawSetpoint = Math.atan2(calcTarget.y - pos.y, calcTarget.x - pos.x);
 
-        double yaw = yawTrim + (-0.3 * Math.sin(euler.z - yawSetpoint));
+        double yaw = control.getYawTrim() + (-0.3 * Math.sin(euler.z - yawSetpoint));
 
         if (yaw > 0.75) {
             yaw = 0.75;
@@ -587,10 +581,10 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             Vector3f dEulerApprox = new Vector3f(dQ.x, dQ.y, dQ.z);
             dEulerApprox.scale(2/dt);
 
-            int thrust = HWILBee.rawCommand(control.getThrust()) - HWILBee.rawCommand(throttleTrim);
-            int roll = HWILBee.rawCommand(control.getRoll()) - HWILBee.rawCommand(rollTrim);
-            int pitch = HWILBee.rawCommand(control.getPitch()) - HWILBee.rawCommand(pitchTrim);
-            int yaw = HWILBee.rawCommand(control.getYaw()) - HWILBee.rawCommand(yawTrim);
+            int thrust = HWILBee.rawCommand(control.getThrust()) - HWILBee.rawCommand(control.getThrustTrim());
+            int roll = HWILBee.rawCommand(control.getRoll()) - HWILBee.rawCommand(control.getRollTrim());
+            int pitch = HWILBee.rawCommand(control.getPitch()) - HWILBee.rawCommand(control.getPitchTrim());
+            int yaw = HWILBee.rawCommand(control.getYaw()) - HWILBee.rawCommand(control.getYawTrim());
 
             try {
 
@@ -679,30 +673,6 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         Vector3f temp = new Vector3f(value);
         temp.sub(pos);
         return(temp.length());
-    }
-
-
-    @Inject(optional = true)
-    public final void setThrottleTrim(@Named("trim-throttle") final int trim) {
-        this.throttleTrim = HWILBee.normCommand(trim);
-    }
-
-
-    @Inject(optional = true)
-    public final void setYawTrim(@Named("trim-yaw") final int trim) {
-        this.yawTrim = HWILBee.normCommand(trim);
-    }
-
-
-    @Inject(optional = true)
-    public final void setRollTrim(@Named("trim-roll") final int trim) {
-        this.rollTrim = HWILBee.normCommand(trim);
-    }
-
-
-    @Inject(optional = true)
-    public final void setPitchTrim(@Named("trim-pitch") final int trim) {
-        this.pitchTrim = HWILBee.normCommand(trim);
     }
 
 

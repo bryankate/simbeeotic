@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.SimTime;
-import harvard.robobees.simbeeotic.model.HeliBehavior;
 import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
@@ -22,8 +21,8 @@ import org.apache.log4j.Logger;
  * 
  * @author dpalmer
  */
-public class HeliRandomWalk extends BaseHeliBehavior implements HeliBehavior
-{
+public class HeliRandomWalk extends BaseHeliBehavior {
+    
 	private PositionSensor sensor;
 	private Timer timer;
 	private Vector3f setpoint;

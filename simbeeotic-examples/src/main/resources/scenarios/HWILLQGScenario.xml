@@ -18,16 +18,17 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="8000"/>
+
+                <prop name="trim-throttle" value="440"/>
+                <prop name="trim-roll" value="511"/>
+                <prop name="trim-pitch" value="515"/>
+                <prop name="trim-yaw" value="507"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.model.LQGHeliBehavior</java-class>
                         <properties>
-                            <prop name="trim-throttle" value="440"/>
-                            <prop name="trim-roll" value="511"/>
-                            <prop name="trim-pitch" value="515"/>
-                            <prop name="trim-yaw" value="507"/>
                             <prop name="control-matrix-directory" value="/Volumes/science220/Documents/College/Summer 2011/Robobees/Data Analysis"/>
                         </properties>
                     </behavior>
