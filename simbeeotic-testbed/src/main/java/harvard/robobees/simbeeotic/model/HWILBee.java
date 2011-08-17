@@ -49,7 +49,6 @@ public class HWILBee extends AbstractHeli {
 
     private Timer boundsTimer;
     private long landingTime = 2;        // seconds, duration of soft landing command
-    private double landingThrust = 0.3;  // thrust command for soft landing
     private double landingHeight = 0.75; // m, above which a soft landing should be attempted
 
     // params
@@ -115,7 +114,7 @@ public class HWILBee extends AbstractHeli {
                         if (currPos.z >= landingHeight) {
                             
                             // reduce rotor speed for soft landing
-                            setThrust(landingThrust);
+                            setThrust(getThrustTrim() - 0.1);
 
                             // set a timer a few seconds in the future to shutdown completely
                             createTimer(new TimerCallback() {

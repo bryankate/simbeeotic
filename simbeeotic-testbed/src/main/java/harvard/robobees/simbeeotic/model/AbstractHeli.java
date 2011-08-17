@@ -175,6 +175,23 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
     }
 
 
+    protected final boolean addBehavior(String name, HeliBehavior behavior) {
+
+        if (behaviors.containsKey(name)) {
+            return false;
+        }
+
+        behaviors.put(name, behavior);
+
+        return true;
+    }
+    
+
+    protected final boolean removeBehavior(String name) {
+        return (behaviors.remove(name) != null);
+    }
+
+
     @Inject(optional = true)
     public final void setStartBehaviors(@Named("start-behaviors") final boolean start) {
         startBehaviors = start;
