@@ -47,7 +47,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private Vector3f calcTarget;
     private Vector3f rVec;                   // repulsive vector for obst. avoidance
     private int myHeliId;
-    private Vector3f hiveLocation;           // where this helicopter should land
+    private Vector3f landingSpot;            // where this helicopter should land
+    private Vector3f hiveLocation;           // the center of the hive
     private double hiveRadius = 0.55;        // in meters; calculated later
     private BufferedWriter logWriter;
 
@@ -100,8 +101,15 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         allHelis = simEngine.findModelsByType(AbstractHeli.class);
         myHeliId = control.getHeliId();
 
-        hiveRadius = simEngine.findModelByType(SimpleHive.class).getSize() / 2;
-        hiveLocation = calcHiveLocation();
+        SimpleHive hive = simEngine.findModelByType(SimpleHive.class);
+
+        if (hive == null) {
+            throw new RuntimeException("A hive must be present and initialized before any helicopters.");
+        }
+
+        hiveLocation = hive.getTruthPosition();
+        hiveRadius = hive.getSize() / 2;
+        landingSpot = calcHiveLocation();
 
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
         orientSensor = platform.getSensor("pose-sensor", PoseSensor.class);
@@ -370,19 +378,19 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void landAtHive() {
 
-        moveToPoint(hiveLocation.x, hiveLocation.y, hiveLocation.z, DESTINATION_EPSILON,
+        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, DESTINATION_EPSILON,
                     new MoveCallback() {
 
                         @Override
                         public void reachedDestination() {
 
-                            hoverAtPoint(hiveLocation);
+                            hoverAtPoint(landingSpot);
 
                             platform.createTimer(new TimerCallback() {
 
                                 @Override
                                 public void fire(SimTime time) {
-                                    landAtPoint(hiveLocation);
+                                    landAtPoint(landingSpot);
                                 }
                             }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
                         }
@@ -398,13 +406,13 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void landAtHive(final MoveCallback callback) {
 
-        moveToPoint(hiveLocation.x, hiveLocation.y, hiveLocation.z, DESTINATION_EPSILON,
+        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, DESTINATION_EPSILON,
                     new MoveCallback() {
 
                         @Override
                         public void reachedDestination() {
 
-                            hoverAtPoint(hiveLocation);
+                            hoverAtPoint(landingSpot);
 
                             platform.createTimer(new TimerCallback() {
 
@@ -412,7 +420,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                                 public void fire(SimTime time) {
 
                                     currMoveCallback = callback;
-                                    landAtPoint(hiveLocation);
+                                    landAtPoint(landingSpot);
                                 }
                             }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
                         }
@@ -626,7 +634,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             return null;
         }
         else if (numHelis == 1) {
-            hive =  new Vector3f(0, 0, LANDING_STAGING_ALTITUDE);
+            hive =  new Vector3f(hiveLocation.x, hiveLocation.y, LANDING_STAGING_ALTITUDE);
         }
         else {
 
@@ -637,8 +645,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             {
                 if (h.getHeliId() == myHeliId)
                 {
-                    x = (float)(hiveRadius * Math.cos(angle));
-                    y = (float)(hiveRadius * Math.sin(angle));
+                    x = hiveLocation.x + (float)(hiveRadius * Math.cos(angle));
+                    y = hiveLocation.y + (float)(hiveRadius * Math.sin(angle));
                     hive = new Vector3f(x, y, LANDING_STAGING_ALTITUDE);
                 }
                 else {
