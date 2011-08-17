@@ -335,6 +335,28 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     /**
      * A convenience method for taking off.
+     *
+     * @param z The altitude to reach after takeoff.
+     *
+     */
+    protected void takeoff(double z) {
+
+        // center servos to make takeoff straighter
+        control.setRoll(control.getRollTrim());
+        control.setPitch(control.getPitchTrim());
+        control.setYaw(control.getYawTrim());
+
+        Vector3f pos = posSensor.getPosition();
+
+        moveToPoint(pos.x, pos.y, z, DESTINATION_EPSILON * 2);
+    }
+
+
+    /**
+     * A convenience method for taking off.
+     *
+     * @param z The altitude to reach after takeoff.
+     * @param callback The clalback to invoke when the altitude is reached.
      */
     protected void takeoff(double z, MoveCallback callback) {
 
@@ -370,6 +392,16 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
         currState = MoveState.LAND;
+    }
+
+
+    /**
+     * Lands the helicopter at the current position.
+     */
+    protected void landAtPoint(Vector3f target, MoveCallback callback) {
+
+        currMoveCallback = callback;
+        landAtPoint(target);
     }
 
 
