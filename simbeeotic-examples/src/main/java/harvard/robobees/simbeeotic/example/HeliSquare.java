@@ -3,6 +3,7 @@ package harvard.robobees.simbeeotic.example;
 
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
+import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
 import harvard.robobees.simbeeotic.model.Timer;
@@ -36,11 +37,11 @@ public class HeliSquare extends BaseHeliBehavior {
 
 
     @Override
-    public void start(Platform platform, final HeliControl control) {
+    public void start(Platform platform, final HeliControl control, final Boundary bounds) {
 
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
 
-        super.start(platform, control);
+        super.start(platform, control, bounds);
 
 
         Vector3f pos = posSensor.getPosition();

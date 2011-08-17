@@ -59,11 +59,6 @@ public class HWILBee extends AbstractHeli {
     private double pitchTrim = normCommand(511);
     private double yawTrim = normCommand(511);
     private boolean boundsCheckEnabled = true;
-    private float xBoundMin = -2.1f;  // m
-    private float xBoundMax = 2.1f;   // m
-    private float yBoundMin = -3.5f;  // m
-    private float yBoundMax = 3.5f;   // m
-    private float zBoundMax = 2;      // m
 
     private static final short CMD_LOW  = 170;
     private static final short CMD_HIGH = 852;
@@ -94,14 +89,16 @@ public class HWILBee extends AbstractHeli {
 
             boundsTimer = createTimer(new TimerCallback() {
 
+                private Boundary bounds = HWILBee.this.getBounds();
+
                 @Override
                 public void fire(SimTime time) {
 
                     Vector3f currPos = getTruthPosition();
 
-                    if ((currPos.x < xBoundMin) || (currPos.x > xBoundMax) ||
-                        (currPos.y < yBoundMin) || (currPos.y > yBoundMax) ||
-                        (currPos.z > zBoundMax)) {
+                    if ((currPos.x < bounds.getXMin()) || (currPos.x > bounds.getXMax()) ||
+                        (currPos.y < bounds.getYMin()) || (currPos.y > bounds.getYMax()) ||
+                        (currPos.z > bounds.getZMax())) {
 
                         // out of bounds, shutdown behaviors and heli
                         logger.warn("Heli (" + getName() + ") is out of bounds, shutting down.");
@@ -391,36 +388,6 @@ public class HWILBee extends AbstractHeli {
     @Inject(optional = true)
     public final void setBoundsCheckEnabled(@Named("enable-bounds-check") final boolean check) {
         this.boundsCheckEnabled = check;
-    }
-
-
-    @Inject(optional = true)
-    public final void setXBoundMin(@Named("x-bound-min") final float val) {
-        this.xBoundMin = val;
-    }
-
-
-    @Inject(optional = true)
-    public final void setXBoundMax(@Named("x-bound-max") final float val) {
-        this.xBoundMax = val;
-    }
-
-
-    @Inject(optional = true)
-    public final void setYBoundMin(@Named("y-bound-min") final float val) {
-        this.yBoundMin = val;
-    }
-
-
-    @Inject(optional = true)
-    public final void setYBoundMax(@Named("y-bound-max") final float val) {
-        this.yBoundMax = val;
-    }
-
-
-    @Inject(optional = true)
-    public final void setZBoundMax(@Named("z-bound-max") final float val) {
-        this.zBoundMax = val;
     }
 
 

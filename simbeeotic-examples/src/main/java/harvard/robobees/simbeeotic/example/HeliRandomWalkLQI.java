@@ -8,6 +8,7 @@ import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.model.BaseHeliBehaviorLQI;
+import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HeliBehavior;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
@@ -41,9 +42,9 @@ public class HeliRandomWalkLQI extends BaseHeliBehaviorLQI implements HeliBehavi
      * @param control The control interface for the helicopter.
      */
 	@Override
-    public void start(Platform platform, HeliControl control)
+    public void start(Platform platform, HeliControl control, final Boundary bounds)
 	{
-		super.start(platform, control);
+		super.start(platform, control, bounds);
 		
 		rand = new Random(System.nanoTime());
 		

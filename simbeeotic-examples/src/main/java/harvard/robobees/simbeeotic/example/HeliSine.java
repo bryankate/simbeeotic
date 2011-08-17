@@ -12,6 +12,7 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HWILBee;
 import harvard.robobees.simbeeotic.model.HeliBehavior;
 import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
@@ -60,10 +61,10 @@ public class HeliSine extends LQIHeliBehavior implements HeliBehavior
      * @param platform The platform upon which the behavior is executing.
      * @param control The control interface for the helicopter.
      */
-    public void start(final Platform platform, final HeliControl control)
+    public void start(final Platform platform, final HeliControl control, final Boundary bounds)
 	{
     	// start low-level control
-    	super.start(platform, control);
+    	super.start(platform, control, bounds);
     	
     	t0 = System.currentTimeMillis();
     	

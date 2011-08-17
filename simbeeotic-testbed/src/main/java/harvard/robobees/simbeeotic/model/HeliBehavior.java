@@ -15,8 +15,9 @@ public interface HeliBehavior {
      *
      * @param platform The platform upon which the behavior is executing.
      * @param control The control interface for the helicopter.
+     * @param bounds The physical bounds in which the helicopter can fly.
      */
-    public void start(Platform platform, HeliControl control);
+    public void start(Platform platform, HeliControl control, Boundary bounds);
 
 
     /**

@@ -12,6 +12,7 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import harvard.robobees.simbeeotic.SimTime;
+import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HeliBehavior;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
@@ -134,7 +135,7 @@ public class HeliCircle implements HeliBehavior
      * @param platform The platform upon which the behavior is executing.
      * @param control The control interface for the helicopter.
      */
-    public void start(final Platform platform, final HeliControl control)
+    public void start(final Platform platform, final HeliControl control, final Boundary bounds)
 	{
     	// start file i/o
     	try

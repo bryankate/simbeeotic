@@ -71,17 +71,18 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
     private static final long CONTROL_LOOP_PERIOD = 20;           // ms (50 Hz)
-    private static final float COLLISION_BUFFER = 1f;             // m
-    private static final float DESTINATION_EPSILON = 0.25f ;      // m
-    private static final float SLOWDOWN_DISTANCE = 0.75f;         // m
-    private static final float FLYING_ALTITUDE = 0.25f;           // m, above which we are considered an obstacle
+    private static final float COLLISION_BUFF = 0.75f;            // m
+    private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
+    private static final float DESTINATION_EPSILON = 0.25f;       // m
+    private static final float SLOWDOWN_DISTANCE = 0.5f;          // m
+    private static final float FLYING_ALTITUDE = 0.2f;            // m, above which we are considered an obstacle
     private static final float LANDING_ALTITUDE = 0.1f;           // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.25f;  // m
     private static final long LANDING_STAGING_TIME = 5;           // s
 
 
     @Override
-    public void start(final Platform platform, final HeliControl control) {
+    public void start(final Platform platform, final HeliControl control, final Boundary bounds) {
 
         this.platform = platform;
         this.control = control;
@@ -99,7 +100,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         allHelis = simEngine.findModelsByType(AbstractHeli.class);
         myHeliId = control.getHeliId();
 
-        hiveRadius = (allHelis.size() * 0.2) / (2 * Math.PI);
+        hiveRadius = simEngine.findModelByType(SimpleHive.class).getSize() / 2;
         hiveLocation = calcHiveLocation();
 
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
@@ -223,12 +224,12 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         }
                         
                         
-                        // give the walls, ceiling, and floor a repulsive force
-                        calcTarget.x -= Math.tan(pos.x * Math.PI / 4) * Math.abs(calcTarget.x) / 5;
-                        calcTarget.y -= Math.tan(pos.y * Math.PI / 4) * Math.abs(calcTarget.y) / 5;
-                        calcTarget.z -= Math.tan((pos.z - 1) * Math.PI / 2) * Math.abs(calcTarget.z - 1) / 10;
-                        
-                        AbstractHeli closestHeli = findClosestHeli(allHelis, COLLISION_BUFFER);
+                        // give the walls a repulsive force
+//                        calcTarget.x -= Math.tan(pos.x * Math.PI / 4) * Math.abs(calcTarget.x) / 5;
+//                        calcTarget.y -= Math.tan(pos.y * Math.PI / 4) * Math.abs(calcTarget.y) / 5;
+
+                        // avoid other helicopters
+                        AbstractHeli closestHeli = findClosestHeli(allHelis, COLLISION_BUFF);
 
                         if ((closestHeli != null) && (pos.z > FLYING_ALTITUDE)) {
 
@@ -242,11 +243,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         }
                         
                         // determine how much to pitch forward
-                        double pitchAdjustment = 0.25;
+                        double pitchAdjustment = 0.3;
                         dist = getDistfromPosition3d(calcTarget);
 
                         if (dist < SLOWDOWN_DISTANCE) {
-                            pitchAdjustment = 0.1;
+                            pitchAdjustment = 0.2;
                         }
 
                         updateThrottle(time.getTime(), pos);
@@ -321,6 +322,22 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         currEpsilon = epsilon;
         currMoveCallback = callback;
         throttlePID.setSetpoint(z);
+    }
+
+
+    /**
+     * A convenience method for taking off.
+     */
+    protected void takeoff(double z, MoveCallback callback) {
+
+        // center servos to make takeoff straighter
+        control.setRoll(control.getRollTrim());
+        control.setPitch(control.getPitchTrim());
+        control.setYaw(control.getYawTrim());
+
+        Vector3f pos = posSensor.getPosition();
+
+        moveToPoint(pos.x, pos.y, z, DESTINATION_EPSILON * 2, callback);
     }
 
 
@@ -490,8 +507,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (newThrottle > control.getThrustTrim() + 0.25)
             newThrottle = control.getThrustTrim() + 0.25;
 
-        if (newThrottle < control.getThrustTrim() - 0.1)
-            newThrottle = control.getThrustTrim() - 0.1;
+        if (newThrottle < control.getThrustTrim() - 0.05)
+            newThrottle = control.getThrustTrim() - 0.05;
 
         control.setThrust(newThrottle);
     }
@@ -545,7 +562,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
         if (logger.isDebugEnabled()) {
 
-            logger.debug("State: " + currState + " Pos: " +  posSensor.getPosition() +
+            logger.debug("State: " + currState + " Pos: " + posSensor.getPosition() +
                          " Target: " + currTarget + " Dist: " + getDistfromPosition3d(currTarget));
         }
     }
@@ -620,8 +637,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             {
                 if (h.getHeliId() == myHeliId)
                 {
-                    x = (float)(hiveRadius*Math.cos(angle));
-                    y = (float)(hiveRadius*Math.sin(angle));
+                    x = (float)(hiveRadius * Math.cos(angle));
+                    y = (float)(hiveRadius * Math.sin(angle));
                     hive = new Vector3f(x, y, LANDING_STAGING_ALTITUDE);
                 }
                 else {

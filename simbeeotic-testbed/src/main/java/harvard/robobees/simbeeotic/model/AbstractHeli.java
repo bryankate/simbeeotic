@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractHeli extends GenericModel implements HeliControl {
 
+    private Boundary bounds = null;
     private Map<String, HeliBehavior> behaviors = new HashMap<String, HeliBehavior>();
 
     // params
@@ -137,6 +138,16 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
             }
         }
 
+        // find the heli bounds
+        HeliBounds boundsModel = getSimEngine().findModelByType(HeliBounds.class);
+
+        if (boundsModel != null) {
+            bounds = boundsModel.getBounds();
+        }
+        else {
+            bounds = new Boundary();
+        }
+
         // start behaviors in an event
         if (startBehaviors) {
             
@@ -146,7 +157,7 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
                 public void fire(SimTime time) {
 
                     for (HeliBehavior b : behaviors.values()) {
-                        b.start(AbstractHeli.this, AbstractHeli.this);
+                        b.start(AbstractHeli.this, AbstractHeli.this, bounds);
                     }
                 }
             }, 0, TimeUnit.SECONDS);
@@ -189,6 +200,11 @@ public abstract class AbstractHeli extends GenericModel implements HeliControl {
 
     protected final boolean removeBehavior(String name) {
         return (behaviors.remove(name) != null);
+    }
+
+
+    protected final Boundary getBounds() {
+        return bounds;
     }
 
 

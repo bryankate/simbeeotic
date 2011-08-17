@@ -117,7 +117,7 @@ public abstract class LQGHeliBehavior implements HeliBehavior
 	}
 	
 	@Override
-	public void start(final Platform platform, final HeliControl control)
+	public void start(final Platform platform, final HeliControl control, final Boundary bounds)
 	{
 		// set up data logging
 		try

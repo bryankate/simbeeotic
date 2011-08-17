@@ -143,10 +143,10 @@ public abstract class BaseHeliBehaviorLQI extends LQIHeliBehavior implements Hel
     }
 
     @Override
-    public void start(final Platform platform, final HeliControl control)
+    public void start(final Platform platform, final HeliControl control, final Boundary bounds)
     {
     	// start low-level control
-    	super.start(platform, control);
+    	super.start(platform, control, bounds);
     	
     	// initialize sensors
     	s1 = platform.getSensor("position-sensor", PositionSensor.class);

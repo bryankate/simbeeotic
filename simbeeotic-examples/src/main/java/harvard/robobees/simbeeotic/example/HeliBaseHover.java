@@ -2,6 +2,7 @@ package harvard.robobees.simbeeotic.example;
 
 
 import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
+import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
 import org.apache.log4j.Logger;
@@ -20,9 +21,9 @@ public class HeliBaseHover extends BaseHeliBehavior {
 
 
     @Override
-    public void start(Platform platform, final HeliControl control) {
+    public void start(Platform platform, final HeliControl control, final Boundary bounds) {
 
-        super.start(platform, control);
+        super.start(platform, control, bounds);
 
         moveToPoint(0, 0, 1, 0.2,
         			new MoveCallback() {
