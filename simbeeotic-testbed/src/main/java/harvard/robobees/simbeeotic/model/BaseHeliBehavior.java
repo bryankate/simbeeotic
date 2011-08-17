@@ -543,11 +543,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private void showState() {
 
-//        if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
 
-            logger.info("State: " + currState + " Pos: " +  posSensor.getPosition() +
+            logger.debug("State: " + currState + " Pos: " +  posSensor.getPosition() +
                          " Target: " + currTarget + " Dist: " + getDistfromPosition3d(currTarget));
-//        }
+        }
     }
 
     private void logModelData(Vector3f pos1, Vector3f pos2, Quat4f pose1, Quat4f pose2, float dt) {
