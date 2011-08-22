@@ -35,7 +35,7 @@ import java.awt.*;
 public abstract class SimpleBee extends GenericModel {
 
     // parameters
-    private float length = 0.2f;    // m
+    private float length = 0.1f;    // m
     private float mass = 0.128f;    // g
     private float maxAccel = 1.0f;  // m/s^2
     private long kinematicUpdateRate = 100;  // ms
