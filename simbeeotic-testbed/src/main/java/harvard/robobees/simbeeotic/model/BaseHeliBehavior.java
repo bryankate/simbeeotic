@@ -71,14 +71,15 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
-    private static final long CONTROL_LOOP_PERIOD = 20;           // ms (50 Hz)
+    private static final long CONTROL_LOOP_PERIOD = 10;           // ms (50 Hz)
     private static final float COLLISION_BUFF = 0.75f;            // m
     private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
-    private static final float DESTINATION_EPSILON = 0.25f;       // m
-    private static final float SLOWDOWN_DISTANCE = 0.5f;          // m
-    private static final float FLYING_ALTITUDE = 0.2f;            // m, above which we are considered an obstacle
+    private static final float DESTINATION_EPSILON = 0.3f;        // m
+    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
+    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
+    private static final float LANDING_EPSILON = 0.3f;            // m
     private static final float LANDING_ALTITUDE = 0.1f;           // m, below which we can drop
-    private static final float LANDING_STAGING_ALTITUDE = 0.25f;  // m
+    private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
     private static final long LANDING_STAGING_TIME = 5;           // s
 
 
@@ -252,10 +253,10 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         
                         // determine how much to pitch forward
                         double pitchAdjustment = 0.3;
-                        dist = getDistfromPosition3d(calcTarget);
+                        dist = getDistfromPosition2d(calcTarget);
 
                         if (dist < SLOWDOWN_DISTANCE) {
-                            pitchAdjustment = 0.2;
+                            pitchAdjustment = 0.1;
                         }
 
                         updateThrottle(time.getTime(), pos);
@@ -410,7 +411,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void landAtHive() {
 
-        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, DESTINATION_EPSILON,
+        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, LANDING_EPSILON,
                     new MoveCallback() {
 
                         @Override
@@ -438,7 +439,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
      */
     protected void landAtHive(final MoveCallback callback) {
 
-        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, DESTINATION_EPSILON,
+        moveToPoint(landingSpot.x, landingSpot.y, landingSpot.z, LANDING_EPSILON,
                     new MoveCallback() {
 
                         @Override
@@ -544,11 +545,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         double newThrottle = control.getThrustTrim() + throttleDelta;
 
         // Make sure we don't exceed min and max throttle
-        if (newThrottle > control.getThrustTrim() + 0.25)
-            newThrottle = control.getThrustTrim() + 0.25;
+        if (newThrottle > control.getThrustTrim() + 0.5)
+            newThrottle = control.getThrustTrim() + 0.5;
 
-        if (newThrottle < control.getThrustTrim() - 0.05)
-            newThrottle = control.getThrustTrim() - 0.05;
+        if (newThrottle < control.getThrustTrim() - 0.1)
+            newThrottle = control.getThrustTrim() - 0.1;
 
         control.setThrust(newThrottle);
     }
