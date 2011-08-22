@@ -234,6 +234,7 @@ public class SimController {
 
 
                     VariationComponent component = compInjector.getInstance(VariationComponent.class);
+                    compInjector.injectMembers(component);
 
                     component.initialize();
                     varComponents.add(component);
