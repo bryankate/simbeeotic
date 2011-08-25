@@ -78,7 +78,7 @@ public class WorldMap {
 
     // params
     private boolean approximatePatches = false;
-    private float stemHeight = 0.3f;   // m
+    private float stemHeight = 0.2f;   // m
     private float stemRadius = 0.01f;  // m
     private float floraHeight = 0.02f; // m
     private float floraRadius = 0.1f;  // m
@@ -570,7 +570,7 @@ public class WorldMap {
                 float radius = patch.getRadius();
                 float diam = radius * 2;
 
-                Color color = new Color(192, 65, 23);
+                Color color = new Color(255, 102, 151);
 
                 if (patch.getColor() != null) {
 
@@ -636,7 +636,7 @@ public class WorldMap {
 
                     CollisionShape shape = new CylinderShapeZ((new Vector3f(patch.getRadius(), patch.getRadius(), halfHeight)));
 
-                    color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 64);
+                    color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 128);
 
                     approxPatchDensity.put(patchInfo.getObjectId(), (double)patch.getDensity());
                     addBody(WorldObject.Type.FLOWER, trans, shape, color, null, null, patchInfo, flowers);
