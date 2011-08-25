@@ -73,7 +73,7 @@ public class VisComponent3D extends JFrame implements VariationComponent {
         }
 
         if (testbedView) {
-            world.setMainView(new Point3d(0, 8, 0), new Point3d(0, 0, 0), new Vector3d(1, 0, 0));
+            world.setMainView(new Point3d(0, 8, 0), new Point3d(0, 0, 0), new Vector3d(0, 0, -1));
         }
 
         context.getRecorder().addListener(world);
