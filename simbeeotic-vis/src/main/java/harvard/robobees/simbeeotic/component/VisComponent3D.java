@@ -84,7 +84,7 @@ public class VisComponent3D extends JFrame implements VariationComponent {
 
         if (secondScreen) {
 
-            size = new Dimension(1024, 1040);
+            size = new Dimension(960, 1040);
             setLocation(1715, 20);
         }
 
