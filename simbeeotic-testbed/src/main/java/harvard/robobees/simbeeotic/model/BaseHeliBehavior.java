@@ -80,7 +80,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private static final float LANDING_EPSILON = 0.3f;            // m
     private static final float LANDING_ALTITUDE = 0.1f;           // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
-    private static final long LANDING_STAGING_TIME = 5;           // s
+    private static final long LANDING_STAGING_TIME = 1;           // s
 
 
     @Override
@@ -702,7 +702,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
             if (h.getHeliId() != myHeliId) {
 
-                dist = getDistfromPosition2d(h.getTruthPosition());
+                dist = getDistfromPosition3d(h.getTruthPosition());
 
                 if (dist < minDist && dist <= threshold) {
                     closestHeli = h;
