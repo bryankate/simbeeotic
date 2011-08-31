@@ -37,8 +37,13 @@ public class VisComponent3D extends JFrame implements VariationComponent {
 
 
     @Inject(optional=true)
-    @Named("testbed-view")
-    private boolean testbedView = false;
+    @Named("testbed-overhead-view")
+    private boolean testbedOverheadView = false;
+
+
+    @Inject(optional=true)
+    @Named("testbed-angle-view")
+    private boolean testbedAngleView = false;
 
 
     @Inject(optional=true)
@@ -72,8 +77,11 @@ public class VisComponent3D extends JFrame implements VariationComponent {
             contentPane = world;
         }
 
-        if (testbedView) {
-            world.setMainView(new Point3d(0, 8, 0), new Point3d(0, 0, 0), new Vector3d(0, 0, -1));
+        if (testbedOverheadView) {
+            world.setMainView(new Point3d(0, 9, 0), new Point3d(0, 0, 0), new Vector3d(0, 0, -1));
+        }
+        else if (testbedAngleView) {
+            world.setMainView(new Point3d(-6, 2, 6), new Point3d(0, 1, 0), new Vector3d(0, 1, 0));
         }
 
         context.getRecorder().addListener(world);
@@ -84,8 +92,17 @@ public class VisComponent3D extends JFrame implements VariationComponent {
 
         if (secondScreen) {
 
-            size = new Dimension(960, 1040);
-            setLocation(1715, 20);
+            setLocation(1680, 0);
+
+            if (testbedOverheadView) {
+
+                size = new Dimension(960, 600);
+            }
+            else if (testbedAngleView) {
+
+                size = new Dimension(960, 480);
+                setLocation(1680, 600);
+            }
         }
 
         setSize(size);
