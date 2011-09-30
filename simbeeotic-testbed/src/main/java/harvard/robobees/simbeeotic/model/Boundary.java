@@ -14,10 +14,10 @@ public class Boundary {
     private float yMax = DEFAULT_Y_MAX;
     private float zMax = DEFAULT_Z_MAX;
 
-    public static final float DEFAULT_X_MIN = -2.2f;
-    public static final float DEFAULT_X_MAX = 2.2f;
-    public static final float DEFAULT_Y_MIN = -3.6f;
-    public static final float DEFAULT_Y_MAX = 3.6f;
+    public static final float DEFAULT_X_MIN = -2.3f;
+    public static final float DEFAULT_X_MAX = 2.3f;
+    public static final float DEFAULT_Y_MIN = -3.7f;
+    public static final float DEFAULT_Y_MAX = 3.7f;
     public static final float DEFAULT_Z_MAX = 2f;
 
 
@@ -32,6 +32,7 @@ public class Boundary {
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
+        this.zMax = zMax;
     }
 
 
@@ -56,7 +57,7 @@ public class Boundary {
 
 
     public float getZMax() {
-        return yMax;
+        return zMax;
     }
 
 

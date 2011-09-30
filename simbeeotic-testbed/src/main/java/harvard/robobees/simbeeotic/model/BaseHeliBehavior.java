@@ -72,7 +72,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private static Logger logger = Logger.getLogger(BaseHeliBehavior.class);
 
     private static final long CONTROL_LOOP_PERIOD = 10;           // ms (50 Hz)
-    private static final float COLLISION_BUFF = 0.75f;            // m
+    private static final float COLLISION_BUFF = 1.0f;             // m
+    private static final float COLLISION_BUFF_HIVE = 0.4f;        // m
     private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
     private static final float DESTINATION_EPSILON = 0.3f;        // m
     private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
@@ -238,7 +239,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 //                        calcTarget.y -= Math.tan(pos.y * Math.PI / 4) * Math.abs(calcTarget.y) / 5;
 
                         // avoid other helicopters
-                        AbstractHeli closestHeli = findClosestHeli(allHelis, COLLISION_BUFF);
+                        AbstractHeli closestHeli = findClosestHeli(allHelis, COLLISION_BUFF, COLLISION_BUFF_HIVE);
 
                         if ((closestHeli != null) && (pos.z > FLYING_ALTITUDE)) {
 
@@ -692,21 +693,34 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     }
 
 
-    private AbstractHeli findClosestHeli(List<AbstractHeli> helis, float threshold) {
+    private AbstractHeli findClosestHeli(List<AbstractHeli> helis, float threshold, float thresholdHive) {
 
         AbstractHeli closestHeli = null;
+        Vector3f otherPos;
         float dist;
         float minDist = Float.MAX_VALUE;
+        float thresh;
 
         for(AbstractHeli h: helis) {
 
             if (h.getHeliId() != myHeliId) {
 
-                dist = getDistfromPosition3d(h.getTruthPosition());
+                otherPos = h.getTruthPosition();
+                dist = getDistfromPosition2d(otherPos);
 
-                if (dist < minDist && dist <= threshold) {
-                    closestHeli = h;
-                    minDist = dist;
+                if (dist < minDist) {
+
+                    thresh = threshold;
+
+                    if (otherPos.z <= LANDING_ALTITUDE) {
+                        thresh = thresholdHive;
+                    }
+
+                    if (dist <= thresh) {
+                        
+                        closestHeli = h;
+                        minDist = dist;
+                    }
                 }
             }
         }
