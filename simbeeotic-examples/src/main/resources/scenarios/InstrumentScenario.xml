@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>100.0</end-time>
+    </simulation>
+
+    <models>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.comms.FreeSpacePropagationModel</java-class>
+            <properties>
+                <prop name="noise-floor-mean" value="-100"/>
+                <prop name="noise-floor-sigma" value="10"/>
+                <prop name="range-thresh" value="30"/>
+            </properties>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model count="8192">
+            <java-class>harvard.robobees.simbeeotic.example.InstrumentBee</java-class>
+            <properties>
+                <prop name="kinematic-update-rate" value="100"/>
+                <prop name="use-random-start" value="true"/>
+                <prop name="random-start-bound" value="20"/>
+                <prop name="allow-bee-collisions" value="true"/>
+                <prop name="use-radio" value="true"/>
+                <prop name="radio-timeout" value="1000"/>
+                <prop name="sensor-timeout" value="1000"/>
+                <prop name="length" value="0.2"/>
+                <prop name="mass" value="0.12"/>
+            </properties>
+            <sensor name="compass">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultCompass</java-class>
+            </sensor>
+            <radio>
+                <java-class>harvard.robobees.simbeeotic.model.comms.DefaultRadio</java-class>
+                <properties>
+                    <prop name="max-power" value="15"/>
+                    <prop name="snr-margin" value="7"/>
+                </properties>
+            </radio>
+        </model>
+    </models>
+
+</scenario>

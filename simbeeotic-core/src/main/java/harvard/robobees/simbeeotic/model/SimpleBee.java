@@ -45,6 +45,10 @@ public abstract class SimpleBee extends GenericModel {
     private float actuationErrDirVar = 0;    // percent (0-1 scale)
     private float actuationErrVelVar = 0;    // percent (0-1 scale)
     private boolean useWind = false;
+    private boolean useRandomStart = false;
+    private float randomStartBound = 10.0f;  // m
+    private boolean allowBeeCollisions = false;
+
 
     protected Timer kinematicTimer;
 
@@ -208,8 +212,15 @@ public abstract class SimpleBee extends GenericModel {
         colShape.calculateLocalInertia(mass, localInertia);
 
         Vector3f start = getStartPosition();
-        start.z += halfLength;
 
+        if (useRandomStart) {
+
+            start = new Vector3f(getRandom().nextFloat() * randomStartBound,
+                                 getRandom().nextFloat() * randomStartBound,
+                                 getRandom().nextFloat() * randomStartBound);
+        }
+
+        start.z += halfLength;
         startTransform.origin.set(start);
 
         int id = getObjectId();
@@ -232,7 +243,13 @@ public abstract class SimpleBee extends GenericModel {
         body.setUserPointer(new EntityInfo(id));
 
         // bees do not collide with each other or the hive
-        world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
+        short collidesWith = (short)(COLLISION_TERRAIN | COLLISION_FLOWER);
+
+        if (allowBeeCollisions) {
+            collidesWith = (short)(collidesWith | COLLISION_BEE);
+        }
+
+        world.addRigidBody(body, COLLISION_BEE, collidesWith);
 
         hoverForce = new Vector3f(0, 0, mass * (float)-PhysicalConstants.EARTH_GRAVITY);
 
@@ -503,5 +520,23 @@ public abstract class SimpleBee extends GenericModel {
         if (!isInitialized()) {
             this.actuationErrVelVar = err;
         }
+    }
+
+
+    @Inject(optional = true)
+    public final void setUseRandomStart(@Named("use-random-start") final boolean use) {
+        this.useRandomStart = use;
+    }
+
+
+    @Inject(optional = true)
+    public final void setRandStartBound(@Named(value = "random-start-bound") final float bound) {
+        this.randomStartBound = bound;
+    }
+
+
+    @Inject(optional = true)
+    public final void setAllowBeeCollisions(@Named("allow-bee-collisions") final boolean allow) {
+        this.allowBeeCollisions = allow;
     }
 }

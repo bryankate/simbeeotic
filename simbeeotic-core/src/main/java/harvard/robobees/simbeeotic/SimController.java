@@ -53,6 +53,8 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import javax.vecmath.Vector3f;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
@@ -79,7 +81,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SimController {
 
     private static final double DEFAULT_STEP = 0.1;               // s
-    private static final double DEFAULT_SUBSTEP = 1.0 / 240.0;     // s
+    private static final double DEFAULT_SUBSTEP = 1.0 / 60.0;     // s
+    private static final long NANOS_IN_SEC = TimeUnit.SECONDS.toNanos(1);
 
     private static Logger logger = Logger.getLogger(SimController.class);
 
@@ -120,6 +123,11 @@ public class SimController {
 
         // todo: parallelize the running of variations
         for (final Variation variation : variations) {
+
+            // instrumentation
+            long instrInitTime = System.nanoTime();
+            long instrPhysicsTime = 0;
+            long instrRunTime = 0;
 
             final int varId = ++currVariation;
 
@@ -352,11 +360,16 @@ public class SimController {
 
 
             // run it
-            long variationStartTime = System.currentTimeMillis();
-
+            double diff;
+            double step;
+            long updatedTime;
+            long instrStartTime;
             SimTime lastSimTime = new SimTime(0);
             SimTime nextSimTime = simEngine.getNextEventTime();
             SimTime endTime = clockControl.getEndTime();
+
+            instrInitTime = System.nanoTime() - instrInitTime;
+            instrRunTime = System.nanoTime();
 
             while((nextSimTime != null) && (nextSimTime.compareTo(endTime) <= 0)) {
 
@@ -366,28 +379,32 @@ public class SimController {
                 // objects are up to date with the event time
                 if (nextSimTime.getTime() > lastSimTime.getTime()) {
 
-                    double diff = nextSimTime.getImpreciseTime() - lastSimTime.getImpreciseTime();
-                    long updatedTime = 0;
+                    diff = nextSimTime.getImpreciseTime() - lastSimTime.getImpreciseTime();
+                    updatedTime = 0;
 
                     while(diff > 0) {
 
                         // update the kinematic state of any externally driven objects
                         externalSync.updateStates();
 
-                        double step = Math.min(DEFAULT_STEP, diff);
+                        step = Math.min(DEFAULT_STEP, diff);
+                        instrStartTime = System.nanoTime();
 
                         dynamicsWorld.stepSimulation((float)step,
                                                      (int)Math.ceil(step / DEFAULT_SUBSTEP),
                                                      (float)DEFAULT_SUBSTEP);
 
                         // keep track of how far ahead the physics engine is getting from the last processed event time
-                        updatedTime += (long)(step * TimeUnit.SECONDS.toNanos(1));
+                        updatedTime += (long)(step * NANOS_IN_SEC);
 
                         // update collisions
                         if (contactHandler.update(lastSimTime, updatedTime)) {
+
+                            instrPhysicsTime += (System.nanoTime() - instrStartTime);
                             break;
                         }
 
+                        instrPhysicsTime += (System.nanoTime() - instrStartTime);
                         diff -= DEFAULT_STEP;
                     }
 
@@ -403,15 +420,23 @@ public class SimController {
                 nextSimTime = simEngine.processNextEvent();
             }
 
+            instrRunTime = System.nanoTime() - instrRunTime;
+
             // cleanup
             hook.run();
             Runtime.getRuntime().removeShutdownHook(hook);
 
-            double runTime = (double)(System.currentTimeMillis() - variationStartTime) / TimeUnit.SECONDS.toMillis(1);
-
             logger.info("");
             logger.info("--------------------------------------------");
-            logger.info("Scenario variation " + currVariation + " executed in " + runTime + " seconds.");
+            logger.info("Scenario variation " + currVariation + " executed in " +
+                        (double)instrRunTime / TimeUnit.SECONDS.toNanos(1) + " seconds.");
+            logger.info("");
+            logger.info("     init time: " + instrInitTime + " nanos");
+            logger.info("    event time: " + simEngine.getInstrumentedEventTime() + " nanos");
+            logger.info("   event count: " + simEngine.getInstrumentedEventCount());
+            logger.info("  physics time: " + instrPhysicsTime + " nanos");
+            logger.info("      run time: " + instrRunTime + " nanos");
+            logger.info("    total time: " + (instrInitTime + instrRunTime) + " nanos");
             logger.info("--------------------------------------------");
         }
     }
@@ -1053,6 +1078,8 @@ public class SimController {
 
         private double realTimeScale = 1;
         private long firstEventRealTime = -1;
+        private long instrEventTime = 0;
+        private long instrEventCount = 0;
 
 
         public SimEngineImpl(double realTimeScale) {
@@ -1270,8 +1297,12 @@ public class SimController {
                 }
 
                 processing = next.time;
+                long start = System.nanoTime();
 
                 next.model.processEvent(next.time, next.event);
+
+                instrEventTime += (System.nanoTime() - start);
+                ++instrEventCount;
             }
 
             lastProcessed = processing;
@@ -1300,6 +1331,16 @@ public class SimController {
             }
 
             modelNameMap.get(model.getName()).add(model);
+        }
+
+
+        public long getInstrumentedEventTime() {
+            return instrEventTime;
+        }
+
+
+        public long getInstrumentedEventCount() {
+            return instrEventCount;
         }
 
 
