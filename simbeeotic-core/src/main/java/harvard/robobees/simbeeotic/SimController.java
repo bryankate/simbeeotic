@@ -719,11 +719,6 @@ public class SimController {
 
             m.setCustomConfig(optionalDoc);
 
-            // go through child models
-            for (ModelConfig childConfig : config.getModel()) {
-                parseModelConfig(childConfig, m, starting, models, variation, injector, nextModelId, nextMotionId);
-            }
-
             // sensors
             for (final SensorConfig sensorConfig : config.getSensor()) {
 
@@ -888,6 +883,11 @@ public class SimController {
 
                 radio.setParentModel(m);
                 m.addChildModel(radio);
+            }
+
+            // go through child models
+            for (ModelConfig childConfig : config.getModel()) {
+                parseModelConfig(childConfig, m, starting, models, variation, injector, nextModelId, nextMotionId);
             }
         }
     }
