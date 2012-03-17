@@ -4,7 +4,7 @@
 These instructions will allow you to install the Java3D native libraries on your system. Java3D is not a pure Java project. It requires a number of native libraries (.dll, .so, etc) to be installed on the target system in order to work. This is annoying, but it should be a one-time inconvenience.
 To start, you need to download this file containing the Java3D native libraries and unzip it to a temporary location:
 
-**[Java3D binaries](simbeeotic/raw/master/site/java3d-1.5.2-binaries.zip)**
+**[Java3D binaries](java3d-1.5.2-binaries.zip)**
 
 ### Mac OSX
 
