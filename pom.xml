@@ -187,10 +187,11 @@
                 <inherited>false</inherited>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
-                <version>1.10.b1</version>
+                <version>1.9.0</version>
                 <configuration>
                     <header>${project.basedir}/src/etc/header.txt</header>
                     <failIfMissing>true</failIfMissing>
+                    <strictCheck>true</strictCheck>
                     <aggregate>true</aggregate>
                     <excludes>
                         <exclude>*.txt</exclude>
@@ -224,20 +225,6 @@
             <url>file://${project.basedir}/repo</url>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>mc-repo</id>
-            <name>MC Repo</name>
-            <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
 
     <!-- specific to the robobebes project - a place to deploy our artifacts -->
     <distributionManagement>
