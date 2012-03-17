@@ -1,14 +1,15 @@
 # Simbeeotic Modeling Guide
 
-Simbeeotic is built on top of the JBullet physics engine and adopts some of its conventions. To begin with, coordinates are expressed using a right-handed coordinate system (pictured below) in which rotations are counter-clockwise about each axis.
-
-![righthand coordinate system](simbeeotic/blob/master/site/img/coord.png)
+Simbeeotic is built on top of the JBullet physics engine and adopts some of its conventions. To begin with, coordinates are expressed using a right-handed coordinate system in which rotations are counter-clockwise about each axis.
 
 In Simbeeotic we usually refer to two reference frames, the world frame and the body frame. The origin of the world frame is placed at an arbitrary point on the surface of the earth and is oriented such that the X axis points North, the Y axis West, and the Z axis orthogonally away from the ground plane. All objects start aligned with the world reference frame. As a convention, the body frame is oriented such that the X axis is aligned along the principle body axis. If you think of an aircraft, this means that the X axis points "out the nose", the Y axis "out the left wing", and the Z axis points "out the top", or "away from the ground" when flying upright.
 
 Simbeeotic uses SI units only. Generally, distance is measured in meters, mass in grams, time in seconds, power in milliWatts, and angles in radians (except for compass readings).
 
 ## Model Hierarchy
+
+![layers](https://github.com/RoboBees/simbeeotic/raw/master/site/img/modules.png)
+
 Simbeeotic is designed to be extensible at multiple levels. The key interfaces are Model and PhysicalEntity. The former defines logical presence in the simulation, whereas the latter defines physical presence. The following UML class diagram shows how these interfaces are used within the simulation framework.
 
 ![model uml](img/uml_physical.png)
