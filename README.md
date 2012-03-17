@@ -5,7 +5,7 @@ Simbeeotic is a simulator geared toward modeling swarms of micro-aerial vehicles
 # Installation
 Simbeeotic is written in Java and uses Maven as its build system. Maven will automatically fetch the required dependencies and compile the project. However, there are some runtime dependencies that must be installed for 3D visualization.
 
-See the **[installation instructions](site/install.md)** for details on installing the runtime dependencies and integrating the project with an IDE.
+See the **[installation instructions](simbeeotic/site/install.md)** for details on installing the runtime dependencies and integrating the project with an IDE.
 
 
 # Working with Simbeeotic
