@@ -2,7 +2,7 @@
 
 Simbeeotic is built on top of the JBullet physics engine and adopts some of its conventions. To begin with, coordinates are expressed using a right-handed coordinate system (pictured below) in which rotations are counter-clockwise about each axis.
 
-![righthand coordinate system](img/coord.png)
+![righthand coordinate system](simbeeotic/blob/master/site/img/coord.png)
 
 In Simbeeotic we usually refer to two reference frames, the world frame and the body frame. The origin of the world frame is placed at an arbitrary point on the surface of the earth and is oriented such that the X axis points North, the Y axis West, and the Z axis orthogonally away from the ground plane. All objects start aligned with the world reference frame. As a convention, the body frame is oriented such that the X axis is aligned along the principle body axis. If you think of an aircraft, this means that the X axis points "out the nose", the Y axis "out the left wing", and the Z axis points "out the top", or "away from the ground" when flying upright.
 
