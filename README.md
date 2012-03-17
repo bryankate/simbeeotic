@@ -5,7 +5,7 @@ Simbeeotic is a simulator geared toward modeling swarms of micro-aerial vehicles
 # Installation
 Simbeeotic is written in Java and uses Maven as its build system. Maven will automatically fetch the required dependencies and compile the project. However, there are some runtime dependencies that must be installed for 3D visualization.
 
-See the **[installation instructions](simbeeotic/site/install.md)** for details on installing the runtime dependencies and integrating the project with an IDE.
+See the **[installation instructions](simbeeotic/blob/master/site/install.md)** for details on installing the runtime dependencies and integrating the project with an IDE.
 
 
 # Working with Simbeeotic
@@ -63,10 +63,10 @@ Of course, if you integrate with an IDE or create a script to kick off a simulat
 
 ## Inputs
 
-The two required inputs, the scenario and world XML files are described in more detail in the **[inputs guide](site/inputs.md)**.
+The two required inputs, the scenario and world XML files are described in more detail in the **[inputs guide](simbeeotic/blob/master/site/inputs.md)**.
 
 # Modeling
-See the **[modeling guide](site/modeling.md)** for more information on how to get started modeling your problem domain.
+See the **[modeling guide](simbeeotic/blob/master/site/modeling.md)** for more information on how to get started modeling your problem domain.
 
 # Documentation
 
@@ -82,7 +82,7 @@ This should produce the API documentation in the following directoy:
     target/site/apidocs/
 
 # License
-See the [LICENSE.txt](LICENSE.txt) and [LICENSE.contrib.txt](LICENSE.contrib.txt) files for information regarding the open source licenses of Simbeeotic and its dependencies. 
+See the [LICENSE.txt](LICENSE.txt) and [simbeeotic/blob/master/LICENSE.contrib.txt](simbeeotic/blob/master/LICENSE.contrib.txt) files for information regarding the open source licenses of Simbeeotic and its dependencies. 
  
 # Support
 You are welcome to email the developers, but since we are busy researchers you may not respond immediately to requests for help.
