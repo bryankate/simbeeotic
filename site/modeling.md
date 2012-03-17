@@ -8,7 +8,7 @@ Simbeeotic uses SI units only. Generally, distance is measured in meters, mass i
 
 ## Model Hierarchy
 
-![layers](https://github.com/RoboBees/simbeeotic/raw/master/site/img/modules.png)
+![layers](simbeeotic/raw/master/site/img/modules.png)
 
 Simbeeotic is designed to be extensible at multiple levels. The key interfaces are Model and PhysicalEntity. The former defines logical presence in the simulation, whereas the latter defines physical presence. The following UML class diagram shows how these interfaces are used within the simulation framework.
 
