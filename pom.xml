@@ -182,7 +182,9 @@
                 </executions>
             </plugin>
 
-            <!-- a plugin that enforces the header on source files -->
+            <!-- a plugin that enforces the header on source files.
+                 it runs from the top level pom, so use the -N mvn option to skip
+                 recursing into submodules (where the plugin fails) -->
             <plugin>
                 <inherited>false</inherited>
                 <groupId>com.mycila.maven-license-plugin</groupId>
