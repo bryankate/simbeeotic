@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cz.advel.jbullet</groupId>
+  <artifactId>jstackalloc</artifactId>
+  <version>20080716</version>
+
+  <dependencies>
+	<dependency>
+		<groupId>org.ow2.util.asm</groupId>
+		<artifactId>asm</artifactId>
+		<version>3.1</version>
+        </dependency>
+    </dependencies>
+</project>
+

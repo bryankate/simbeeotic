@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cz.advel.jbullet</groupId>
+  <artifactId>jbullet</artifactId>
+  <version>20101010-BNK-3</version>
+
+  <dependencies>
+	<dependency>
+		<groupId>cz.advel.jbullet</groupId>
+		<artifactId>jstackalloc</artifactId>
+		<version>20080716</version>
+        </dependency>
+  	<dependency>
+            <groupId>net.java.dev.java3d</groupId>
+            <artifactId>vecmath</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+    </dependencies>
+</project>
+

@@ -1,15 +1,20 @@
-<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
     <id>dist</id>
+    
     <formats>
-        <format>zip</format>
+        <format>dir</format>
     </formats>
 
-    <!-- assemble jars and 3rd party dependencies -->
+    <includeBaseDirectory>false</includeBaseDirectory>
+
     <moduleSets>
         <moduleSet>
+
+            <useAllReactorProjects>true</useAllReactorProjects>
+
             <includes>
                 <include>harvard.robobees.simbeeotic:*</include>
             </includes>
@@ -18,24 +23,31 @@
                 <unpack>false</unpack>
                 <dependencySets>
                     <dependencySet>
-                        <excludes>
-                            <exclude>harvard.robobees.simbeeotic:*</exclude>
-                        </excludes>
-                        <outputDirectory>jar/3rd_party</outputDirectory>
+                        <includes>
+                            <include>*</include>
+                        </includes>
+                        <outputDirectory>jar</outputDirectory>
                         <unpack>false</unpack>
-                        <scope>runtime</scope>
                     </dependencySet>
                 </dependencySets>
             </binaries>
         </moduleSet>
     </moduleSets>
 
-
     <fileSets>
+
+        <!-- copy licenses -->
+        <fileSet>
+            <directory>..</directory>
+            <includes>
+                <include>LICENSE*</include>
+            </includes>
+            <outputDirectory>.</outputDirectory>
+        </fileSet>
 
         <!-- copy test scripts -->
         <fileSet>
-            <directory>src/assembly/resources</directory>
+            <directory>../src/assembly/resources</directory>
             <includes>
                 <include>run*</include>
             </includes>
@@ -45,7 +57,7 @@
 
         <!-- copy schemas -->
         <fileSet>
-            <directory>simbeeotic-core/src/main/resources</directory>
+            <directory>../simbeeotic-core/src/main/resources</directory>
             <includes>
                 <include>*.xsd</include>
             </includes>
@@ -54,19 +66,18 @@
 
         <!-- copy example source and scenarios -->
         <fileSet>
-            <directory>simbeeotic-examples/src/main/java</directory>
+            <directory>../simbeeotic-examples/src/main/java</directory>
             <outputDirectory>examples/src</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>simbeeotic-examples/src/main/resources/scenarios</directory>
+            <directory>../simbeeotic-examples/src/main/resources/scenarios</directory>
             <outputDirectory>examples/scenarios</outputDirectory>
         </fileSet>
 
         <!-- copy javadoc -->
         <fileSet>
-            <directory>target/site/apidocs</directory>
+            <directory>../target/site/apidocs</directory>
             <outputDirectory>doc/api</outputDirectory>
         </fileSet>
     </fileSets>
-
 </assembly>

@@ -6,17 +6,11 @@
 
     <groupId>harvard.robobees</groupId>
     <artifactId>simbeeotic</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.0-SNAPSHOT</version>
 
     <name>RobobBees Colony Simulator</name>
     <description>A simulation environment for the RoboBees Colony group.</description>
     <packaging>pom</packaging>
-
-    <parent>
-        <groupId>harvard.robobees</groupId>
-        <artifactId>robobees-parent</artifactId>
-        <version>1.1.0</version>
-    </parent>
 
     <modules>
         <module>simbeeotic-core</module>
@@ -25,6 +19,7 @@
         <module>simbeeotic-testbed</module>
         <module>simbeeotic-examples</module>
         <module>simbeeotic-app</module>
+        <module>simbeeotic-dist</module>
     </modules>
 
     <dependencyManagement>
@@ -51,8 +46,13 @@
                 <artifactId>simbeeotic-examples</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>harvard.robobees.simbeeotic</groupId>
+                <artifactId>simbeeotic-app</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-            <!-- external dependencies -->
+            <!-- external dependencies that are in the maven repo -->
             <dependency>
                 <groupId>com.google.inject</groupId>
                 <artifactId>guice</artifactId>
@@ -62,6 +62,33 @@
                 <groupId>net.sf.jopt-simple</groupId>
                 <artifactId>jopt-simple</artifactId>
                 <version>3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math</artifactId>
+                <version>2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>jfree</groupId>
+                <artifactId>jfreechart</artifactId>
+                <version>1.0.12</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>2.3.0</version>
+            </dependency>
+
+            <!-- external dependencies provided locally (not in the central repo) -->
+            <dependency>
+                <groupId>cz.advel.jbullet</groupId>
+                <artifactId>jbullet</artifactId>
+                <version>20101010-BNK-3</version>
+            </dependency>
+            <dependency>
+                <groupId>gov.nist.math.javanumerics</groupId>
+                <artifactId>jama</artifactId>
+                <version>1.0.2</version>
             </dependency>
             <dependency>
                 <groupId>net.java.dev.java3d</groupId>
@@ -77,31 +104,6 @@
                 <groupId>net.java.dev.java3d</groupId>
                 <artifactId>vecmath</artifactId>
                 <version>1.5.2</version>
-            </dependency>
-            <dependency>
-                <groupId>cz.advel.jbullet</groupId>
-                <artifactId>jbullet</artifactId>
-                <version>20101010-BNK-3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-math</artifactId>
-                <version>2.1</version>
-            </dependency>
-            <dependency>
-                <groupId>gov.nist.math.javanumerics</groupId>
-                <artifactId>jama</artifactId>
-                <version>1.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>jfree</groupId>
-                <artifactId>jfreechart</artifactId>
-                <version>1.0.12</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>2.3.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -152,6 +154,15 @@
                         <!--<verbose>true</verbose>-->
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.2.1</version>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/main/assembly/dist.xml</descriptor>
+                        </descriptors>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -170,46 +181,74 @@
                 </executions>
             </plugin>
 
+            <!-- a plugin that enforces the header on source files -->
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-3</version>
+                <inherited>false</inherited>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
                 <configuration>
-                    <archiverConfig>
-                        <duplicateBehavior>skip</duplicateBehavior>
-                    </archiverConfig>
-                    <descriptors>
-                        <descriptor>src/assembly/descriptors/dev.xml</descriptor>
-                        <!--<descriptor>src/assembly/descriptors/dist.xml</descriptor>-->
-                    </descriptors>
+                    <header>${project.basedir}/src/etc/header.txt</header>
+                    <failIfMissing>true</failIfMissing>
+                    <aggregate>true</aggregate>
+                    <excludes>
+                        <exclude>LICENSE*</exclude>
+                        <exclude>repo/**</exclude>
+                        <exlucde>src/**</exlucde>
+                    </excludes>
+                    <headerDefinitions>
+                        <headerDefinition>${project.basedir}/src/etc/javastyle.xml</headerDefinition>
+                    </headerDefinitions>
+                    <mapping>
+                        <java>JAVA_STYLE</java>
+                    </mapping>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+    <!-- define a local repo for the stuff that is not in the central maven repo -->
     <repositories>
         <repository>
-            <id>hive</id>
-            <name>RoboBees Maven Repository</name>
-            <url>http://hive.seas.harvard.edu/artifactory/mavenrepo</url>
-        </repository>
-        <repository>
-            <id>hive-snapshots</id>
-            <name>RoboBees Maven Snapshot Repository</name>
-            <url>http://hive.seas.harvard.edu/artifactory/mavenrepo-snapshots</url>
+            <id>project-repo</id>
+            <name>Local Project Repo</name>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>file://${project.basedir}/repo</url>
         </repository>
     </repositories>
 
-    <mailingLists>
-        <mailingList>
-            <name>RobobBees Colony List</name>
-            <post>robobees-colony@seas.harvard.edu</post>
-        </mailingList>
-    </mailingLists>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>mc-repo</id>
+            <name>MC Repo</name>
+            <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
-    <scm>
-        <connection>scm:svn:http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</connection>
-        <developerConnection>scm:svn:http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</developerConnection>
-        <url>http://hive.seas.harvard.edu/svn/main/src/simbeeotic/trunk</url>
-    </scm>
-
+    <!-- specific to the robobebes project - a place to deploy our artifacts -->
+    <distributionManagement>
+        <repository>
+            <id>hive</id>
+            <name>RoboBees Maven Repository</name>
+            <url>http://hive.seas.harvard.edu/artifactory/hive</url>
+        </repository>
+        <snapshotRepository>
+            <id>hive-snapshots</id>
+            <name>RoboBees Maven Snapshot Repository</name>
+            <url>http://hive.seas.harvard.edu/artifactory/hive-snapshots</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+   
 </project>
