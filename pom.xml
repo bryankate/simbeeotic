@@ -193,7 +193,8 @@
                     <failIfMissing>true</failIfMissing>
                     <aggregate>true</aggregate>
                     <excludes>
-                        <exclude>LICENSE*</exclude>
+                        <exclude>*.txt</exclude>
+                        <exclude>*.md</exclude>
                         <exclude>repo/**</exclude>
                         <exlucde>src/**</exlucde>
                     </excludes>
