@@ -82,7 +82,7 @@ This should produce the API documentation in the following directoy:
     target/site/apidocs/
 
 # License
-See the [LICENSE.txt](LICENSE.txt) and [simbeeotic/blob/master/LICENSE.contrib.txt](simbeeotic/blob/master/LICENSE.contrib.txt) files for information regarding the open source licenses of Simbeeotic and its dependencies. 
+See the [LICENSE.txt](simbeeotic/blob/master/LICENSE.txt) and [LICENSE.contrib.txt](simbeeotic/blob/master/LICENSE.contrib.txt) files for information regarding the open source licenses of Simbeeotic and its dependencies. 
  
 # Support
 You are welcome to email the developers, but since we are busy researchers you may not respond immediately to requests for help.
