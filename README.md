@@ -70,7 +70,7 @@ See the **[modeling guide](simbeeotic/wiki/Modeling-Guide)** for more informatio
 
 # Documentation
 
-Simbeeotic is described in [Simbeeotic: A Simulator and Testbed for Micro-Aerial Vehicle Swarm Experiments](simbeeotic/raw/master/site/simbeeotic-ipsn12.pdf).
+Simbeeotic is described in [Simbeeotic: A Simulator and Testbed for Micro-Aerial Vehicle Swarm Experiments](http://www.eecs.harvard.edu/~bkate/pubs/simbeeotic-ipsn12.pdf).
 
 ## API Documentation
 Users can generate Javadoc for Simbeeotic using Maven. The easiest way to accomplish this is to run the following command from the top level directory:
