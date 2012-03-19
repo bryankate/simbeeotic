@@ -212,7 +212,9 @@
         </plugins>
     </build>
 
-    <!-- define a local repo for the stuff that is not in the central maven repo -->
+    <!-- define a local repo for the stuff that is not in the central maven repo.
+         the user.dir property works with the submodules as long as the build is kicked off from the
+         top level directory (as it should anyway). -->
     <repositories>
         <repository>
             <id>project-repo</id>
@@ -224,7 +226,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <url>file://${project.basedir}/repo</url>
+            <url>file://${user.dir}/repo</url>
         </repository>
     </repositories>
 
