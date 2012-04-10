@@ -75,6 +75,18 @@ public class KinectInputComponent implements VariationComponent {
     @Named("server-port")
     private int serverPort = 6789;
 
+    @Inject(optional = true)
+    @Named("pos-x")
+    private float xPos = 0.0f;
+
+    @Inject(optional = true)
+    @Named("pos-y")
+    private float yPos = 0.0f;
+
+    @Inject(optional = true)
+    @Named("pos-z")
+    private float zPos = 1.0f;
+
     private AtomicBoolean running = new AtomicBoolean(true);
 
     private static Logger logger = Logger.getLogger(KinectInputComponent.class);
@@ -173,9 +185,9 @@ public class KinectInputComponent implements VariationComponent {
                     KinematicState.State state = KinematicState.State.parseFrom(in);
                     in.close();
 
-                    Vector3f pos = new Vector3f((float)state.getLocX() / 1000.0f,
-                                                (float)state.getLocY() / 1000.0f,
-                                                (float)state.getLocZ() / 1000.0f);
+                    Vector3f pos = new Vector3f((float)state.getLocX() + xPos,
+                                                (float)state.getLocY() + yPos,
+                                                (float)state.getLocZ() + zPos);
 
                     Quat4f orient = new Quat4f();
 
