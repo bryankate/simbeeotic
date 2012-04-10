@@ -84,7 +84,7 @@
             <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
             <properties>
                 <prop name="server-host" value="127.0.0.1"/>
-                <prop name="object-names" value="heli1"/>
+                <prop name="object-name" value="heli1"/>
             </properties>
         </variation>
         
