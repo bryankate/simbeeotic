@@ -60,7 +60,7 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.HeliBaseKinectHover</java-class>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -81,7 +81,7 @@
 
     <components>
         <variation>
-            <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
+            <java-class>harvard.robobees.simbeeotic.component.KinectInputComponent</java-class>
             <properties>
                 <prop name="server-host" value="127.0.0.1"/>
                 <prop name="object-name" value="heli1"/>

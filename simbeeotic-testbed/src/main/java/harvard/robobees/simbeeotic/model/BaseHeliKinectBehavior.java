@@ -288,7 +288,7 @@ public abstract class BaseHeliKinectBehavior implements HeliBehavior {
     protected void takeoff(double z, MoveCallback callback) {
         
         currMoveCallback = callback;
-        hover(z);
+        takeoff(z);
     }
 
 
