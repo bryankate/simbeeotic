@@ -33,6 +33,7 @@
 package harvard.robobees.simbeeotic.component;
 
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
@@ -190,6 +191,24 @@ public class KinectInputComponent implements VariationComponent {
                                                 (float)state.getLocZ() + zPos);
 
                     Quat4f orient = new Quat4f();
+
+                    switch(state.getOrient()) {
+
+                        default:
+                        case UNKNOWN:
+                        case CENTER:
+
+                            QuaternionUtil.setEuler(orient, 0, 0, 0);
+                            break;
+
+                        case RIGHT:
+                            QuaternionUtil.setEuler(orient, (float)Math.PI / 2, 0, 0);
+                            break;
+
+                        case LEFT:
+                            QuaternionUtil.setEuler(orient, (float)-Math.PI / 2, 0, 0);
+                            break;
+                    }
 
                     externalSync.setState(objectName, pos, orient);
 

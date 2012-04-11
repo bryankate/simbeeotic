@@ -35,6 +35,77 @@ public final class KinematicState {
       return kinectd.protocol.KinematicState.internal_static_kinectd_protocol_State_fieldAccessorTable;
     }
     
+    public enum Orientation
+        implements com.google.protobuf.ProtocolMessageEnum {
+      CENTER(0, 0),
+      LEFT(1, 1),
+      RIGHT(2, 2),
+      UNKNOWN(3, 3),
+      ;
+      
+      
+      public final int getNumber() { return value; }
+      
+      public static Orientation valueOf(int value) {
+        switch (value) {
+          case 0: return CENTER;
+          case 1: return LEFT;
+          case 2: return RIGHT;
+          case 3: return UNKNOWN;
+          default: return null;
+        }
+      }
+      
+      public static com.google.protobuf.Internal.EnumLiteMap<Orientation>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Orientation>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Orientation>() {
+              public Orientation findValueByNumber(int number) {
+                return Orientation.valueOf(number)
+      ;        }
+            };
+      
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return kinectd.protocol.KinematicState.State.getDescriptor().getEnumTypes().get(0);
+      }
+      
+      private static final Orientation[] VALUES = {
+        CENTER, LEFT, RIGHT, UNKNOWN, 
+      };
+      public static Orientation valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+      private final int index;
+      private final int value;
+      private Orientation(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+      
+      static {
+        kinectd.protocol.KinematicState.getDescriptor();
+      }
+      
+      // @@protoc_insertion_point(enum_scope:kinectd.protocol.State.Orientation)
+    }
+    
     // required uint32 frameNum = 1;
     public static final int FRAMENUM_FIELD_NUMBER = 1;
     private boolean hasFrameNum;
@@ -70,7 +141,15 @@ public final class KinematicState {
     public boolean hasLocZ() { return hasLocZ; }
     public double getLocZ() { return locZ_; }
     
+    // required .kinectd.protocol.State.Orientation orient = 6;
+    public static final int ORIENT_FIELD_NUMBER = 6;
+    private boolean hasOrient;
+    private kinectd.protocol.KinematicState.State.Orientation orient_;
+    public boolean hasOrient() { return hasOrient; }
+    public kinectd.protocol.KinematicState.State.Orientation getOrient() { return orient_; }
+    
     private void initFields() {
+      orient_ = kinectd.protocol.KinematicState.State.Orientation.CENTER;
     }
     public final boolean isInitialized() {
       if (!hasFrameNum) return false;
@@ -78,6 +157,7 @@ public final class KinematicState {
       if (!hasLocX) return false;
       if (!hasLocY) return false;
       if (!hasLocZ) return false;
+      if (!hasOrient) return false;
       return true;
     }
     
@@ -98,6 +178,9 @@ public final class KinematicState {
       }
       if (hasLocZ()) {
         output.writeDouble(5, getLocZ());
+      }
+      if (hasOrient()) {
+        output.writeEnum(6, getOrient().getNumber());
       }
       getUnknownFields().writeTo(output);
     }
@@ -127,6 +210,10 @@ public final class KinematicState {
       if (hasLocZ()) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(5, getLocZ());
+      }
+      if (hasOrient()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(6, getOrient().getNumber());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -301,6 +388,9 @@ public final class KinematicState {
         if (other.hasLocZ()) {
           setLocZ(other.getLocZ());
         }
+        if (other.hasOrient()) {
+          setOrient(other.getOrient());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -344,6 +434,16 @@ public final class KinematicState {
             }
             case 41: {
               setLocZ(input.readDouble());
+              break;
+            }
+            case 48: {
+              int rawValue = input.readEnum();
+              kinectd.protocol.KinematicState.State.Orientation value = kinectd.protocol.KinematicState.State.Orientation.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(6, rawValue);
+              } else {
+                setOrient(value);
+              }
               break;
             }
           }
@@ -441,6 +541,27 @@ public final class KinematicState {
         return this;
       }
       
+      // required .kinectd.protocol.State.Orientation orient = 6;
+      public boolean hasOrient() {
+        return result.hasOrient();
+      }
+      public kinectd.protocol.KinematicState.State.Orientation getOrient() {
+        return result.getOrient();
+      }
+      public Builder setOrient(kinectd.protocol.KinematicState.State.Orientation value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasOrient = true;
+        result.orient_ = value;
+        return this;
+      }
+      public Builder clearOrient() {
+        result.hasOrient = false;
+        result.orient_ = kinectd.protocol.KinematicState.State.Orientation.CENTER;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:kinectd.protocol.State)
     }
     
@@ -467,10 +588,13 @@ public final class KinematicState {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021proto/State.proto\022\020kinectd.protocol\"U\n" +
-      "\005State\022\020\n\010frameNum\030\001 \002(\r\022\020\n\010occluded\030\002 \002" +
-      "(\010\022\014\n\004locX\030\003 \002(\001\022\014\n\004locY\030\004 \002(\001\022\014\n\004locZ\030\005" +
-      " \002(\001B\020B\016KinematicState"
+      "\n\021proto/State.proto\022\020kinectd.protocol\"\307\001" +
+      "\n\005State\022\020\n\010frameNum\030\001 \002(\r\022\020\n\010occluded\030\002 " +
+      "\002(\010\022\014\n\004locX\030\003 \002(\001\022\014\n\004locY\030\004 \002(\001\022\014\n\004locZ\030" +
+      "\005 \002(\001\0223\n\006orient\030\006 \002(\0162#.kinectd.protocol" +
+      ".State.Orientation\";\n\013Orientation\022\n\n\006CEN" +
+      "TER\020\000\022\010\n\004LEFT\020\001\022\t\n\005RIGHT\020\002\022\013\n\007UNKNOWN\020\003B" +
+      "\020B\016KinematicState"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -482,7 +606,7 @@ public final class KinematicState {
           internal_static_kinectd_protocol_State_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_kinectd_protocol_State_descriptor,
-              new java.lang.String[] { "FrameNum", "Occluded", "LocX", "LocY", "LocZ", },
+              new java.lang.String[] { "FrameNum", "Occluded", "LocX", "LocY", "LocZ", "Orient", },
               kinectd.protocol.KinematicState.State.class,
               kinectd.protocol.KinematicState.State.Builder.class);
           return null;
