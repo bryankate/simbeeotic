@@ -148,6 +148,13 @@ public final class KinematicState {
     public boolean hasOrient() { return hasOrient; }
     public kinectd.protocol.KinematicState.State.Orientation getOrient() { return orient_; }
     
+    // required double centerOffset = 7;
+    public static final int CENTEROFFSET_FIELD_NUMBER = 7;
+    private boolean hasCenterOffset;
+    private double centerOffset_ = 0D;
+    public boolean hasCenterOffset() { return hasCenterOffset; }
+    public double getCenterOffset() { return centerOffset_; }
+    
     private void initFields() {
       orient_ = kinectd.protocol.KinematicState.State.Orientation.CENTER;
     }
@@ -158,6 +165,7 @@ public final class KinematicState {
       if (!hasLocY) return false;
       if (!hasLocZ) return false;
       if (!hasOrient) return false;
+      if (!hasCenterOffset) return false;
       return true;
     }
     
@@ -181,6 +189,9 @@ public final class KinematicState {
       }
       if (hasOrient()) {
         output.writeEnum(6, getOrient().getNumber());
+      }
+      if (hasCenterOffset()) {
+        output.writeDouble(7, getCenterOffset());
       }
       getUnknownFields().writeTo(output);
     }
@@ -214,6 +225,10 @@ public final class KinematicState {
       if (hasOrient()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(6, getOrient().getNumber());
+      }
+      if (hasCenterOffset()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(7, getCenterOffset());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -391,6 +406,9 @@ public final class KinematicState {
         if (other.hasOrient()) {
           setOrient(other.getOrient());
         }
+        if (other.hasCenterOffset()) {
+          setCenterOffset(other.getCenterOffset());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -444,6 +462,10 @@ public final class KinematicState {
               } else {
                 setOrient(value);
               }
+              break;
+            }
+            case 57: {
+              setCenterOffset(input.readDouble());
               break;
             }
           }
@@ -562,6 +584,24 @@ public final class KinematicState {
         return this;
       }
       
+      // required double centerOffset = 7;
+      public boolean hasCenterOffset() {
+        return result.hasCenterOffset();
+      }
+      public double getCenterOffset() {
+        return result.getCenterOffset();
+      }
+      public Builder setCenterOffset(double value) {
+        result.hasCenterOffset = true;
+        result.centerOffset_ = value;
+        return this;
+      }
+      public Builder clearCenterOffset() {
+        result.hasCenterOffset = false;
+        result.centerOffset_ = 0D;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:kinectd.protocol.State)
     }
     
@@ -588,13 +628,13 @@ public final class KinematicState {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021proto/State.proto\022\020kinectd.protocol\"\307\001" +
+      "\n\021proto/State.proto\022\020kinectd.protocol\"\335\001" +
       "\n\005State\022\020\n\010frameNum\030\001 \002(\r\022\020\n\010occluded\030\002 " +
       "\002(\010\022\014\n\004locX\030\003 \002(\001\022\014\n\004locY\030\004 \002(\001\022\014\n\004locZ\030" +
       "\005 \002(\001\0223\n\006orient\030\006 \002(\0162#.kinectd.protocol" +
-      ".State.Orientation\";\n\013Orientation\022\n\n\006CEN" +
-      "TER\020\000\022\010\n\004LEFT\020\001\022\t\n\005RIGHT\020\002\022\013\n\007UNKNOWN\020\003B" +
-      "\020B\016KinematicState"
+      ".State.Orientation\022\024\n\014centerOffset\030\007 \002(\001" +
+      "\";\n\013Orientation\022\n\n\006CENTER\020\000\022\010\n\004LEFT\020\001\022\t\n" +
+      "\005RIGHT\020\002\022\013\n\007UNKNOWN\020\003B\020B\016KinematicState"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -606,7 +646,7 @@ public final class KinematicState {
           internal_static_kinectd_protocol_State_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_kinectd_protocol_State_descriptor,
-              new java.lang.String[] { "FrameNum", "Occluded", "LocX", "LocY", "LocZ", "Orient", },
+              new java.lang.String[] { "FrameNum", "Occluded", "LocX", "LocY", "LocZ", "Orient", "CenterOffset", },
               kinectd.protocol.KinematicState.State.class,
               kinectd.protocol.KinematicState.State.Builder.class);
           return null;
