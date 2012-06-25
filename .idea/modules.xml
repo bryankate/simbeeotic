@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../simbeeotic-tutorial/Mburkardt/simbeeotic-tutorial/Simbeeotic-tutorial.iml" filepath="$PROJECT_DIR$/../simbeeotic-tutorial/Mburkardt/simbeeotic-tutorial/Simbeeotic-tutorial.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic.iml" filepath="$PROJECT_DIR$/simbeeotic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-app/simbeeotic-app.iml" filepath="$PROJECT_DIR$/simbeeotic-app/simbeeotic-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-core/simbeeotic-core.iml" filepath="$PROJECT_DIR$/simbeeotic-core/simbeeotic-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-dist/simbeeotic-dist.iml" filepath="$PROJECT_DIR$/simbeeotic-dist/simbeeotic-dist.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-env/simbeeotic-env.iml" filepath="$PROJECT_DIR$/simbeeotic-env/simbeeotic-env.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-examples/simbeeotic-examples.iml" filepath="$PROJECT_DIR$/simbeeotic-examples/simbeeotic-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-testbed/simbeeotic-testbed.iml" filepath="$PROJECT_DIR$/simbeeotic-testbed/simbeeotic-testbed.iml" />
+      <module fileurl="file://$PROJECT_DIR$/simbeeotic-vis/simbeeotic-vis.iml" filepath="$PROJECT_DIR$/simbeeotic-vis/simbeeotic-vis.iml" />
+    </modules>
+  </component>
+</project>
+
