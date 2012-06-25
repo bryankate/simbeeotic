@@ -6,3 +6,5 @@ target
 .settings
 .classpath
 .DS_Store
+.idea
+log4j.properties
