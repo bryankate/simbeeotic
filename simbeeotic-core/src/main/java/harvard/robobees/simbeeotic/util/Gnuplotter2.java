@@ -31,15 +31,15 @@ public class Gnuplotter2 {
     private String lastPlotCommand = "";
     private String defaultTerm = "x11";
 
-    private static Gnuplotter instance;
+    private static Gnuplotter2 instance;
 
     static {
-        instance = new Gnuplotter();
+        instance = new Gnuplotter2();
     }
 
     private static final String DEFAULT_PLOT = "";
 
-    private static Logger logger = Logger.getLogger(Gnuplotter.class);
+    private static Logger logger = Logger.getLogger(Gnuplotter2.class);
 
 
     public Gnuplotter2(boolean... flags) {
@@ -83,7 +83,7 @@ public class Gnuplotter2 {
     }
 
     
-    public static Gnuplotter getGlobalInstance() {
+    public static Gnuplotter2 getGlobalInstance() {
         return instance;
     }
 
@@ -230,7 +230,7 @@ public class Gnuplotter2 {
             writer.close();
         }
         catch(IOException ioe) {
-            logger.error("Error writing Gnuplotter log.", ioe);
+            logger.error("Error writing Gnuplotter2 log.", ioe);
         }
     }
 
