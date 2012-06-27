@@ -1,4 +1,4 @@
-package harvard.robobees.simbeeotic.algorithms.util;
+package harvard.robobees.simbeeotic.algorithms;
 
 import Jama.Matrix;
 

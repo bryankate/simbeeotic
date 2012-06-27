@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!--
+
+    Copyright (c) 2012, The President and Fellows of Harvard College.
+    All Rights Reserved.
+
+     Redistribution and use in source and binary forms, with or without
+     modification, are permitted provided that the following conditions
+     are met:
+
+     1. Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+     3. Neither the name of the University nor the names of its contributors
+        may be used to endorse or promote products derived from this software
+        without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY AND CONTRIBUTORS ``AS IS'' AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE UNIVERSITY OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
+
+-->
+
+<scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://harvard/robobees/simbeeotic/configuration/scenario"
+          xsi:schemaLocation="http://harvard/robobees/simbeeotic/configuration/scenario http://some/path/to/schema.xsd">
+
+    <master-seed>
+        <constant value="111982"/>
+    </master-seed>
+
+    <simulation>
+        <end-time>1200000000000.0</end-time>
+    </simulation>
+    <models>
+        <model count="1">
+            <java-class>harvard.robobees.simbeeotic.model.ParticleBee</java-class>
+            <start-position x="30" y="65" z="1"/>
+
+
+            <sensor name="range-sensor">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultLaserRangeSensor</java-class>
+                <properties>
+                    <prop name="sigma" value="0"/>
+                    <prop name="min-range" value="0.2"/>
+                    <prop name="max-range" value="20.0"/>
+                </properties>
+                <offset x=".1" y="0" z="0"/>
+                <pointing x="1" y="0" z="0"/>
+            </sensor>
+            <sensor name="compass">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultCompass</java-class>
+            </sensor>
+            <sensor name="contact-bottom">
+                <java-class>harvard.robobees.simbeeotic.model.sensor.DefaultContactSensor</java-class>
+                <properties>
+                    <prop name="radius" value="0.007"/>
+                </properties>
+                <offset x="0" y="0" z="-0.1"/>
+            </sensor>
+        </model>
+
+
+    </models>
+    <components>
+        <variation>
+            <java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class>
+        </variation>
+    </components>
+
+</scenario>
