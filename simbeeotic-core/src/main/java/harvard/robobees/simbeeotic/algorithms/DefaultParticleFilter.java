@@ -3,8 +3,10 @@ package harvard.robobees.simbeeotic.algorithms;
 
 import Jama.Matrix;
 import harvard.robobees.simbeeotic.util.Gnuplotter2;
+import harvard.robobees.simbeeotic.util.HeatMap;
 import org.apache.log4j.Logger;
 
+import javax.vecmath.Vector3f;
 import java.util.Random;
 
 public class DefaultParticleFilter implements ParticleFilter {
@@ -15,6 +17,7 @@ public class DefaultParticleFilter implements ParticleFilter {
     //robot senses
     //robot.sense gives distance to the four landmarks
 
+    private HeatMap heatMap = new HeatMap();
     Gnuplotter2 p = new Gnuplotter2(true);
     private static Logger logger = Logger.getLogger(DefaultParticleFilter.class);
     public Random rand = new Random();
@@ -22,6 +25,7 @@ public class DefaultParticleFilter implements ParticleFilter {
     public double sensorNoise = 5;
     public double forwardNoise = .05;
     public double turnNoise = .05;
+
 
 
 
@@ -38,6 +42,7 @@ public class DefaultParticleFilter implements ParticleFilter {
         p.unsetProperty("key");
         p.setProperty("title", "'Distance to nearest object (0 = infinity or zero)'");
         p.setPlotParams("with points");
+        heatMap.initialize();
     }
 
     public double[] sense(double xNoisy, double yNoisy, double headingNoisy) {
@@ -52,20 +57,19 @@ public class DefaultParticleFilter implements ParticleFilter {
 
 
     public Matrix generateParticles(int numberOfParticles){
-        p.clearData(); //clear previous plot
-        String lineData = "";
+        double[][] particleMap = new double[100][100];
         double[][] particles = new double[numberOfParticles][3];
         for (int i = 0; i<numberOfParticles; i++){
             particles[i][0] = Math.random()*100;
             particles[i][1] = Math.random()*100;
             particles[i][2] = Math.random()*Math.PI*2;
-            lineData += particles[i][0] + " " + particles[i][1] + "\n";
-            p.addDataPoint(lineData); //plots h vs. range
-            if (i%200 == 0){
-                p.plot();
-            }
-            logger.info("particle number:" + i);
+
+            int xParticle = (int)Math.round(particles[i][0])%100;
+            int yParticle = (int)Math.round(particles[i][1])%100;
+            particleMap[xParticle][yParticle] = 1;
+
         }
+
         return new Matrix(particles);
     }
 
@@ -102,12 +106,11 @@ public class DefaultParticleFilter implements ParticleFilter {
         return Math.exp(-(Math.pow(mu-x,2))/Math.pow(sigma,2))/Math.sqrt(2*Math.PI*Math.pow(sigma,2));
     }
 
-    public Matrix resample(Matrix particles, double[] measurementProbability){
+    public Matrix resample(Matrix particles, double[] measurementProbability, Vector3f pos){
         int m = particles.getRowDimension();
         int n = particles.getColumnDimension();
         Matrix newParticles = new Matrix(m,n);
-        p.clearData(); //clear previous plot
-        String lineData = "";
+        double[][] particleMap = new double[100][100];
 
         int index = (int) (Math.random() * m);
         double beta = 0;
@@ -126,14 +129,14 @@ public class DefaultParticleFilter implements ParticleFilter {
             for (int j=0; j<n; j++){
                 newParticles.set(i,j,particles.get(index,j ));
             }
-            lineData += newParticles.get(i,0) + " " + newParticles.get(i,1) + "\n";
-            p.addDataPoint(lineData); //plots h vs. range
-            if (i%200 == 0){
-                p.plot();
 
-            }
-            logger.info("updated particle number:" + i);
         }
+        for (int i = 0; i<m; i++){
+            int xParticle = (int)Math.round(newParticles.get(i,0))%100;
+            int yParticle = (int)Math.round(newParticles.get(i,1))%100;
+            particleMap[xParticle][yParticle] = 1;
+        }
+        heatMap.setDataBlock(particleMap, pos);
         return newParticles;
     }
 }

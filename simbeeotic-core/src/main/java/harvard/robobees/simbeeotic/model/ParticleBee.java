@@ -84,14 +84,14 @@ public class ParticleBee extends SimpleBee{
             logger.info("X for input: " + xNoisy + " Y for input: " + yNoisy);
             double headingNoisy = beeTheta + getRandom().nextGaussian()*headingSigma;
             z = particleFilter.sense(xNoisy,yNoisy,headingNoisy);
-            particles = particleFilter.resample(particles,w);
+            particles = particleFilter.resample(particles,w, pos);
             w = particleFilter.measureProb(particles, z);
             move = true;
         }
         if (move == true){
-            turn(.1f);
-            setDesiredLinearVelocity(new Vector3f(5,0,0));
-            particles = particleFilter.moveParticles(particles,.1,.5);
+            turn(0f);
+            setDesiredLinearVelocity(new Vector3f(1,0,0));
+            particles = particleFilter.moveParticles(particles,0,.1);
             move = false;
         }
 
