@@ -18,30 +18,32 @@ public class DefaultParticleFilter implements ParticleFilter {
     //robot.sense gives distance to the four landmarks
 
     private HeatMap heatMap = new HeatMap();
-    Gnuplotter2 p = new Gnuplotter2(true);
+    //Gnuplotter2 p = new Gnuplotter2(true);
     private static Logger logger = Logger.getLogger(DefaultParticleFilter.class);
     public Random rand = new Random();
 
-    public double sensorNoise = 5;
+    public double sensorNoise = 10;
     public double forwardNoise = .05;
     public double turnNoise = .05;
 
+    int leftPoint = 0;
+    int rightPoint=0;
 
 
 
+    //public Matrix landmarks = new Matrix(new double[][] {{20, 20},
+    //        {80,80},
+    //        {20,80},
+    //        {80,20}});
 
-    public Matrix landmarks = new Matrix(new double[][] {{20, 20},
-            {80,80},
-            {20,80},
-            {80,20}});
-
+    public Matrix landmarks = new Matrix(new double[][] {{10, 50}, {90,50}});
 
 
     public void initialize(){
-        p.setProperty("term", "x11");
-        p.unsetProperty("key");
-        p.setProperty("title", "'Distance to nearest object (0 = infinity or zero)'");
-        p.setPlotParams("with points");
+        //p.setProperty("term", "x11");
+        //p.unsetProperty("key");
+        //p.setProperty("title", "'Distance to nearest object (0 = infinity or zero)'");
+        //p.setPlotParams("with points");
         heatMap.initialize();
     }
 
@@ -103,10 +105,13 @@ public class DefaultParticleFilter implements ParticleFilter {
     }
 
     public double gaussian(double mu, double sigma, double x){
-        return Math.exp(-(Math.pow(mu-x,2))/Math.pow(sigma,2))/Math.sqrt(2*Math.PI*Math.pow(sigma,2));
+        return Math.exp(-.5*(Math.pow(mu-x,2))/Math.pow(sigma,2))/Math.sqrt(2*Math.PI*Math.pow(sigma,2));
     }
 
-    public Matrix resample(Matrix particles, double[] measurementProbability, Vector3f pos){
+    public Matrix resample(Matrix particles, double[] w, Vector3f pos){
+        leftPoint=0;
+        rightPoint=0;
+
         int m = particles.getRowDimension();
         int n = particles.getColumnDimension();
         Matrix newParticles = new Matrix(m,n);
@@ -116,27 +121,42 @@ public class DefaultParticleFilter implements ParticleFilter {
         double beta = 0;
         double mw = 0;
         for (int i = 0; i<m; i++){
-            if (measurementProbability[i]>mw){
-                mw = measurementProbability[i];
+            if (w[i]>mw){
+                mw = w[i];
             }
         }
         for (int i=0; i<m; i++){
             beta += Math.random()*2*mw;
-            while (beta>measurementProbability[index]){
-                beta -= measurementProbability[index];
+            while (beta>w[index]){
+                beta -= w[index];
                 index = (index+1)%m;
             }
             for (int j=0; j<n; j++){
-                newParticles.set(i,j,particles.get(index,j ));
+                newParticles.set(i,j,particles.get(index,j));
             }
 
         }
         for (int i = 0; i<m; i++){
+
             int xParticle = (int)Math.round(newParticles.get(i,0))%100;
             int yParticle = (int)Math.round(newParticles.get(i,1))%100;
+            if (xParticle <0){
+                xParticle = 0;
+            }
+            if (yParticle <0){
+                yParticle = 0;
+            }
+            if (yParticle<50){
+                leftPoint++;
+            }
+            if (yParticle>50){
+                rightPoint++;
+            }
+
             particleMap[xParticle][yParticle] = 1;
         }
         heatMap.setDataBlock(particleMap, pos);
+        logger.info("left points:" + leftPoint + "right points:" + rightPoint);
         return newParticles;
     }
 }

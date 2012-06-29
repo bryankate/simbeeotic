@@ -31,13 +31,13 @@ public class ParticleBee extends SimpleBee{
     double xSigma = .1;
     double ySigma = .1;
     double headingSigma = .1;
-
+    int counter = 0;
 
     @Override
     public void initialize() {
         super.initialize();
         setHovering(true);  //make the bee hover at constant height
-        setUseRandomStart(true);
+        //setUseRandomStart(true);
 
         compass = getSensor("compass", Compass.class); //compass to find heading
         laserRangeSensor = getSensor("range-sensor", LaserRangeSensor.class); //laser range finder for occupancy mapping
@@ -49,13 +49,13 @@ public class ParticleBee extends SimpleBee{
         Vector3f pos = getTruthPosition();
         double xNoisy = pos.x + getRandom().nextGaussian()*xSigma;
         double yNoisy = pos.y + getRandom().nextGaussian()*ySigma;
-        logger.info("X for input: " + xNoisy + " Y for input: " + yNoisy);
+        //logger.info("X for input: " + xNoisy + " Y for input: " + yNoisy);
         double headingNoisy = beeTheta + getRandom().nextGaussian()*headingSigma;
 
         //gives distance from the bee to the landmarks, with a little bit of noise.
         z = particleFilter.sense(xNoisy,yNoisy,headingNoisy);
         particles = particleFilter.generateParticles(1000);
-        w = particleFilter.measureProb(particles, z);
+
 
 
     }
@@ -74,24 +74,26 @@ public class ParticleBee extends SimpleBee{
         logger.info("ID: " + getModelId() + "  " +
                 "time: " + time.getImpreciseTime() + "  " +
                 "pos: " + pos + "  " +
-                "vel: " + vel + " ");
+                "vel: " + vel + " " + "counter:" + counter);
 
 
         if (move == false){
             setDesiredLinearVelocity(new Vector3f(0,0,0));
             double xNoisy = pos.x + getRandom().nextGaussian()*xSigma;
             double yNoisy = pos.y + getRandom().nextGaussian()*ySigma;
-            logger.info("X for input: " + xNoisy + " Y for input: " + yNoisy);
+            //logger.info("X for input: " + xNoisy + " Y for input: " + yNoisy);
             double headingNoisy = beeTheta + getRandom().nextGaussian()*headingSigma;
             z = particleFilter.sense(xNoisy,yNoisy,headingNoisy);
-            particles = particleFilter.resample(particles,w, pos);
             w = particleFilter.measureProb(particles, z);
+            particles = particleFilter.resample(particles,w, pos);
+            counter++;
             move = true;
+
         }
         if (move == true){
             turn(0f);
-            setDesiredLinearVelocity(new Vector3f(1,0,0));
-            particles = particleFilter.moveParticles(particles,0,.1);
+            setDesiredLinearVelocity(new Vector3f(.1f,0,0));
+            particles = particleFilter.moveParticles(particles,0,.01);
             move = false;
         }
 
