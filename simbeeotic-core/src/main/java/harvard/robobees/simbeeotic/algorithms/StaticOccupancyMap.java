@@ -6,24 +6,10 @@
 package harvard.robobees.simbeeotic.algorithms;
 
 
-import com.bulletphysics.linearmath.Transform;
-import harvard.robobees.simbeeotic.algorithms.util.KalmanXYThetaEstimate;
-import harvard.robobees.simbeeotic.model.sensor.DefaultLaserRangeSensor;
 import harvard.robobees.simbeeotic.util.Gnuplotter2;
 import harvard.robobees.simbeeotic.util.HeatMap;
 import org.apache.log4j.Logger;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
 import Jama.Matrix;
-
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.GrayPaintScale;
-import org.jfree.chart.renderer.PaintScale;
-import org.jfree.chart.renderer.xy.VectorRenderer;
-import org.jfree.chart.renderer.xy.XYBlockRenderer;
-
-import org.omg.CORBA.PUBLIC_MEMBER;
-import harvard.robobees.simbeeotic.util.TracePlotter2D;
 
 import javax.vecmath.Vector3f;
 
@@ -51,7 +37,7 @@ public class StaticOccupancyMap extends BayesFilter{
     private HeatMap heatMap = new HeatMap();
     private HeatMap positionKalmanMap = new HeatMap();
     public KalmanXYThetaEstimate kalman = new KalmanXYThetaEstimate();
-    //public EkfSlam slam = new EkfSlam();
+    public EkfSlam slam = new EkfSlam();
 
 
     Matrix stateVector;
@@ -81,6 +67,27 @@ public class StaticOccupancyMap extends BayesFilter{
 
         //heatMap.initialize();
         positionKalmanMap.initialize();
+
+
+
+        stateVector = new Matrix(new double[][] {{0}, {0}, {0}});
+        Matrix covariance = new Matrix(new double[][] {{1,0,0},
+                                                       {0,1,0},
+                                                       {0,0,.1}});
+        /*Matrix covariance = new Matrix(new double [][] {{1,0,0,0,0,0},
+                                                        {0,1,0,0,0,0},
+                                                        {0,0,.1,0,0,0},
+                                                        {0,0,0,1000,0,0},
+                                                        {0,0,0,0,1000,0},
+                                                        {0,0,0,0,0,.1}});
+                                                        */
+        Matrix controls = new Matrix(new double[][] {{0}, {0}, {Math.PI/4}});
+
+        Matrix measurements = new Matrix(new double[][] {{10.23},{.61},{29.81}, {-.96}});
+        slam.ekfLocalization(stateVector, covariance, controls, measurements);
+
+
+
 
 
         for (int i=0; i<200; i++){
@@ -242,6 +249,10 @@ public class StaticOccupancyMap extends BayesFilter{
 
     public void slamMap (float range[], Vector3f currPos, float beeTheta){
 
+
+
+
+
         boolean hallwayRight = false;
         boolean hallwayLeft = false;
         boolean wallAhead = false;
@@ -282,7 +293,7 @@ public class StaticOccupancyMap extends BayesFilter{
                 if (uncertaintyCovariance.det() != 0){
                     double exponent = (xMinusState.transpose()).times((uncertaintyCovariance.inverse()).times(xMinusState)).get(0,0);
                     logger.info("exponent" + exponent);
-                    positionProbability[i][j] = 1/(Math.sqrt(2*Math.PI)*uncertaintyCovariance.det());
+                    positionProbability[i][j] = 1/(Math.sqrt(2*Math.PI*uncertaintyCovariance.det()));
                     positionProbability[i][j] *= Math.exp(-.5*exponent);
                     logger.info("probs: " + positionProbability[i][j] + " i" + i + " j" + j);
                 }

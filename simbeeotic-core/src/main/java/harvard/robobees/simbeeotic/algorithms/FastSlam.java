@@ -32,23 +32,39 @@
 
 package harvard.robobees.simbeeotic.algorithms;
 
-import Jama.Matrix;
-
-import javax.vecmath.Vector3f;
 
 /**
+ * SLAM, implementing a particle filter and EKF.
+ *
  * @author Mburkardt
  */
 
-public interface ParticleFilter{
+public class FastSlam {
 
-    public double[] sense(double xNoisy, double yNoisy, double headingNoisy);
+    //loop over all prticles
+    //sample pose
+    //check if observed feature
 
-    public void initialize();
-    public Matrix generateParticles(int numberOfParticles);
-    public Matrix moveParticles(Matrix particles, double rotation, double distance);
-    public double[] measureProb(Matrix particles, double[] z);
-    public double gaussian(double mu, double sigma, double x);
-    public Matrix resample(Matrix particles, double[] measurementProbability, Vector3f pos);
+   //initialize mean
+    //calculate jacobian
+    //initialize covariance
+    //default importance weight
+
+    //measurement prediction
+    //calculate jacobian
+    //measurement covariance
+    //calculate kalman gain
+    //update mean
+    //update covariance
+    //update weighting/importance factor
+
+    //for unobserved features, leave everything unchanged
+
+    //initialize new particle set
+    //resample M particles
+
+
+
+
 
 }
