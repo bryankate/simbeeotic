@@ -105,6 +105,8 @@ public class HeatMap extends JFrame {
         dataset.addSeries(0,converted);
 
         mapPlot.setDataset(dataset);
+
+
         mapPlot.setDomainCrosshairValue(currPos.y+99);
         mapPlot.setRangeCrosshairValue(currPos.x+99);
 
@@ -128,8 +130,11 @@ public class HeatMap extends JFrame {
         dataset.addSeries(0,converted);
 
         mapPlot.setDataset(dataset);
-        mapPlot.setDomainCrosshairValue(currPos.y+99);
-        mapPlot.setRangeCrosshairValue(currPos.x+99);
+        mapPlot.setDomainCrosshairValue(currPos.y);
+        mapPlot.setRangeCrosshairValue(currPos.x);
+
+        //mapPlot.setDomainCrosshairValue(currPos.y+99);
+        //mapPlot.setRangeCrosshairValue(currPos.x+99);
 
 
     }

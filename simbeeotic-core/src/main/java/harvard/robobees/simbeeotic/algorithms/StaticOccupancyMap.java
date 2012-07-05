@@ -20,6 +20,7 @@ public class StaticOccupancyMap extends BayesFilter{
     public int worldRadius = 100; //radius of world, in meters
 
     //todo: initialize worldmap elements as .5 (all of them)
+    //float [][] worldMap = new float[1000][1000];
     float[][] worldMap = new float[200][200]; //creates a grid with 10cm resolution
     double[][] positionProbability = new double[200][200];
 
@@ -63,10 +64,10 @@ public class StaticOccupancyMap extends BayesFilter{
         polar.setProperty("title", "'Polar representation of what the bee sees. +x direction is direction of travel.'");
         polar.setPlotParams("with points");
 
-        kalman.initialize();
+        //kalman.initialize();
 
-        //heatMap.initialize();
-        positionKalmanMap.initialize();
+        heatMap.initialize();
+        //positionKalmanMap.initialize();
 
 
 
@@ -88,9 +89,7 @@ public class StaticOccupancyMap extends BayesFilter{
 
 
 
-
-
-        for (int i=0; i<200; i++){
+       for (int i=0; i<200; i++){
             for (int j=0; j<200; j++){
                 worldMap[i][j] = .5f;
           //      worldMap[99+xFromOrigin][99+yFromOrigin] = 1; //shifts coordinates so that they match up with the matrix
@@ -114,17 +113,10 @@ public class StaticOccupancyMap extends BayesFilter{
 
         //map.writeLog("/home/markus/mapLogFile.txt");
         //map.splot();
-
-
-
-
-
-
-
-
     }
 
     public void drawRange(float range[]){
+        //returns a plot of the range values given with with the laser range-finder.
 
         p.clearData(); //clear previous plot
         String lineData = "";

@@ -47,7 +47,7 @@
     <models>
         <model count="1">
             <java-class>harvard.robobees.simbeeotic.model.ParticleBee</java-class>
-            <start-position x="30" y="65" z="1"/>
+            <start-position x="80" y="60" z="1"/>
 
 
             <sensor name="range-sensor">

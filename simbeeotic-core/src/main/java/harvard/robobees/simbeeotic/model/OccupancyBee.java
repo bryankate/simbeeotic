@@ -105,7 +105,7 @@ public class OccupancyBee extends SimpleBee{
         //occupancyMap.drawRange(range);
         //occupancyMap.polarMap(range, beeTheta);
         //occupancyMap.occupancy(range, pos, beeTheta);
-        //occupancyMap.bayesOccupancy(range, pos, beeTheta);
+        occupancyMap.bayesOccupancy(range, pos, beeTheta);
         //occupancyMap.scaledLaserHeading(range, beeTheta);
 
 
@@ -195,11 +195,11 @@ public class OccupancyBee extends SimpleBee{
                 finish();
             }
 
-        }*/
+        }
 
+        */
 
-
-       //  turn((float).1);
+        //turn((float).1);
 
 
         //make bee move along Dworkin Hallways
@@ -266,6 +266,73 @@ public class OccupancyBee extends SimpleBee{
                 finish();
             }
         } */
+
+
+        if (counter==0){
+            Vector3f target = new Vector3f(-1,12,1);
+            turnToward(target);
+            Vector3f velDesire = new Vector3f(maxVel, 0, 0);
+            setDesiredLinearVelocity(velDesire);
+
+            difference.sub(target, pos);
+            double distToGo = difference.length();
+            if (distToGo < 1){
+                counter++;
+                return;
+            }
+        }
+        else if (counter==1){
+            Vector3f target = new Vector3f(-25,12,1);
+            turnToward(target);
+            Vector3f velDesire = new Vector3f(maxVel, 0, 0);
+            setDesiredLinearVelocity(velDesire);
+
+            difference.sub(target, pos);
+            double distToGo = difference.length();
+            if (distToGo < 1){
+                counter++;
+                return;
+            }
+        }
+        else if (counter==2){
+            Vector3f target = new Vector3f(-16.3f,12,1);
+            turnToward(target);
+            Vector3f velDesire = new Vector3f(maxVel, 0, 0);
+            setDesiredLinearVelocity(velDesire);
+
+            difference.sub(target, pos);
+            double distToGo = difference.length();
+            if (distToGo < 1){
+                counter++;
+                return;
+            }
+        }
+        else if (counter==3){
+            Vector3f target = new Vector3f(-16.3f,-1,1);
+            turnToward(target);
+            Vector3f velDesire = new Vector3f(maxVel, 0, 0);
+            setDesiredLinearVelocity(velDesire);
+
+            difference.sub(target, pos);
+            double distToGo = difference.length();
+            if (distToGo < 1){
+                counter++;
+                return;
+            }
+        }
+        else if (counter==4){
+            Vector3f target = new Vector3f(35,-1,1);
+            turnToward(target);
+            Vector3f velDesire = new Vector3f(maxVel, 0, 0);
+            setDesiredLinearVelocity(velDesire);
+
+            difference.sub(target, pos);
+            double distToGo = difference.length();
+            if (distToGo < 1){
+                finish();
+            }
+        }
+
 
     }
 
