@@ -35,6 +35,9 @@ package harvard.robobees.simbeeotic.algorithms;
 
 import Jama.Matrix;
 import org.apache.log4j.Logger;
+
+import java.util.Random;
+
 /**
  * SLAM, implementing a particle filter and EKF.
  *
@@ -42,10 +45,15 @@ import org.apache.log4j.Logger;
  */
 
 
-public class FastSlam {
+public class FastSlam implements FastSlamInterface{
 
     private static Logger logger = Logger.getLogger(FastSlam.class);
-
+    public Matrix stateVector;
+    public int numFeatures;
+    public Matrix covariance;
+    public Matrix controls;
+    public Matrix measurements;
+    public Random rand = new Random();
 
 
     //loop over all particles
@@ -73,6 +81,12 @@ public class FastSlam {
 
     //initialize new particle set
     //resample M particles
+
+    @Override
+    public void initialize(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements) {
+
+
+    }
 
     //run for every particle:
     public void predict(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements){
@@ -135,6 +149,7 @@ public class FastSlam {
 
     public void ekfInitialize(Matrix stateVector, Matrix covariance, Matrix controls, Matrix measurements){
         //based on ocw.mit.edu/courses/aeronautics-and-astronautics/16-412j-cognitive-robotics-spring-2005/projects/1aslam_blas_repo.pdf
+        //Update current state using the odometry data.
 
         //stateVector is x,y,theta, landmarkX, landmarkY, ...
         //statevector is of dimension 3+2N x 1
@@ -218,6 +233,10 @@ public class FastSlam {
         double yCorrection = deltaTime*vel*Math.sin(theta);
         double thetaCorrection = deltaTime*angVel;
 
+        stateVector.set(0,0,x+xCorrection);
+        stateVector.set(1,0,y+yCorrection);
+        stateVector.set(2,0,theta+thetaCorrection);
+
         Matrix jacobianA = Matrix.identity(3,3);
         jacobianA.set(0,2, -deltaTime*vel*Math.sin(theta));
         jacobianA.set(1,2, deltaTime*vel*Math.cos(theta));
@@ -231,8 +250,21 @@ public class FastSlam {
         Matrix positionCovariance = covariance.getMatrix(0,2,0,2);
         positionCovariance = (jacobianA.times(positionCovariance.times(jacobianA))).plus(processNoiseQ);
 
+        for (int i = 0; i<3; i++){
+            for (int j=0; j<3; j++){
+                covariance.set(i,j,positionCovariance.get(i,j));
+            }
+        }
+
         Matrix positionCovarianceXCorr = covariance.getMatrix(0,2,0,covariance.getColumnDimension());
         positionCovarianceXCorr = jacobianA.times(positionCovarianceXCorr);
+
+        for (int i=0; i<3; i++){
+            for (int j=0; j<covariance.getColumnDimension(); j++){
+                covariance.set(i,j,positionCovarianceXCorr.get(i,j));
+            }
+        }
+
     }
 
     public void ekfUpdate(Matrix stateVector, Matrix controls, Matrix covariance, Matrix measurements, int landmarkIndex){
@@ -242,8 +274,13 @@ public class FastSlam {
         double xLandmark = measurements.get(2*landmarkIndex,0); //let landmark index start at 0
         double yLandmark = measurements.get(2*landmarkIndex+1,0);
         double range = Math.sqrt(Math.pow(xLandmark-x,2) + Math.pow(yLandmark-y,2));
-        double bearing = Math.atan((yLandmark-y)/(xLandmark-x))-theta;
+        //double bearing = Math.atan((yLandmark-y)/(xLandmark-x))-theta;
         Matrix noiseR = new Matrix(new double[][] {{.01*range,0},{0,.1}});
+
+        double vel = controls.get(0,0);
+        double deltaTime = 1;
+        double xCorrection = deltaTime*vel*Math.cos(theta);
+        double yCorrection = deltaTime*vel*Math.sin(theta);
 
 
         //jacobian for the measurement model
@@ -258,15 +295,20 @@ public class FastSlam {
         jacobianH.set(1,3+2*landmarkIndex, -(yLandmark-y)/Math.pow(range,2));
         jacobianH.set(1,4+2*landmarkIndex, -(xLandmark-x)/Math.pow(range,2));
 
+        Matrix measurementsWithNoise = new Matrix(2,1);
+        measurementsWithNoise.set(0,0, xLandmark * rand.nextGaussian());
+        measurementsWithNoise.set(1,0, yLandmark * rand.nextGaussian());
 
+        Matrix measurementPredict = new Matrix(2,1);
+        measurementPredict.set(0,0, xLandmark + xCorrection);
+        measurementPredict.set(1,0, yLandmark + yCorrection);
 
         Matrix innovationS = (jacobianH.times(covariance.times(jacobianH.transpose()))).plus(noiseR);
         Matrix kalmanGain = (controls.times(jacobianH.transpose())).times(innovationS.inverse());
-
-        //stateVector = stateVector.plus(kalmanGain.times(measurementWithNoise.minus(measurementPredict));
+        stateVector = stateVector.plus(kalmanGain.times(measurementsWithNoise.minus(measurementPredict)));
     }
 
-    public void addLandmarks(Matrix stateVector, Matrix covariance, Matrix measurements, Matrix newLandmarks, Matrix controls){
+    public void addLandmarks(Matrix stateVector, Matrix covariance, Matrix newLandmarks, Matrix controls){
         //based on ocw.mit.edu/courses/aeronautics-and-astronautics/16-412j-cognitive-robotics-spring-2005/projects/1aslam_blas_repo.pdf
         double x = stateVector.get(0,0);
         double y = stateVector.get(1,0);
@@ -332,6 +374,22 @@ public class FastSlam {
 
     }
 
+
+    public Matrix getCovariance() {
+        return covariance;
+    }
+
+    public void setCovariance(Matrix covariance) {
+        this.covariance = covariance;
+    }
+
+    public Matrix getStateVector() {
+        return stateVector;
+    }
+
+    public void setStateVector(Matrix stateVector) {
+        this.stateVector = stateVector;
+    }
 
 
 }

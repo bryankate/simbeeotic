@@ -32,18 +32,18 @@
 
 package harvard.robobees.simbeeotic.model;
 
+import Jama.Matrix;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimTime;
-import harvard.robobees.simbeeotic.algorithms.EkfSlam;
-import harvard.robobees.simbeeotic.algorithms.FastSlam;
-import harvard.robobees.simbeeotic.algorithms.StaticOccupancyMap;
+import harvard.robobees.simbeeotic.algorithms.*;
 import harvard.robobees.simbeeotic.model.sensor.*;
 import harvard.robobees.simbeeotic.util.HeatMap;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 /**
  * A bee that performs occupancy grid mapping with the use of a laser range finder.
@@ -58,15 +58,23 @@ public class SlamBee extends SimpleBee{
 
 
 
-    private FastSlam slam = new FastSlam();
+    public FastSlamInterface slam = new FastSlam();
 
 
     private float maxVel = 1f; //set max velocity to 3 m/s, so that entire map can be mapped.
     private float[] range = new float[181];
     public float beeTheta;
     public int counter = 0;
+    private static Logger logger = Logger.getLogger(SlamBee.class);
 
-    private static Logger logger = Logger.getLogger(OccupancyBee.class);
+
+
+    public Vector3f startPos;
+    public double startTheta;
+    public Matrix measurements = new Matrix(new double[][] {{5,10}});  //landmarkCoords
+    public Matrix covariance = new Matrix(new double[][] {{1000,0,0},{0,1000,0},{0,0,1000}});
+    public Matrix stateVector;
+    public Matrix controls;
 
 
 
@@ -78,9 +86,15 @@ public class SlamBee extends SimpleBee{
         compass = getSensor("compass", Compass.class); //compass to find heading
         laserRangeSensor = getSensor("range-sensor", LaserRangeSensor.class); //laser range finder for occupancy mapping
 
+        startPos = getTruthPosition();
+        startTheta = compass.getHeading();
+        stateVector = new Matrix(new double[][] {{0},{0},{0}});
+        controls = new Matrix(new double[][] {{0},{0},{0}});
 
-
-
+        //currently, measurements consists of x,y coords of the landmarks
+        slam.ekfPredict(stateVector, controls, covariance);
+        stateVector = slam.getStateVector();
+        covariance = slam.getCovariance();
     }
 
 
@@ -89,6 +103,9 @@ public class SlamBee extends SimpleBee{
         Vector3f pos = getTruthPosition();
         Vector3f vel = getTruthLinearVelocity();
 
+
+        controls = new Matrix(new double[][] {{vel.x},{vel.y},{0}});
+
         beeTheta = compass.getHeading();
 
         logger.info("ID: " + getModelId() + "  " +
@@ -96,9 +113,18 @@ public class SlamBee extends SimpleBee{
                 "pos: " + pos + "  " +
                 "vel: " + vel + " ");
 
+        double x = pos.x - startPos.x;
+        double y = pos.y - startPos.y;
+        double theta = beeTheta - startTheta;
+        stateVector.set(0,0,x);
+        stateVector.set(1,0,y);
+        stateVector.set(2,0,theta);
 
-        //range = laserRangeSensor.getRange();  //get range from the laser-range-finder.
+        slam.addLandmarks(stateVector, covariance, measurements, controls);
 
+        slam.ekfUpdate(stateVector, controls, covariance, measurements, 0);
+        stateVector = slam.getStateVector();
+        covariance = slam.getCovariance();
 
 
     }

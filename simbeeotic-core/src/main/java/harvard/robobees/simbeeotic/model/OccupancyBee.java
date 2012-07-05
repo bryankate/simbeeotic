@@ -267,7 +267,7 @@ public class OccupancyBee extends SimpleBee{
             }
         } */
 
-
+        //navigate new version of MDFloor2.xml
         if (counter==0){
             Vector3f target = new Vector3f(-1,12,1);
             turnToward(target);
