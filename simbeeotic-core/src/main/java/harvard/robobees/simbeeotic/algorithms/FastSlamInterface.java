@@ -41,13 +41,13 @@ import Jama.Matrix;
 
 public interface FastSlamInterface {
 
-    public void initialize(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements);
+    public void initialize();
     public void predict(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements);
     public double getImporanceFactor(Matrix muMinusX, Matrix covariance);
     public void ekfInitialize(Matrix stateVector, Matrix covariance, Matrix controls, Matrix measurements);
-    public void ekfPredict(Matrix stateVector, Matrix controls, Matrix covariance);
-    public void ekfUpdate(Matrix stateVector, Matrix controls, Matrix covariance, Matrix measurements, int landmarkIndex);
-    public void addLandmarks(Matrix stateVector, Matrix covariance, Matrix newLandmarks, Matrix controls);
+    public void ekfPredict(Matrix controls);
+    public void ekfUpdate(Matrix controls, Matrix measurements, int landmarkIndex);
+    public void addLandmarks(Matrix newLandmarks, Matrix controls);
     public Matrix getCovariance();
     public void setCovariance(Matrix covariance);
     public Matrix getStateVector();

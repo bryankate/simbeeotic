@@ -83,9 +83,9 @@ public class FastSlam implements FastSlamInterface{
     //resample M particles
 
     @Override
-    public void initialize(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements) {
-
-
+    public void initialize() {
+        stateVector = new Matrix(new double[][] {{0},{0},{0}});
+        covariance = new Matrix(new double[][] {{1000,0,0},{0,1000,0},{0,0,1000}});
     }
 
     //run for every particle:
@@ -164,7 +164,7 @@ public class FastSlam implements FastSlamInterface{
         //control vector is in bee frame, with 0,0 being x-velocity, 1,0 being y-velocity, and 2,0 being angular velocity
         double vel = controls.get(0,0);
         double angVel = controls.get(2,0);
-        double deltaTime = 1; //time interval between measurements
+        double deltaTime = .1; //time interval between measurements
         double qErrorTerm = 0;
 
         //todo: for correction and jacobianA, double check the velocity thing
@@ -217,7 +217,7 @@ public class FastSlam implements FastSlamInterface{
 
     }
 
-    public void ekfPredict(Matrix stateVector, Matrix controls, Matrix covariance){
+    public void ekfPredict(Matrix controls){
         //based on ocw.mit.edu/courses/aeronautics-and-astronautics/16-412j-cognitive-robotics-spring-2005/projects/1aslam_blas_repo.pdf
         double x = stateVector.get(0,0);
         double y = stateVector.get(1,0);
@@ -256,7 +256,7 @@ public class FastSlam implements FastSlamInterface{
             }
         }
 
-        Matrix positionCovarianceXCorr = covariance.getMatrix(0,2,0,covariance.getColumnDimension());
+        Matrix positionCovarianceXCorr = covariance.getMatrix(0,2,0,covariance.getColumnDimension()-1);
         positionCovarianceXCorr = jacobianA.times(positionCovarianceXCorr);
 
         for (int i=0; i<3; i++){
@@ -267,10 +267,11 @@ public class FastSlam implements FastSlamInterface{
 
     }
 
-    public void ekfUpdate(Matrix stateVector, Matrix controls, Matrix covariance, Matrix measurements, int landmarkIndex){
+    public void ekfUpdate(Matrix controls, Matrix measurements, int landmarkIndex){
         double x = stateVector.get(0,0);
         double y = stateVector.get(1,0);
         double theta = stateVector.get(2,0);
+        measurements = measurements.transpose();
         double xLandmark = measurements.get(2*landmarkIndex,0); //let landmark index start at 0
         double yLandmark = measurements.get(2*landmarkIndex+1,0);
         double range = Math.sqrt(Math.pow(xLandmark-x,2) + Math.pow(yLandmark-y,2));
@@ -278,7 +279,7 @@ public class FastSlam implements FastSlamInterface{
         Matrix noiseR = new Matrix(new double[][] {{.01*range,0},{0,.1}});
 
         double vel = controls.get(0,0);
-        double deltaTime = 1;
+        double deltaTime = .1;
         double xCorrection = deltaTime*vel*Math.cos(theta);
         double yCorrection = deltaTime*vel*Math.sin(theta);
 
@@ -290,10 +291,13 @@ public class FastSlam implements FastSlamInterface{
         jacobianH.set(1,0, (yLandmark-y)/Math.pow(range,2));
         jacobianH.set(1,1, (xLandmark-x)/Math.pow(range,2));
         jacobianH.set(1,2, -1);
-        jacobianH.set(0,3+2*landmarkIndex, -(x-xLandmark)/range);
-        jacobianH.set(0,4+2*landmarkIndex, -(y-yLandmark)/range);
-        jacobianH.set(1,3+2*landmarkIndex, -(yLandmark-y)/Math.pow(range,2));
-        jacobianH.set(1,4+2*landmarkIndex, -(xLandmark-x)/Math.pow(range,2));
+
+        if (covariance.getColumnDimension()>3){
+            jacobianH.set(0,3+2*landmarkIndex, -(x-xLandmark)/range);
+            jacobianH.set(0,4+2*landmarkIndex, -(y-yLandmark)/range);
+            jacobianH.set(1,3+2*landmarkIndex, -(yLandmark-y)/Math.pow(range,2));
+            jacobianH.set(1,4+2*landmarkIndex, -(xLandmark-x)/Math.pow(range,2));
+        }
 
         Matrix measurementsWithNoise = new Matrix(2,1);
         measurementsWithNoise.set(0,0, xLandmark * rand.nextGaussian());
@@ -304,16 +308,16 @@ public class FastSlam implements FastSlamInterface{
         measurementPredict.set(1,0, yLandmark + yCorrection);
 
         Matrix innovationS = (jacobianH.times(covariance.times(jacobianH.transpose()))).plus(noiseR);
-        Matrix kalmanGain = (controls.times(jacobianH.transpose())).times(innovationS.inverse());
+        Matrix kalmanGain = (covariance.times(jacobianH.transpose())).times(innovationS.inverse());
         stateVector = stateVector.plus(kalmanGain.times(measurementsWithNoise.minus(measurementPredict)));
     }
 
-    public void addLandmarks(Matrix stateVector, Matrix covariance, Matrix newLandmarks, Matrix controls){
+    public void addLandmarks(Matrix newLandmarks, Matrix controls){
         //based on ocw.mit.edu/courses/aeronautics-and-astronautics/16-412j-cognitive-robotics-spring-2005/projects/1aslam_blas_repo.pdf
         double x = stateVector.get(0,0);
         double y = stateVector.get(1,0);
         double xNewLandmark = newLandmarks.get(0,0);
-        double yNewLandmark = newLandmarks.get(1,0);
+        double yNewLandmark = newLandmarks.get(0,1);
         double theta = stateVector.get(2,0);
         double vel = controls.get(0,0);
         double angVel = controls.get(2,0);
@@ -330,7 +334,7 @@ public class FastSlam implements FastSlamInterface{
         jacobianJz.set(1,0, Math.sin(theta + angVel*deltaTime));
         jacobianJz.set(1,1, deltaTime*vel*Math.cos(theta + angVel*deltaTime));
 
-        Matrix updatedStateVector = new Matrix(stateVector.getRowDimension(), 1);
+        Matrix updatedStateVector = new Matrix(stateVector.getRowDimension()+2, 1);
         for (int i=0; i<stateVector.getRowDimension(); i++){
             updatedStateVector.set(i, 0, stateVector.get(i,0));
         }
@@ -348,9 +352,9 @@ public class FastSlam implements FastSlamInterface{
         Matrix robotRobotCovariance = covariance.getMatrix(0,2,0,2);
         Matrix newLandmarkCovariance = jacobianJxr.times(robotRobotCovariance.times(jacobianJxr.transpose()));
         newLandmarkCovariance = newLandmarkCovariance.plus(jacobianJz.times(noiseR.times(jacobianJz.transpose()))); //p^N+1,N+1
-        for (int i=covariance.getRowDimension()-2; i<covariance.getRowDimension(); i++){
-            for (int j=covariance.getColumnDimension()-2; j<covariance.getColumnDimension(); j++){
-                updatedCovariance.set(i,j, newLandmarkCovariance.get(i,j));
+        for (int i=covariance.getRowDimension(); i<covariance.getRowDimension()+2; i++){
+            for (int j=covariance.getColumnDimension(); j<covariance.getColumnDimension()+2; j++){
+                updatedCovariance.set(i,j, newLandmarkCovariance.get(i-3,j-3));     //-3 may not be right
             }
         }
 
@@ -361,13 +365,14 @@ public class FastSlam implements FastSlamInterface{
                 updatedCovariance.set(j,i, robotLandmarkCovariance.get(i-covariance.getRowDimension(),j-covariance.getColumnDimension()));
             }
         }
-
-        Matrix positionCovarianceXCorr = covariance.getMatrix(0,2,3,covariance.getColumnDimension()-1); //p^ri
-        Matrix landmarkLandmarkCovariance = jacobianJxr.times(positionCovarianceXCorr.transpose());
-        for (int i=covariance.getRowDimension(); i<updatedCovariance.getRowDimension(); i++){
-            for (int j=3; j<covariance.getColumnDimension(); j++){
-                updatedCovariance.set(i,j, landmarkLandmarkCovariance.get(i-covariance.getRowDimension(),j-3));
-                updatedCovariance.set(j,i, landmarkLandmarkCovariance.get(i-covariance.getRowDimension(),j-3));
+        if (covariance.getColumnDimension()-1 > 3){
+            Matrix positionCovarianceXCorr = covariance.getMatrix(0,2,3,covariance.getColumnDimension()-1); //p^ri
+            Matrix landmarkLandmarkCovariance = jacobianJxr.times(positionCovarianceXCorr.transpose());
+            for (int i=covariance.getRowDimension(); i<updatedCovariance.getRowDimension(); i++){
+                for (int j=3; j<covariance.getColumnDimension(); j++){
+                    updatedCovariance.set(i,j, landmarkLandmarkCovariance.get(i-covariance.getRowDimension(),j-3));
+                    updatedCovariance.set(j,i, landmarkLandmarkCovariance.get(i-covariance.getRowDimension(),j-3));
+                }
             }
         }
 
