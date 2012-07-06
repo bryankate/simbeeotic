@@ -42,7 +42,7 @@ import Jama.Matrix;
 public interface FastSlamInterface {
 
     public void initialize();
-    public void predict(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements);
+    public void predict(Matrix controls);
     public double getImporanceFactor(Matrix muMinusX, Matrix covariance);
     public void ekfInitialize(Matrix stateVector, Matrix covariance, Matrix controls, Matrix measurements);
     public void ekfPredict(Matrix controls);
@@ -52,4 +52,6 @@ public interface FastSlamInterface {
     public void setCovariance(Matrix covariance);
     public Matrix getStateVector();
     public void setStateVector(Matrix stateVector);
+    public void initializeEKF();
+    public void updateOldLandmark(Matrix measurements);
 }

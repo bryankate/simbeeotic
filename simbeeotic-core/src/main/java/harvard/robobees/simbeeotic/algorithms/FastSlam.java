@@ -36,6 +36,7 @@ package harvard.robobees.simbeeotic.algorithms;
 import Jama.Matrix;
 import org.apache.log4j.Logger;
 
+import java.security.PublicKey;
 import java.util.Random;
 
 /**
@@ -54,6 +55,12 @@ public class FastSlam implements FastSlamInterface{
     public Matrix controls;
     public Matrix measurements;
     public Random rand = new Random();
+
+    double sigmaR = .5;
+    double sigmaPhi = .1;
+    public Matrix Q = new Matrix(new double[][] {{sigmaR, 0, 0},
+            {0, sigmaPhi, 0},
+            {0, 0, 0.5}});
 
 
     //loop over all particles
@@ -85,14 +92,27 @@ public class FastSlam implements FastSlamInterface{
     @Override
     public void initialize() {
         stateVector = new Matrix(new double[][] {{0},{0},{0}});
-        covariance = new Matrix(new double[][] {{1000,0,0},{0,1000,0},{0,0,1000}});
+        //covariance = new Matrix(new double[][] {{1000,0,0},{0,1000,0},{0,0,1000}});
+        covariance = new Matrix(new double[][] {{0,0,0},{0,0,0},{0,0,0}});
+    }
+    public void initializeEKF(){
+        stateVector = new Matrix(new double[][] {{0},{0},{0},{0},{0},{0}});
+        covariance = new Matrix(new double[][] {{0,0,0,0,0,0},
+                {0,0,0,0,0,0},
+                {0,0,0,0,0,0},
+                {0,0,0,1000,0,0},
+                {0,0,0,0,1000,0},
+                {0,0,0,0,0,1000}});
+        numFeatures = 1;
     }
 
     //run for every particle:
-    public void predict(Matrix stateVector, int numFeatures, Matrix covariance, Matrix controls, Matrix measurements){
+    public void predict(Matrix controls){
 
-        //stateVector is (x,y,theta,mean1,covariance1,...)
+        //stateVector is (x,y,theta,landmarkx1,landmarky1,index1,,...)
 
+
+        //update statevector with new estimated pose. assume that the landmarks aren't moving.
         double x = stateVector.get(0,0);
         double y = stateVector.get(1,0);
         double theta = stateVector.get(2,0);
@@ -100,15 +120,6 @@ public class FastSlam implements FastSlamInterface{
         double angVel = controls.get(2,0);
         double deltaTime = .1; //time interval between measurements
 
-        //denoted as Q in table 7.2
-        double sigmaR = .5;
-        double sigmaPhi = .1;
-        Matrix covarianceQ = new Matrix(new double[][] {{sigmaR, 0, 0},
-                                                        {0, sigmaPhi, 0},
-                                                        {0, 0, 0.5}});
-
-
-        //sample new pose:
         double xCorrection = vel/angVel*(-Math.sin(theta) + Math.sin(theta+angVel*deltaTime));
         double yCorrection = vel/angVel*(Math.cos(theta) - Math.cos(theta + angVel * deltaTime));
         double thetaCorrection = angVel*deltaTime;
@@ -116,24 +127,45 @@ public class FastSlam implements FastSlamInterface{
         stateVector.set(1,0, stateVector.get(1,0) + yCorrection);
         stateVector.set(2,0, stateVector.get(2,0) + thetaCorrection);
 
+        Matrix F = Matrix.identity(3,stateVector.getRowDimension());
+        Matrix I = Matrix.identity(stateVector.getRowDimension(), stateVector.getRowDimension());
+        Matrix gJacobian = new Matrix(3,3);
+        gJacobian.set(0,2, vel/angVel*(-Math.cos(theta) + Math.cos(theta+angVel*deltaTime)));
+        gJacobian.set(1,2, vel/angVel*(-Math.sin(theta) + Math.sin(theta+angVel*deltaTime)));
+
+        Matrix G = I.plus((F.transpose()).times(gJacobian.times(F)));
+
+        covariance = G.times(covariance.times(G.transpose()));//.plus((F.transpose()).times(R.times(F)));
+    }
+
+    public void updateOldLandmark(Matrix measurements){
+        //measuremetns are (r,theta,index)!!!
+
         for (int k = 0; k<numFeatures; k++){
+            //note, xPredict, xMeasure, yPredict, and yMeasure refer to the x,y, positions of the landmarks
+            double xLandmark = stateVector.get(3+3*k,0);
+            double yLandmark = stateVector.get(4+3*k,0);
+            double rLandmark = measurements.get(3*k,0);
+            double phiLandmark = measurements.get(3*k+1,0);
+            double xBee = stateVector.get(0,0);
+            double yBee = stateVector.get(1,0);
 
-            //todo: verify this is where these values are supposed to come from.
-            double rLandmark = measurements.get(2*k,0);
-            double phiLandmark = measurements.get(2*k+1,0);
+            Matrix delta = new Matrix(new double[][] {{xLandmark-xBee},{yLandmark-yBee}});
 
-            double xLandmark = rLandmark*Math.cos(phiLandmark + stateVector.get(2,0));
-            double yLandmark = rLandmark*Math.sin(phiLandmark + stateVector.get(2,0));
-            //Matrix mean = h^-1(measure,stateVector.update)
-            //jacobian of the measurement model with respect to the robot location, computed at predicted mean mu
-            double q = Math.pow(xLandmark-x,2) + Math.pow(yLandmark-y, 2);
-            Matrix jacobianH = new Matrix(3,3);
-            jacobianH.set(0,0, -(xLandmark-x)/rLandmark);
-            jacobianH.set(0,1, -(yLandmark-y)/rLandmark);
-            jacobianH.set(1,0, (yLandmark-y)/q);
-            jacobianH.set(1,1, -(xLandmark-x)/q);
-            jacobianH.set(1,2, -1);
+            Matrix qMatrix = (delta.transpose()).times(delta);
+            double q = qMatrix.get(0,0);
+
+
+
+
+
         }
+    }
+
+    public void updateNewLandmark(){
+
+        numFeatures++;
+
     }
 
     public double getImporanceFactor(Matrix muMinusX, Matrix covariance){
@@ -323,7 +355,7 @@ public class FastSlam implements FastSlamInterface{
         double angVel = controls.get(2,0);
         double deltaTime = .1;
         double range = Math.sqrt(Math.pow(xNewLandmark-x,2) + Math.pow(yNewLandmark-y,2));
-        Matrix noiseR = new Matrix(new double[][] {{.01*range,0},{0,.1}});
+        Matrix noiseR = new Matrix(new double[][] {{.01*range,0},{0,.01}});
         Matrix jacobianJxr = Matrix.identity(2,3);
         jacobianJxr.set(0,2, -deltaTime*vel*Math.sin(theta));
         jacobianJxr.set(1,2, deltaTime*vel*Math.cos(theta));
@@ -375,6 +407,8 @@ public class FastSlam implements FastSlamInterface{
                 }
             }
         }
+        covariance = updatedCovariance;
+        stateVector = updatedStateVector;
 
 
     }
