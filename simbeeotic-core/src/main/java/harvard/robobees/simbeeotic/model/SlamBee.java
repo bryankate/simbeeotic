@@ -72,8 +72,8 @@ public class SlamBee extends SimpleBee{
     public Vector3f startPos;
     public double startTheta;
     //public Matrix measurements = new Matrix(new double[][] {{5,10}});  //landmarkCoords
-    public Matrix measurements = new Matrix(new double[][] {{10,0,0}});
-    public Matrix covariance = new Matrix(new double[][] {{1000,0,0},{0,1000,0},{0,0,1000}});
+    public Matrix measurements = new Matrix(new double[][] {{5,Math.PI/2,0}});
+    public Matrix covariance;
     public Matrix stateVector;
     public Matrix controls;
 
@@ -90,19 +90,33 @@ public class SlamBee extends SimpleBee{
         startPos = getTruthPosition();
         startTheta = compass.getHeading();
 
-        controls = new Matrix(new double[][] {{0},{0},{0}});
+        controls = new Matrix(new double[][] {{0},{0},{1}});
 
         //currently, measurements consists of x,y coords of the landmarks
-        slam.initialize();
-        slam.ekfPredict(controls);
-        stateVector = slam.getStateVector();
-        covariance = slam.getCovariance();
-
+        //slam.initialize();
+        //slam.ekfPredict(controls);
+        //stateVector = slam.getStateVector();
+        //covariance = slam.getCovariance();
+        Matrix newLandmark = new Matrix(new double[][] {{10,0}});
 
         slam.initializeEKF();
+        slam.addNewLandmark(newLandmark);
+        stateVector = slam.getStateVector();
+        covariance = slam.getCovariance();
         slam.predict(controls);
+
+        stateVector = slam.getStateVector();
+        logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
+                + stateVector.get(2,0) + " " + stateVector.get(3,0) + " " + stateVector.get(4,0) + " " + stateVector.get(5,0));
+
+
         measurements = measurements.transpose();
         slam.updateOldLandmark(measurements);
+        stateVector = slam.getStateVector();
+        covariance = slam.getCovariance();
+        logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
+            + stateVector.get(2,0) + " " + stateVector.get(3,0) + " " + stateVector.get(4,0) + " " + stateVector.get(5,0));
+
 
 
     }
@@ -113,17 +127,29 @@ public class SlamBee extends SimpleBee{
         setDesiredLinearVelocity(new Vector3f(maxVel,0,0));
         Vector3f pos = getTruthPosition();
         Vector3f vel = getTruthLinearVelocity();
+        turn(.1f);
+        //Vector3f angVel = getTruthAngularVelocity();
+        double  angVel = 1;
 
-
-        controls = new Matrix(new double[][] {{vel.x},{vel.y},{0}});
-
+        //controls = new Matrix(new double[][] {{vel.x},{vel.y},{angVel.z}});
+        controls = new Matrix(new double[][] {{vel.x},{vel.y},{angVel}});
 
         beeTheta = compass.getHeading();
+
+        slam.predict(controls);
+        slam.updateOldLandmark(measurements);
+        stateVector = slam.getStateVector();
+        covariance = slam.getCovariance();
+        logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
+                + stateVector.get(2,0) + " " + stateVector.get(3,0) + " " + stateVector.get(4,0) + " " + stateVector.get(5,0));
+
+
 
         logger.info("ID: " + getModelId() + "  " +
                 "time: " + time.getImpreciseTime() + "  " +
                 "pos: " + pos + "  " +
-                "vel: " + vel + " ");
+                "vel: " + vel + " " + "angVel: " + angVel);
+
 
         //double x = pos.x - startPos.x;
         //double y = pos.y - startPos.y;
@@ -132,25 +158,12 @@ public class SlamBee extends SimpleBee{
         //stateVector.set(1,0,y);
         //stateVector.set(2,0,theta);
 
-        slam.ekfPredict(controls);
-        stateVector = slam.getStateVector();
-        covariance = slam.getCovariance();
-        logger.info("after predict" + stateVector.get(0,0) + " " + stateVector.get(1,0) + " " + stateVector.get(2,0));
-
-        if (counter == 0){
-            slam.addLandmarks(measurements, controls);
-            stateVector = slam.getStateVector();
-            covariance = slam.getCovariance();
-            logger.info("after adding landmarks" + stateVector.get(0,0) + " " + stateVector.get(1,0) + " " + stateVector.get(2,0));
-            counter++;
-        }
-
-        slam.ekfUpdate(controls, measurements, 0);
-        stateVector = slam.getStateVector();
-        covariance = slam.getCovariance();
-        logger.info("after update" + stateVector.get(0, 0) + " " + stateVector.get(1, 0) + " " + stateVector.get(2, 0));
-
-
+        //slam.ekfPredict(controls);
+        //if (counter == 0){
+        //    slam.addLandmarks(measurements, controls);
+        //    counter++;
+        //}
+        //slam.ekfUpdate(controls, measurements, 0);
 
     }
 

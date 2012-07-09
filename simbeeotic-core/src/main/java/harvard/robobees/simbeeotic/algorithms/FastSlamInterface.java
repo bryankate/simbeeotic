@@ -54,4 +54,5 @@ public interface FastSlamInterface {
     public void setStateVector(Matrix stateVector);
     public void initializeEKF();
     public void updateOldLandmark(Matrix measurements);
+    public void addNewLandmark(Matrix newLandMarks);
 }

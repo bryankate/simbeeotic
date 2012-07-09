@@ -96,7 +96,7 @@ public class FastSlam implements FastSlamInterface{
         covariance = new Matrix(new double[][] {{0,0,0},{0,0,0},{0,0,0}});
     }
     public void initializeEKF(){
-        stateVector = new Matrix(new double[][] {{0},{0},{0},{0},{0},{0}});
+        stateVector = new Matrix(new double[][] {{0},{0},{0},{5},{Math.PI/4},{0}});
         covariance = new Matrix(new double[][] {{0,0,0,0,0,0},
                 {0,0,0,0,0,0},
                 {0,0,0,0,0,0},
@@ -138,27 +138,79 @@ public class FastSlam implements FastSlamInterface{
         covariance = G.times(covariance.times(G.transpose()));//.plus((F.transpose()).times(R.times(F)));
     }
 
+    public void addNewLandmark(Matrix newLandMarks){
+        //let newLandMarks be a Nx2 matrix, where N is the number of landmarks to be added
+        for (int i = 0; i< newLandMarks.getRowDimension(); i++){
+            Matrix tempState = new Matrix(stateVector.getRowDimension()+3, 1);
+            for (int j = 0; j<stateVector.getRowDimension(); j++){
+                tempState.set(j,0,stateVector.get(j,0));
+            }
+            tempState.set(stateVector.getRowDimension(), 0, newLandMarks.get(i,0));
+            tempState.set(stateVector.getRowDimension() + 1, 0, newLandMarks.get(i,1));
+            tempState.set(stateVector.getRowDimension() + 2, 0, numFeatures);
+
+            Matrix tempCov = new Matrix(covariance.getRowDimension()+3, covariance.getColumnDimension()+3);
+            for (int j=0; j<covariance.getRowDimension(); j++){
+                for (int k=0; k<covariance.getColumnDimension(); k++){
+                    tempCov.set(j,k,covariance.get(j,k));
+                }
+            }
+            tempCov.set(covariance.getRowDimension(),covariance.getColumnDimension(),1000);
+            tempCov.set(covariance.getRowDimension()+1,covariance.getColumnDimension()+1,1000);
+            tempCov.set(covariance.getRowDimension()+2,covariance.getColumnDimension()+2,1000);
+
+            stateVector = tempState;
+            covariance = tempCov;
+            numFeatures++;
+
+
+        }
+    }
+
     public void updateOldLandmark(Matrix measurements){
         //measuremetns are (r,theta,index)!!!
 
         for (int k = 0; k<numFeatures; k++){
             //note, xPredict, xMeasure, yPredict, and yMeasure refer to the x,y, positions of the landmarks
+            Matrix I = Matrix.identity(stateVector.getRowDimension(), stateVector.getRowDimension());
             double xLandmark = stateVector.get(3+3*k,0);
             double yLandmark = stateVector.get(4+3*k,0);
             double rLandmark = measurements.get(3*k,0);
             double phiLandmark = measurements.get(3*k+1,0);
             double xBee = stateVector.get(0,0);
             double yBee = stateVector.get(1,0);
+            Matrix measurementLandmark = new Matrix(new double[][] {{rLandmark},{phiLandmark},{stateVector.get(5+3*k,0)}});
 
-            Matrix delta = new Matrix(new double[][] {{xLandmark-xBee},{yLandmark-yBee}});
+            double deltaX = xLandmark-xBee;
+            double deltaY = yLandmark-yBee;
+            Matrix delta = new Matrix(new double[][] {{deltaX},{deltaY}});
+
 
             Matrix qMatrix = (delta.transpose()).times(delta);
             double q = qMatrix.get(0,0);
 
+            Matrix measurementPredict = new Matrix(new double[][] {{Math.sqrt(q)},
+                    {Math.atan2(yLandmark-yBee, xLandmark-xBee) - stateVector.get(2,0)},
+                    {stateVector.get(5+3*k,0)}});
+            Matrix F = new Matrix(6,stateVector.getRowDimension());
+            F.set(0,0,1);
+            F.set(1,1,1);
+            F.set(2,2,1);
+            int j = k+1;
+            F.set(3, 3*k,1);
+            F.set(4, 3*k+1,1);
+            F.set(5, 3*k+2,1);
+            Matrix h = new Matrix(new double[][] {
+                    {-Math.sqrt(q)*deltaX,-Math.sqrt(q)*deltaY,0,Math.sqrt(q)*deltaX,Math.sqrt(q)*deltaY,0},
+                    {deltaY,  -deltaX, -q, -deltaY, deltaX, 0},
+                    {0,0,0,0,0,q}});
+            Matrix H = (h.times(F)).times(1/q);
 
+            Matrix S = ((H.times(covariance.times((H.transpose())))).plus(Q)).inverse();
+            Matrix K = covariance.times((H.transpose()).times(S));
+            stateVector = stateVector.plus(K.times(measurementLandmark.minus(measurementPredict)));
 
-
-
+            covariance = (I.minus(K.times(H))).times(covariance);
         }
     }
 
