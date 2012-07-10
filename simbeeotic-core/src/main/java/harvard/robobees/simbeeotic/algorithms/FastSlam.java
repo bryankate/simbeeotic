@@ -96,25 +96,21 @@ public class FastSlam implements FastSlamInterface{
         covariance = new Matrix(new double[][] {{0,0,0},{0,0,0},{0,0,0}});
     }
     public void initializeEKF(){
-        stateVector = new Matrix(new double[][] {{0},{0},{0},{5},{Math.PI/4},{0}});
+        stateVector = new Matrix(new double[][] {{0},{0},{0},{10},{Math.PI/2},{0}});
         covariance = new Matrix(new double[][] {{0,0,0,0,0,0},
                 {0,0,0,0,0,0},
                 {0,0,0,0,0,0},
                 {0,0,0,1000,0,0},
                 {0,0,0,0,1000,0},
                 {0,0,0,0,0,1000}});
+        measurements = new Matrix(new double[][] {{10},{Math.PI/2},{0}});
         numFeatures = 1;
     }
 
     //run for every particle:
     public void predict(Matrix controls){
-
         //stateVector is (x,y,theta,landmarkx1,landmarky1,index1,,...)
-
-
         //update statevector with new estimated pose. assume that the landmarks aren't moving.
-        double x = stateVector.get(0,0);
-        double y = stateVector.get(1,0);
         double theta = stateVector.get(2,0);
         double vel = controls.get(0,0);
         double angVel = controls.get(2,0);
@@ -159,15 +155,22 @@ public class FastSlam implements FastSlamInterface{
             tempCov.set(covariance.getRowDimension()+1,covariance.getColumnDimension()+1,1000);
             tempCov.set(covariance.getRowDimension()+2,covariance.getColumnDimension()+2,1000);
 
+            Matrix tempMeasure = new Matrix(measurements.getRowDimension()+3, 1);
+            for (int j = 0; j<measurements.getRowDimension(); j++){
+                tempMeasure.set(j,0,measurements.get(j,0));
+            }
+            tempMeasure.set(measurements.getRowDimension(),0,newLandMarks.get(i,0));
+            tempMeasure.set(measurements.getRowDimension()+1,0,newLandMarks.get(i,1));
+            tempMeasure.set(measurements.getRowDimension()+2,0,numFeatures);
+
             stateVector = tempState;
             covariance = tempCov;
+            measurements = tempMeasure;
             numFeatures++;
-
-
         }
     }
 
-    public void updateOldLandmark(Matrix measurements){
+    public void updateOldLandmark(){
         //measuremetns are (r,theta,index)!!!
 
         for (int k = 0; k<numFeatures; k++){
@@ -214,10 +217,21 @@ public class FastSlam implements FastSlamInterface{
         }
     }
 
-    public void updateNewLandmark(){
+    public void updateMeasurements(){
+        double xBee = stateVector.get(0,0);
+        double yBee = stateVector.get(1,0);
+        double thetaBee = stateVector.get(2,0);
 
-        numFeatures++;
+        //for first landmark (0,10):
+        double xLandmark = 0;
+        double yLandmark = 10;
 
+
+        double r = Math.sqrt(Math.pow(xLandmark-xBee,2) + Math.pow(yLandmark-yBee,2));
+        double theta = Math.atan2(yLandmark-yBee,xLandmark-xBee)- thetaBee;
+
+        measurements.set(0,0,r);
+        measurements.set(1,0,theta);
     }
 
     public double getImporanceFactor(Matrix muMinusX, Matrix covariance){
@@ -228,8 +242,6 @@ public class FastSlam implements FastSlamInterface{
         }
         return importanceFactor;
     }
-
-
 
     public void ekfInitialize(Matrix stateVector, Matrix covariance, Matrix controls, Matrix measurements){
         //based on ocw.mit.edu/courses/aeronautics-and-astronautics/16-412j-cognitive-robotics-spring-2005/projects/1aslam_blas_repo.pdf

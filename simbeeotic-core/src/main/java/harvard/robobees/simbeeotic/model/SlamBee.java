@@ -72,7 +72,7 @@ public class SlamBee extends SimpleBee{
     public Vector3f startPos;
     public double startTheta;
     //public Matrix measurements = new Matrix(new double[][] {{5,10}});  //landmarkCoords
-    public Matrix measurements = new Matrix(new double[][] {{5,Math.PI/2,0}});
+    public Matrix measurements = new Matrix(new double[][] {{10},{Math.PI/2},{0}});
     public Matrix covariance;
     public Matrix stateVector;
     public Matrix controls;
@@ -100,31 +100,23 @@ public class SlamBee extends SimpleBee{
         Matrix newLandmark = new Matrix(new double[][] {{10,0}});
 
         slam.initializeEKF();
-        slam.addNewLandmark(newLandmark);
+        //slam.addNewLandmark(newLandmark);
         stateVector = slam.getStateVector();
         covariance = slam.getCovariance();
         slam.predict(controls);
 
-        stateVector = slam.getStateVector();
-        logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
-                + stateVector.get(2,0) + " " + stateVector.get(3,0) + " " + stateVector.get(4,0) + " " + stateVector.get(5,0));
-
-
-        measurements = measurements.transpose();
-        slam.updateOldLandmark(measurements);
+        //slam.updateOldLandmark(measurements);
         stateVector = slam.getStateVector();
         covariance = slam.getCovariance();
         logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
             + stateVector.get(2,0) + " " + stateVector.get(3,0) + " " + stateVector.get(4,0) + " " + stateVector.get(5,0));
-
-
 
     }
 
 
     @Override
     protected void updateKinematics(SimTime time) {
-        setDesiredLinearVelocity(new Vector3f(maxVel,0,0));
+        setDesiredLinearVelocity(new Vector3f(0,0,0));
         Vector3f pos = getTruthPosition();
         Vector3f vel = getTruthLinearVelocity();
         turn(.1f);
@@ -137,7 +129,9 @@ public class SlamBee extends SimpleBee{
         beeTheta = compass.getHeading();
 
         slam.predict(controls);
-        slam.updateOldLandmark(measurements);
+        slam.updateMeasurements();
+        slam.updateOldLandmark();
+
         stateVector = slam.getStateVector();
         covariance = slam.getCovariance();
         logger.info("StateVector: " + stateVector.get(0,0) + " " + stateVector.get(1,0) + " "
