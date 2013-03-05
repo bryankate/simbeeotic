@@ -46,7 +46,7 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
-import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -57,17 +57,19 @@ import static java.lang.Math.round;
 
 
 /**
- * A model that acts as a proxy for a physical helicopter flying in the
- * testbed. The position and orientation are obtained from an outside
+ * A model that acts as a proxy for a physical helicopter with heliboard flying
+ * in the testbed. The position and orientation are obtained from an outside
  * source (e.g. the Vicon motion capture cameras) and all commands are
- * forwarded to the physical helicopter via radio.
+ * forwarded to the physical helicopter via the base board.
+ * This forwarding requires bbserver to be running on 'serverHost' on 'serverPort'
+ *
  * <p/>
  * Any attempt to directly apply a force on this model will fail. It can
  * only be controlled via the given command API.
  *
- * @author bkate
+ * @author kar
  */
-public class HWILBee extends AbstractHeli {
+public class AutoHeliBee extends AbstractHeli {
 
     private ExternalRigidBody body;
     private ExternalStateSync externalSync;
@@ -75,8 +77,7 @@ public class HWILBee extends AbstractHeli {
     private DatagramSocket sock;
     private InetAddress server;
 
-    // current command - 2 bytes each for thrust, roll, pitch, and yaw
-    private byte[] commands = new byte[] {(byte)0xaa, 0x00, (byte)0xff, 0x01, (byte)0xff, 0x01, (byte)0xff, 0x01};
+    private byte thrust, roll, pitch, yaw;
 
     private Timer boundsTimer;
     private long landingTime = 2;        // seconds, duration of soft landing command
@@ -84,18 +85,18 @@ public class HWILBee extends AbstractHeli {
 
     // params
     private String serverHost = "192.168.7.11";
-    private int serverPort = 8000;
-    private double throttleTrim = normCommand(511);
-    private double rollTrim = normCommand(511);
-    private double pitchTrim = normCommand(511);
-    private double yawTrim = normCommand(511);
+    private int serverPort = 1234;
+    private double throttleTrim = normCommand(160);
+    private double rollTrim = normCommand(127);
+    private double pitchTrim = normCommand(127);
+    private double yawTrim = normCommand(127);
     private boolean boundsCheckEnabled = true;
 
-    private static final short CMD_LOW  = 170;
-    private static final short CMD_HIGH = 852;
+    private static final short CMD_LOW  = 0;
+    private static final short CMD_HIGH = 255;
     private static final short CMD_RANGE = CMD_HIGH - CMD_LOW;
 
-    private static Logger logger = Logger.getLogger(HWILBee.class);
+    private static Logger logger = Logger.getLogger(AutoHeliBee.class);
 
 
     @Override
@@ -109,7 +110,7 @@ public class HWILBee extends AbstractHeli {
             server = InetAddress.getByName(serverHost);
         }
         catch(Exception e) {
-            logger.error("Could not establish connection to heli_server.", e);
+            logger.error("Could not establish connection to bbserver.", e);
         }
 
         logger.debug("Connected to " + serverHost + " on port " + serverPort);
@@ -122,7 +123,7 @@ public class HWILBee extends AbstractHeli {
 
             boundsTimer = createTimer(new TimerCallback() {
 
-                private Boundary bounds = HWILBee.this.getBounds();
+                private Boundary bounds = AutoHeliBee.this.getBounds();
 
                 @Override
                 public void fire(SimTime time) {
@@ -221,10 +222,19 @@ public class HWILBee extends AbstractHeli {
         }
 
         // try to shutdown the heli gently
-        commands = new byte[8];
-        sendCommands();
+        while(thrust > 0) {
+            setThrust(thrust - 10);
+            sendCommands();
+            try {
+                Thread.currentThread().sleep(500);
+            }
+            catch(Exception e) {
+                System.out.println(" Exception " + e.toString());
+            }
+        }
 
-        logger.debug("Finishing up in HWILBee ..");
+
+        logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();
     }
 
@@ -232,91 +242,65 @@ public class HWILBee extends AbstractHeli {
     @Override
     public double getThrust() {
 
-        short val = (short)((0xff & commands[1]) << 8 |
-                            (0xff & commands[0]));
-
-        return (val - CMD_LOW) / (double)CMD_RANGE;
+        return (thrust - CMD_LOW) / (double)CMD_RANGE;
     }
 
 
     @Override
     public final void setThrust(double level) {
+        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
+        thrust = (byte) (val & 0xFF);
 
-        commands[0] = (byte)(curr & 0x00ff);
-        commands[1] = (byte)((curr & 0xff00) >> 8);
-
-        logger.debug("thrust: " + (((commands[1]&0xFF) << 8) + (commands[0] & 0xFF)));
+        logger.debug("thrust: " + thrust);
         sendCommands();
     }
 
 
     @Override
     public double getRoll() {
-
-        short val = (short)((0xff & commands[3]) << 8 |
-                            (0xff & commands[2]));
-
-        return (val - CMD_LOW) / (double)CMD_RANGE;
+        return (roll - CMD_LOW) / (double)CMD_RANGE;
     }
 
 
     @Override
     public final void setRoll(double level) {
+        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
-
-        commands[2] = (byte)(curr & 0x00ff);
-        commands[3] = (byte)((curr & 0xff00) >> 8);
-
-        logger.debug("roll: " + (((commands[3]&0xFF) << 8) + (commands[2] & 0xFF)));
+        roll = (byte) (val & 0xFF);
+        logger.debug("roll: " + roll);
         sendCommands();
     }
 
 
     @Override
     public double getPitch() {
-
-        short val = (short)((0xff & commands[5]) << 8 |
-                            (0xff & commands[4]));
-
-        return (val - CMD_LOW) / (double)CMD_RANGE;
+        return (pitch - CMD_LOW) / (double)CMD_RANGE;
     }
 
 
     @Override
     public final void setPitch(double level) {
+        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
-
-        commands[4] = (byte)(curr & 0x00ff);
-        commands[5] = (byte)((curr & 0xff00) >> 8);
-
-        logger.debug("pitch: " + (((commands[5]&0xFF) << 8) + (commands[4] & 0xFF)));
+        roll = (byte) (val & 0xFF);
+        logger.debug("pitch: " + pitch);
         sendCommands();
     }
 
 
     @Override
     public double getYaw() {
-
-        short val = (short)((0xff & commands[7]) << 8 |
-                            (0xff & commands[6]));
-
-        return (val - CMD_LOW) / (double)CMD_RANGE;
+        return (yaw - CMD_LOW) / (double)CMD_RANGE;
     }
 
 
     @Override
     public final void setYaw(double level) {
+        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        short curr = (short)(CMD_LOW + (CMD_RANGE * cap(level)));
-
-        commands[6] = (byte)(curr & 0x00ff);
-        commands[7] = (byte)((curr & 0xff00) >> 8);
-
-        logger.debug("yaw: " + (((commands[7]&0xFF) << 8) + (commands[6] & 0xFF)));
+        yaw = (byte) (val & 0xFF);
+        logger.debug("yaw: " + yaw);
         sendCommands();
     }
 
@@ -342,6 +326,12 @@ public class HWILBee extends AbstractHeli {
 
 
     private void sendCommands() {
+
+        byte[] commands = new byte[4];
+        commands[0] = thrust;
+        commands[1] = yaw;
+        commands[2] = pitch;
+        commands[3] = roll;
 
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
