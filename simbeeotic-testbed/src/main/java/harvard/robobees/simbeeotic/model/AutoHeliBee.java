@@ -43,6 +43,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
+import bbserver.protocol.BBCommandInterface;
+import bbserver.protocol.BBDatasetReply;
+import bbserver.protocol.BBDatasetRequest;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
@@ -98,6 +101,8 @@ public class AutoHeliBee extends AbstractHeli {
 
     private static Logger logger = Logger.getLogger(AutoHeliBee.class);
 
+    //
+    private BBCommandInterface bbCommand;
 
     @Override
     public void initialize() {
@@ -327,13 +332,9 @@ public class AutoHeliBee extends AbstractHeli {
 
     private void sendCommands() {
 
-        byte[] commands = new byte[4];
-        commands[0] = thrust;
-        commands[1] = yaw;
-        commands[2] = pitch;
-        commands[3] = roll;
-
-        DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
+        byte[] byteArray = BBCommandInterface.Command.newBuilder().setThrottle(thrust).setYaw(yaw).setPitch(pitch).setRoll(roll).build().toByteArray();
+//
+        DatagramPacket dgram = new DatagramPacket(byteArray, byteArray.length, server, serverPort);
 
         try {
             sock.send(dgram);
