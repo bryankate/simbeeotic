@@ -186,9 +186,14 @@ public class ViconInputComponent implements VariationComponent {
                                                (float)state.getOrientQuatZ(),
                                                (float)state.getOrientQuatW());
 
-                    externalSync.setState(objectName, pos, orient);
 
-//                    logger.debug(objectName + " " + pos + " " + orient);
+                    if(externalSync.isOccludedObject(objectName))
+                        externalSync.setOccludedState(objectName, pos, orient, state.getOccluded());
+                    else
+                        externalSync.setState(objectName, pos, orient);
+
+                    if(externalSync.isOccludedObject(objectName))
+                        logger.debug(objectName + " " + pos + " " + orient + " " + state.getOccluded() + " " + externalSync.getOccluded(objectName));
                 }
                 catch(IOException ioe) {
                     return;

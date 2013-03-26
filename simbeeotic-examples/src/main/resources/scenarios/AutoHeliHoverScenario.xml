@@ -42,7 +42,7 @@
     </master-seed>
 
     <simulation>
-        <end-time>10000</end-time>
+        <end-time>100000</end-time>
     </simulation>
 
     <models>
@@ -50,21 +50,21 @@
             <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
             <start-position x="0" y="0" z="0"/>
         </model>
-        <model name="heli2">
+        <model name="autoheli">
             <java-class>harvard.robobees.simbeeotic.model.AutoHeliBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="1234"/>
 
-                <prop name="trim-throttle" value="420"/>
-                <prop name="trim-roll" value="511"/>
-                <prop name="trim-pitch" value="503"/>
-                <prop name="trim-yaw" value="511"/>
+                <prop name="trim-throttle" value="160"/>
+                <prop name="trim-roll" value="137"/>
+                <prop name="trim-pitch" value="120"/>
+                <prop name="trim-yaw" value="127"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliBaseHover</java-class>
                         <properties>
                             <prop name="logging" value="true"/>
                             <prop name="log-path" value="helilog.txt"/>
@@ -93,7 +93,7 @@
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="7777"/>
-                <prop name="object-names" value="heli2"/>
+                <prop name="object-names" value="autoheli"/>
             </properties>
         </variation>
         

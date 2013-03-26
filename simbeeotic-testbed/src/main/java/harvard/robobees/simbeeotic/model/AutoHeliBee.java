@@ -43,9 +43,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
-import bbserver.protocol.BBCommandInterface;
-import bbserver.protocol.BBDatasetReply;
-import bbserver.protocol.BBDatasetRequest;
 import org.apache.log4j.Logger;
 
 import javax.vecmath.Vector3f;
@@ -80,35 +77,42 @@ public class AutoHeliBee extends AbstractHeli {
     private DatagramSocket sock;
     private InetAddress server;
 
-    private byte thrust, roll, pitch, yaw;
+    private byte cmd, thrust, roll, pitch, yaw;
 
     private Timer boundsTimer;
-    private long landingTime = 2;        // seconds, duration of soft landing command
+    private long landingTime = 1;        // seconds, duration of soft landing command
     private double landingHeight = 0.75; // m, above which a soft landing should be attempted
-
-    // params
-    private String serverHost = "192.168.7.11";
-    private int serverPort = 1234;
-    private double throttleTrim = normCommand(160);
-    private double rollTrim = normCommand(127);
-    private double pitchTrim = normCommand(127);
-    private double yawTrim = normCommand(127);
-    private boolean boundsCheckEnabled = true;
-
     private static final short CMD_LOW  = 0;
     private static final short CMD_HIGH = 255;
     private static final short CMD_RANGE = CMD_HIGH - CMD_LOW;
 
+
+    // params
+    private String serverHost = "192.168.7.11";
+    private int serverPort = 1234;
+    private double throttleTrim;
+    private double rollTrim;
+    private double pitchTrim;
+    private double yawTrim;
+    private boolean boundsCheckEnabled = true;
+
+    protected int THROTTLE_HIGH, THROTTLE_LOW;
     private static Logger logger = Logger.getLogger(AutoHeliBee.class);
 
     //
-    private BBCommandInterface bbCommand;
+    private byte[] commands = new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
 
     @Override
     public void initialize() {
 
+        THROTTLE_HIGH = 240;
+        THROTTLE_LOW = 80;
         super.initialize();
 
+        throttleTrim = normCommand(185);
+        rollTrim = normCommand(127);
+        pitchTrim = normCommand(127);
+        yawTrim = normCommand(127);
         try {
 
             sock = new DatagramSocket();
@@ -120,6 +124,8 @@ public class AutoHeliBee extends AbstractHeli {
 
         logger.debug("Connected to " + serverHost + " on port " + serverPort);
 
+        setCmd(((byte)142));
+
         // start out by zeroing the heli (thrust to zero, yaw, pitch and roll to 0.5)
         sendCommands();
 
@@ -128,19 +134,14 @@ public class AutoHeliBee extends AbstractHeli {
 
             boundsTimer = createTimer(new TimerCallback() {
 
-                private Boundary bounds = AutoHeliBee.this.getBounds();
-
                 @Override
                 public void fire(SimTime time) {
-
                     Vector3f currPos = getTruthPosition();
 
-                    if ((currPos.x < bounds.getXMin()) || (currPos.x > bounds.getXMax()) ||
-                        (currPos.y < bounds.getYMin()) || (currPos.y > bounds.getYMax()) ||
-                        (currPos.z > bounds.getZMax())) {
-
+                   //logger.info(externalSync.getOccluded(getName()));
+                   if(externalSync.getOccluded(getName()) > 7500) { // runs every 20 ms
                         // out of bounds, shutdown behaviors and heli
-                        logger.warn("Heli (" + getName() + ") is out of bounds, shutting down.");
+                        logger.warn("Heli (" + getName() + ") is occluded for more than half a second, shutting down.");
 
                         for (HeliBehavior b : getBehaviors().values()) {
                             b.stop();
@@ -148,16 +149,21 @@ public class AutoHeliBee extends AbstractHeli {
 
                         // if we are too high try a soft landing
                         if (currPos.z >= landingHeight) {
-                            
+
                             // reduce rotor speed for soft landing
-                            setThrust(getThrustTrim() - 0.1);
+                            setThrust(getThrust() - 0.3);
 
                             // set a timer a few seconds in the future to shutdown completely
                             createTimer(new TimerCallback() {
 
                                 @Override
                                 public void fire(SimTime time) {
+                                    logger.info("Out of bounds timer fired");
                                     setThrust(0);
+                                    setPitch(getPitchTrim());
+                                    setRoll(getRollTrim());
+                                    getSimEngine().requestScenarioTermination();
+                                    finish();
                                 }
                             }, landingTime, TimeUnit.SECONDS);
                         }
@@ -167,6 +173,7 @@ public class AutoHeliBee extends AbstractHeli {
 
                         // no need to check anymore
                         boundsTimer.cancel();
+
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
@@ -211,7 +218,7 @@ public class AutoHeliBee extends AbstractHeli {
         world.addRigidBody(body, COLLISION_BEE, (short)(COLLISION_TERRAIN | COLLISION_FLOWER));
 
         // register this object with the external synchronizer
-        externalSync.registerObject(getName(), body);
+        externalSync.registerOccludedObject(getName(), body);
 
         return body;
     }
@@ -228,7 +235,7 @@ public class AutoHeliBee extends AbstractHeli {
 
         // try to shutdown the heli gently
         while(thrust > 0) {
-            setThrust(thrust - 10);
+            setThrust(getThrust() - 1);
             sendCommands();
             try {
                 Thread.currentThread().sleep(500);
@@ -238,27 +245,54 @@ public class AutoHeliBee extends AbstractHeli {
             }
         }
 
+        setCmd(((byte)42));
+        setThrust(0.0);
 
         logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();
     }
 
+    public byte getCmd() {
+       return cmd;
+    }
+
+    public final void setCmd(byte level) {
+        thrust = (byte) (level & 0xFF);
+
+        logger.debug("thrust: " + thrust);
+    }
 
     @Override
     public double getThrust() {
+        double thrustValue;
+        double THROTTLE_RANGE = THROTTLE_HIGH - THROTTLE_LOW;
 
-        return (thrust - CMD_LOW) / (double)CMD_RANGE;
+        if(thrust < 0.0)
+            thrustValue = thrust + 256;
+        else
+            thrustValue = thrust;
+
+        double val = (thrustValue - THROTTLE_LOW) / (double)THROTTLE_RANGE;
+
+        return val;
     }
 
 
     @Override
     public final void setThrust(double level) {
-        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
+        int THROTTLE_RANGE = THROTTLE_HIGH - THROTTLE_LOW;
+        short val = (short) (THROTTLE_LOW + cap(level) * THROTTLE_RANGE);
+
+        if(val > THROTTLE_HIGH)
+            val = (short) THROTTLE_HIGH;
+        else if(val < THROTTLE_LOW)
+            val = (short) THROTTLE_LOW;
 
         thrust = (byte) (val & 0xFF);
 
-        logger.debug("thrust: " + thrust);
         sendCommands();
+
+        logger.debug("thrust: " + thrust);
     }
 
 
@@ -273,8 +307,8 @@ public class AutoHeliBee extends AbstractHeli {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
         roll = (byte) (val & 0xFF);
+        //sendCommands();
         logger.debug("roll: " + roll);
-        sendCommands();
     }
 
 
@@ -288,15 +322,23 @@ public class AutoHeliBee extends AbstractHeli {
     public final void setPitch(double level) {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        roll = (byte) (val & 0xFF);
+        pitch = (byte) (val & 0xFF);
+        //sendCommands();
         logger.debug("pitch: " + pitch);
-        sendCommands();
     }
 
 
     @Override
     public double getYaw() {
-        return (yaw - CMD_LOW) / (double)CMD_RANGE;
+        double val = (yaw - CMD_LOW) / (double)CMD_RANGE;
+
+        if(val < 0.0)
+            val += 1.0;
+
+        if(val > 1.0)
+            val = 1.0;
+
+        return val;
     }
 
 
@@ -305,8 +347,8 @@ public class AutoHeliBee extends AbstractHeli {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
         yaw = (byte) (val & 0xFF);
-        logger.debug("yaw: " + yaw);
         sendCommands();
+        logger.debug("yaw: " + yaw);
     }
 
 
@@ -332,12 +374,18 @@ public class AutoHeliBee extends AbstractHeli {
 
     private void sendCommands() {
 
-        byte[] byteArray = BBCommandInterface.Command.newBuilder().setThrottle(thrust).setYaw(yaw).setPitch(pitch).setRoll(roll).build().toByteArray();
+
+        commands[0] = (byte) cmd;
+        commands[1] = thrust;
+        commands[2] = yaw;
+        commands[3] = pitch;
+        commands[4] = roll;
 //
-        DatagramPacket dgram = new DatagramPacket(byteArray, byteArray.length, server, serverPort);
+        DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
         try {
             sock.send(dgram);
+            //logger.info("Sent command of size " + commands.length + " t: " + commands[1] + " y: " + commands[2] + " p: " + commands[3] + " r: " + commands[4]);
         }
         catch(IOException ioe) {
             logger.error("Could not send command packet to heli_server.", ioe);
@@ -345,7 +393,7 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
 
-    private static double cap(double in) {
+    protected static double cap(double in) {
 
         if (in < 0) {
             return 0;

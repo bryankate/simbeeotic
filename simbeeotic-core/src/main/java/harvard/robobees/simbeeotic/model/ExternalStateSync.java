@@ -55,7 +55,7 @@ public class ExternalStateSync {
 
     private Map<Integer, CollisionObject> objects = new HashMap<Integer, CollisionObject>();
     private Map<Integer, Transform> states = new ConcurrentHashMap<Integer, Transform>();
-
+    private Map<Integer, Integer> occluded = new HashMap<Integer, Integer>();
 
     /**
      * Registers a collision object with the synchronizer. The object's state
@@ -73,6 +73,29 @@ public class ExternalStateSync {
         }
     }
 
+    /**
+     * Similar to registerObject but also tracks occlusions.
+     * Done to prevent helicopters crashing in vicon testbed when the
+     * object is not being tracked and correspondingly cannot be stopped
+     * when it goes out of bounds.
+     *
+     * @param name The name of the object.
+     * @param colObj The object to be synchronized.
+     */
+    public void registerOccludedObject(String name, CollisionObject colObj) {
+
+        int id = name.hashCode();
+
+        if (!objects.containsKey(id)) {
+            objects.put(id, colObj);
+        }
+        if(!occluded.containsKey(id))
+            occluded.put(id, 0);
+    }
+
+    public boolean isOccludedObject(String name) {
+        return (occluded.containsKey(name.hashCode())? true: false);
+    }
 
     /**
      * Sets the state of an object using external data.
@@ -91,6 +114,35 @@ public class ExternalStateSync {
         states.put(name.hashCode(), trans);
     }
 
+    /**
+     * Sets the state of an object using external data similar to setState.
+     * Adds if occluded.
+     *
+     * @param name The ID of the object being updated.
+     * @param position The new position of the object.
+     * @param orientation The new orientation of the object.
+     * @param occ Bool that tells us if the object is occluded
+     *
+     */
+    public void setOccludedState(String name, Vector3f position, Quat4f orientation, boolean occ) {
+        Transform trans = new Transform();
+
+        trans.origin.set(position);
+        trans.setRotation(orientation);
+
+        states.put(name.hashCode(), trans);
+
+        if(occluded.containsKey(name.hashCode())) {
+            if(occ)
+                occluded.put(name.hashCode(), occluded.get(name.hashCode()) + 1);
+            else
+                occluded.put(name.hashCode(), 0);
+        }
+    }
+
+    public int getOccluded(String name) {
+        return occluded.get(name.hashCode());
+    }
 
     /**
      * Updates the collision objects to reflect the latest external
