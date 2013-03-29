@@ -155,9 +155,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseHeliBehavior.");
         }
 
-        throttlePID = new PIDController(1, 0.4, 1e-2, 0.1);
-        pitchPID = new PIDController(0, 0.4, 1e-2, 0.1);
-        rollPID = new PIDController(0, 0.4, 1e-2, 0.1);
+        throttlePID = new PIDController(1, 0.4, 0.0, 0.1);
+        pitchPID = new PIDController(0, 0.4, 0.0, 0.1);
+        rollPID = new PIDController(0, 0.4, 0.0, 0.1);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrust());

@@ -77,7 +77,7 @@ public class AutoHeliBee extends AbstractHeli {
     private DatagramSocket sock;
     private InetAddress server;
 
-    private byte cmd, thrust, roll, pitch, yaw;
+    private short cmd, thrust, roll, pitch, yaw;
 
     private Timer boundsTimer;
     private long landingTime = 1;        // seconds, duration of soft landing command
@@ -253,7 +253,7 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
     public byte getCmd() {
-       return cmd;
+       return ((byte)(cmd & 0xFF));
     }
 
     public final void setCmd(byte level) {
@@ -267,12 +267,7 @@ public class AutoHeliBee extends AbstractHeli {
         double thrustValue;
         double THROTTLE_RANGE = THROTTLE_HIGH - THROTTLE_LOW;
 
-        if(thrust < 0.0)
-            thrustValue = thrust + 256;
-        else
-            thrustValue = thrust;
-
-        double val = (thrustValue - THROTTLE_LOW) / (double)THROTTLE_RANGE;
+       double val = (thrust - THROTTLE_LOW) / (double)THROTTLE_RANGE;
 
         return val;
     }
@@ -288,7 +283,7 @@ public class AutoHeliBee extends AbstractHeli {
         else if(val < THROTTLE_LOW)
             val = (short) THROTTLE_LOW;
 
-        thrust = (byte) (val & 0xFF);
+        thrust = (short) (val & 0xFF);
 
         sendCommands();
 
@@ -306,7 +301,12 @@ public class AutoHeliBee extends AbstractHeli {
     public final void setRoll(double level) {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        roll = (byte) (val & 0xFF);
+        if(val < CMD_LOW)
+            val = CMD_LOW;
+        else if(val > (CMD_LOW + CMD_RANGE))
+            val = (CMD_LOW + CMD_RANGE);
+
+        roll = (short) (val & 0xFF);
         //sendCommands();
         logger.debug("roll: " + roll);
     }
@@ -322,7 +322,12 @@ public class AutoHeliBee extends AbstractHeli {
     public final void setPitch(double level) {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        pitch = (byte) (val & 0xFF);
+        if(val < CMD_LOW)
+            val = CMD_LOW;
+        else if(val > (CMD_LOW + CMD_RANGE))
+            val = (CMD_LOW + CMD_RANGE);
+
+        pitch = (short) (val & 0xFF);
         //sendCommands();
         logger.debug("pitch: " + pitch);
     }
@@ -332,12 +337,6 @@ public class AutoHeliBee extends AbstractHeli {
     public double getYaw() {
         double val = (yaw - CMD_LOW) / (double)CMD_RANGE;
 
-        if(val < 0.0)
-            val += 1.0;
-
-        if(val > 1.0)
-            val = 1.0;
-
         return val;
     }
 
@@ -346,7 +345,12 @@ public class AutoHeliBee extends AbstractHeli {
     public final void setYaw(double level) {
         short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
 
-        yaw = (byte) (val & 0xFF);
+        if(val < CMD_LOW)
+            val = CMD_LOW;
+        else if(val > (CMD_LOW + CMD_RANGE))
+            val = (CMD_LOW + CMD_RANGE);
+
+        yaw = (short) (val & 0xFF);
         sendCommands();
         logger.debug("yaw: " + yaw);
     }
@@ -376,10 +380,10 @@ public class AutoHeliBee extends AbstractHeli {
 
 
         commands[0] = (byte) cmd;
-        commands[1] = thrust;
-        commands[2] = yaw;
-        commands[3] = pitch;
-        commands[4] = roll;
+        commands[1] = (byte) (thrust & 0xFF);
+        commands[2] = (byte) (yaw & 0xFF);
+        commands[3] = (byte) (pitch & 0xFF);
+        commands[4] = (byte) (roll & 0xFF);
 //
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
