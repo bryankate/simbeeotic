@@ -95,6 +95,7 @@ public class AutoHeliBee extends AbstractHeli {
     private double pitchTrim;
     private double yawTrim;
     private boolean boundsCheckEnabled = true;
+    boolean started = false;
 
     protected int THROTTLE_HIGH, THROTTLE_LOW;
     private static Logger logger = Logger.getLogger(AutoHeliBee.class);
@@ -105,12 +106,13 @@ public class AutoHeliBee extends AbstractHeli {
     @Override
     public void initialize() {
 
+
         THROTTLE_HIGH = 240;
         THROTTLE_LOW = 80;
         super.initialize();
 
         throttleTrim = normCommand(185);
-        rollTrim = normCommand(127);
+        rollTrim = normCommand(110);
         pitchTrim = normCommand(127);
         yawTrim = normCommand(127);
         try {
@@ -139,7 +141,7 @@ public class AutoHeliBee extends AbstractHeli {
                     Vector3f currPos = getTruthPosition();
 
                    //logger.info(externalSync.getOccluded(getName()));
-                   if(externalSync.getOccluded(getName()) > 7500) { // runs every 20 ms
+                   if(externalSync.getOccluded(getName()) > 5000) { // runs every 20 ms
                         // out of bounds, shutdown behaviors and heli
                         logger.warn("Heli (" + getName() + ") is occluded for more than half a second, shutting down.");
 
@@ -162,8 +164,6 @@ public class AutoHeliBee extends AbstractHeli {
                                     setThrust(0);
                                     setPitch(getPitchTrim());
                                     setRoll(getRollTrim());
-                                    getSimEngine().requestScenarioTermination();
-                                    finish();
                                 }
                             }, landingTime, TimeUnit.SECONDS);
                         }
@@ -173,8 +173,23 @@ public class AutoHeliBee extends AbstractHeli {
 
                         // no need to check anymore
                         boundsTimer.cancel();
+                        finish();
+                        getSimEngine().requestScenarioTermination();
 
-                    }
+
+                   }
+                   if(started && (((BaseAutoHeliBehavior)getBehaviors().values().toArray()[0]).getState() == BaseAutoHeliBehavior.MoveState.IDLE)) {
+                       //Finish up
+                       logger.info("Idle state: Ending ..");
+                       boundsTimer.cancel();
+                       finish();
+                       getSimEngine().requestScenarioTermination();
+                   }
+
+                   if(((BaseAutoHeliBehavior)getBehaviors().values().toArray()[0]).getState() != BaseAutoHeliBehavior.MoveState.IDLE) {
+                       started = true;
+                   }
+
                 }
             }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
         }
@@ -233,18 +248,6 @@ public class AutoHeliBee extends AbstractHeli {
             boundsTimer.cancel();
         }
 
-        // try to shutdown the heli gently
-        while(thrust > 0) {
-            setThrust(getThrust() - 1);
-            sendCommands();
-            try {
-                Thread.currentThread().sleep(500);
-            }
-            catch(Exception e) {
-                System.out.println(" Exception " + e.toString());
-            }
-        }
-
         setCmd(((byte)42));
         setThrust(0.0);
 
@@ -285,7 +288,8 @@ public class AutoHeliBee extends AbstractHeli {
 
         thrust = (short) (val & 0xFF);
 
-        sendCommands();
+        if(!sock.isClosed())
+            sendCommands();
 
         logger.debug("thrust: " + thrust);
     }
@@ -351,7 +355,7 @@ public class AutoHeliBee extends AbstractHeli {
             val = (CMD_LOW + CMD_RANGE);
 
         yaw = (short) (val & 0xFF);
-        sendCommands();
+        //sendCommands();
         logger.debug("yaw: " + yaw);
     }
 

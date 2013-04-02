@@ -64,7 +64,7 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliBaseHover</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliWaypoint</java-class>
                     </behavior>
                 </behaviors>
             </custom-config>
