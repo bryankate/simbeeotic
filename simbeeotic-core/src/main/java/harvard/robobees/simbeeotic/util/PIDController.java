@@ -32,6 +32,8 @@
 package harvard.robobees.simbeeotic.util;
 
 
+import org.apache.log4j.Logger;
+
 import java.util.concurrent.TimeUnit;
 
 
@@ -42,14 +44,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class PIDController {
 
-    private double setPoint;
-    private double pGain;
-    private double iGain;
-    private double dGain;
+    protected double setPoint;
+    protected double pGain;
+    protected double iGain;
+    protected double dGain;
 
-    private long lastTime;
-    private double lastError = 0;
-    private double integral = 0;
+    protected long lastTime;
+    protected double lastError = 0;
+    protected double integral = 0;
+    protected static Logger logger = Logger.getLogger(PIDController.class);
+
 
 
     /**
@@ -97,6 +101,7 @@ public class PIDController {
         double error = setPoint - currValue;
         double deriv = (error - lastError) / dt;
 
+        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + deriv);
         integral += error * dt;
         lastTime = currTime;
         lastError = error;
