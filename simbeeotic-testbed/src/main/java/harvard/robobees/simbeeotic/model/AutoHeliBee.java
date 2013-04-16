@@ -77,11 +77,11 @@ public class AutoHeliBee extends AbstractHeli {
     private DatagramSocket sock;
     private InetAddress server;
 
-    private byte cmd, thrust, roll, pitch, yaw;
+    private int cmd, thrust, roll, pitch, yaw;
 
     private Timer boundsTimer;
     private long landingTime = 1;        // seconds, duration of soft landing command
-    private double landingHeight = 0.75; // m, above which a soft landing should be attempted
+    private double landingHeight = 0.5; // m, above which a soft landing should be attempted
     private static final short CMD_LOW  = 0;
     private static final short CMD_HIGH = 255;
     private static final short CMD_RANGE = CMD_HIGH - CMD_LOW;
@@ -99,7 +99,6 @@ public class AutoHeliBee extends AbstractHeli {
     protected int THROTTLE_HIGH, THROTTLE_LOW;
     private static Logger logger = Logger.getLogger(AutoHeliBee.class);
 
-    //
     private byte[] commands = new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
 
     @Override
@@ -114,7 +113,6 @@ public class AutoHeliBee extends AbstractHeli {
         pitchTrim = normCommand(127);
         yawTrim = normCommand(127);
         try {
-
             sock = new DatagramSocket();
             server = InetAddress.getByName(serverHost);
         }
@@ -138,7 +136,7 @@ public class AutoHeliBee extends AbstractHeli {
                 public void fire(SimTime time) {
                     Vector3f currPos = getTruthPosition();
 
-                   //logger.info(externalSync.getOccluded(getName()));
+//                   logger.info("occlusion: " + externalSync.getOccluded(getName()));
                    if(externalSync.getOccluded(getName()) > 7500) { // runs every 20 ms
                         // out of bounds, shutdown behaviors and heli
                         logger.warn("Heli (" + getName() + ") is occluded for more than half a second, shutting down.");
@@ -170,6 +168,8 @@ public class AutoHeliBee extends AbstractHeli {
                         else {
                             setThrust(0);
                         }
+
+                       sendCommands();
 
                         // no need to check anymore
                         boundsTimer.cancel();
@@ -252,102 +252,62 @@ public class AutoHeliBee extends AbstractHeli {
         sock.close();
     }
 
-    public byte getCmd() {
+    public int getCmd() {
        return cmd;
     }
 
-    public final void setCmd(byte level) {
-        thrust = (byte) (level & 0xFF);
-
-        logger.debug("thrust: " + thrust);
+    public final void setCmd(int level) {
+        cmd = level & 0xFF;
+        logger.debug("cmd: " + cmd);
     }
 
     @Override
     public double getThrust() {
-        double thrustValue;
-        double THROTTLE_RANGE = THROTTLE_HIGH - THROTTLE_LOW;
-
-        if(thrust < 0.0)
-            thrustValue = thrust + 256;
-        else
-            thrustValue = thrust;
-
-        double val = (thrustValue - THROTTLE_LOW) / (double)THROTTLE_RANGE;
-
-        return val;
+        return (thrust - THROTTLE_LOW) / (double)(THROTTLE_HIGH - THROTTLE_LOW);
     }
-
 
     @Override
     public final void setThrust(double level) {
-        int THROTTLE_RANGE = THROTTLE_HIGH - THROTTLE_LOW;
-        short val = (short) (THROTTLE_LOW + cap(level) * THROTTLE_RANGE);
-
-        if(val > THROTTLE_HIGH)
-            val = (short) THROTTLE_HIGH;
-        else if(val < THROTTLE_LOW)
-            val = (short) THROTTLE_LOW;
-
-        thrust = (byte) (val & 0xFF);
-
-        sendCommands();
-
+        thrust = (int) round(THROTTLE_LOW + cap(level) * (double)(THROTTLE_HIGH - THROTTLE_LOW));
         logger.debug("thrust: " + thrust);
     }
 
 
     @Override
     public double getRoll() {
-        return (roll - CMD_LOW) / (double)CMD_RANGE;
+        return normCommand(roll);
     }
 
 
     @Override
     public final void setRoll(double level) {
-        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
-
-        roll = (byte) (val & 0xFF);
-        //sendCommands();
+        roll = rawCommand(cap(level));
         logger.debug("roll: " + roll);
     }
 
 
     @Override
     public double getPitch() {
-        return (pitch - CMD_LOW) / (double)CMD_RANGE;
+        return normCommand(pitch);
     }
 
 
     @Override
     public final void setPitch(double level) {
-        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
-
-        pitch = (byte) (val & 0xFF);
-        //sendCommands();
+        pitch = rawCommand(cap(level));
         logger.debug("pitch: " + pitch);
     }
 
 
     @Override
     public double getYaw() {
-        double val = (yaw - CMD_LOW) / (double)CMD_RANGE;
-
-        if(val < 0.0)
-            val += 1.0;
-
-        if(val > 1.0)
-            val = 1.0;
-
-        return val;
+        return normCommand(yaw);
     }
 
 
     @Override
     public final void setYaw(double level) {
-        short val = (short) (CMD_LOW + cap(level) * CMD_RANGE);
-
-        yaw = (byte) (val & 0xFF);
-        sendCommands();
+        yaw = rawCommand(cap(level));
         logger.debug("yaw: " + yaw);
     }
 
@@ -372,14 +332,13 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
 
-    private void sendCommands() {
+    public void sendCommands() {
 
-
-        commands[0] = (byte) cmd;
-        commands[1] = thrust;
-        commands[2] = yaw;
-        commands[3] = pitch;
-        commands[4] = roll;
+        commands[0] = (byte) (cmd & 0xFF);
+        commands[1] = (byte) (thrust & 0xFF);
+        commands[2] = (byte) (yaw & 0xFF);
+        commands[3] = (byte) (pitch & 0xFF);
+        commands[4] = (byte) (roll & 0xFF);
 //
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
@@ -394,15 +353,12 @@ public class AutoHeliBee extends AbstractHeli {
 
 
     protected static double cap(double in) {
-
         if (in < 0) {
             return 0;
         }
-
         if (in > 1) {
             return 1;
         }
-
         return in;
     }
 
@@ -439,8 +395,8 @@ public class AutoHeliBee extends AbstractHeli {
      *
      * @return The heli command value (in the range of CMD_LOW to CMD_HIGH).
      */
-    public static short rawCommand(double cmd) {
-        return (short)(CMD_LOW + (int)round(cmd * CMD_RANGE));
+    public static int rawCommand(double cmd) {
+        return (int) round(CMD_LOW + cmd * CMD_RANGE);
     }
 
 

@@ -150,4 +150,6 @@ public interface HeliControl {
      *              percentage of the total possible output.
      */
     public void setThrust(double level);
+
+    public void sendCommands();
 }

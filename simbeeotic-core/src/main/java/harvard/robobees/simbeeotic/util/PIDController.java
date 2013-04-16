@@ -42,14 +42,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class PIDController {
 
-    private double setPoint;
-    private double pGain;
-    private double iGain;
-    private double dGain;
+    protected double setPoint;
+    protected double pGain;
+    protected double iGain;
+    protected double dGain;
 
-    private long lastTime;
-    private double lastError = 0;
-    private double integral = 0;
+    protected long lastTime;
+    protected double lastError = 0;
+    protected double integral = 0;
 
 
     /**

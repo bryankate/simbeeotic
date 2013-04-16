@@ -53,13 +53,14 @@ public class AutoHeliBaseHover extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
-        moveToPoint(0, 0, 1, 0.2,
-        			new MoveCallback() {
+        moveToPoint(0, 0, 1, 0.1);
 
-						@Override
-						public void reachedDestination() {
-							hover(new Vector3f(0, 0, 1));
-						}
-        			});
+//        moveToPoint(0, 0, 1, 0.2,
+//        			new MoveCallback() {
+//
+//						@Override
+//						public void reachedDestination() {
+//							hover(new Vector3f(0, 0, 1));
+//						}
     }
 }

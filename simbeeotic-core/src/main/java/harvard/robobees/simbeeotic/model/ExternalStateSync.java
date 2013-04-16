@@ -34,6 +34,7 @@ package harvard.robobees.simbeeotic.model;
 
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.linearmath.Transform;
+import harvard.robobees.simbeeotic.util.MathUtil;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -157,6 +158,11 @@ public class ExternalStateSync {
             if (trans != null) {
                 objects.get(id).setWorldTransform(states.get(id));
             }
+
+
+//            Quat4f q = new Quat4f();
+//            trans.getRotation(q);
+//            System.out.println("(" + System.nanoTime()/1e9 + ") Object " + id + ": " + MathUtil.quaternionToEulerZYX(q).toString());
         }
     }
 }

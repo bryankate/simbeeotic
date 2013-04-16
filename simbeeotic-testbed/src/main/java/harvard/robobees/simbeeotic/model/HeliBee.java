@@ -160,4 +160,8 @@ public class HeliBee extends AbstractHeli {
     public double getThrustTrim() {
         return 0.5;
     }
+
+    @Override
+    public void sendCommands() {
+    }
 }

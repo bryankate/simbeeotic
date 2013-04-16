@@ -33,10 +33,9 @@ package harvard.robobees.simbeeotic.util;
 
 
 import org.apache.log4j.Logger;
-import sun.security.pkcs11.wrapper.CK_SSL3_MASTER_KEY_DERIVE_PARAMS;
+//import sun.security.pkcs11.wrapper.CK_SSL3_MASTER_KEY_DERIVE_PARAMS;
 
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * A PID control loop with a median filter on D.
@@ -48,14 +47,20 @@ public class MedianPIDController extends PIDController {
     final int MFWIDTH = 3;
     protected double[] median;
     int mptr;
-    final double alpha = 0.25;
+    double alpha;
     double mediand;
+    double ferr, lferr;
 
-    public MedianPIDController(double set, double p, double i, double d) {
+    private static Logger logger = Logger.getLogger(MedianPIDController.class);
+
+    public MedianPIDController(double set, double p, double i, double d, double a) {
         super(set, p, i, d);
+        alpha = a;
         median = new double[MFWIDTH];
         mptr=0;
         mediand = 0.0;
+        ferr = 0.0;
+        lferr = 0.0;
     }
 
     /**
@@ -68,11 +73,14 @@ public class MedianPIDController extends PIDController {
      */
     public Double update(long currTime, double currValue) {
 
+        double error = setPoint - currValue;
 
         if (lastTime == 0) {
 
             lastTime = currTime;
-            lastError = setPoint - currValue;
+            lastError = error;
+
+            lferr = error;
 
             return null;
         }
@@ -83,11 +91,13 @@ public class MedianPIDController extends PIDController {
             return null;
         }
 
-        double error = setPoint - currValue;
-        double deriv = (error - lastError) / dt;
+        ferr = alpha*error + (1.0 - alpha)*ferr;
 
-        double mval=0.0;
-        median[mptr] = deriv;
+//        double deriv = (error - lastError) / dt;
+        double fderiv = (ferr - lferr) / dt;
+
+        double mval = 0.0;
+        median[mptr] = fderiv;
         mptr = (mptr + 1)%MFWIDTH;
 
         if((median[0] > median[1]) && (median[0] > median[2])) {
@@ -95,34 +105,36 @@ public class MedianPIDController extends PIDController {
                 mval = median[1];
             else
                 mval = median[2];
-        }
-
-        if((median[1] > median[0]) && (median[1] > median[2])) {
+        } else if((median[1] > median[0]) && (median[1] > median[2])) {
             if(median[0] > median[2])
                 mval = median[0];
             else
                 mval = median[2];
-        }
-
-        if((median[2] > median[1]) && (median[2] > median[0])) {
+        } else if((median[2] > median[1]) && (median[2] > median[0])) {
             if(median[1] > median[0])
                 mval = median[1];
             else
                 mval = median[0];
         }
 
-        mediand += alpha * (mval - mediand);
+//        mediand += alpha * (mval - mediand);
+        mediand = mval;
 
-        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + deriv);
+        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + fderiv);
         if(mediand * error > 0.0)
             integral += error * dt;
         lastTime = currTime;
         lastError = error;
+        lferr = ferr;
 
         return (pGain * error) + (iGain * integral) + (dGain * mediand);
     }
 
-    public double getMedianD() {
+    public double getDErr() {
         return mediand;
+    }
+
+    public double getIErr() {
+        return integral;
     }
 }

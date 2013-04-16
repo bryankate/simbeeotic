@@ -341,7 +341,7 @@ public class HWILBee extends AbstractHeli {
     }
 
 
-    private void sendCommands() {
+    public void sendCommands() {
 
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
