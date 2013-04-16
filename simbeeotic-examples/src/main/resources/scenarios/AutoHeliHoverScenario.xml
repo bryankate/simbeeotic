@@ -56,19 +56,15 @@
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="1234"/>
 
-                <prop name="trim-throttle" value="160"/>
-                <prop name="trim-roll" value="137"/>
-                <prop name="trim-pitch" value="120"/>
+                <prop name="trim-throttle" value="185"/>
+                <prop name="trim-roll" value="127"/>
+                <prop name="trim-pitch" value="127"/>
                 <prop name="trim-yaw" value="127"/>
             </properties>
             <custom-config>
                 <behaviors>
                     <behavior>
                         <java-class>harvard.robobees.simbeeotic.example.AutoHeliBaseHover</java-class>
-                        <properties>
-                            <prop name="logging" value="true"/>
-                            <prop name="log-path" value="helilog.txt"/>
-                        </properties>
                     </behavior>
                 </behaviors>
             </custom-config>
