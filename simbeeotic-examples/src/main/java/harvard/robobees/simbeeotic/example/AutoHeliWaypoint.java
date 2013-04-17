@@ -32,7 +32,7 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.BaseHeliBehavior;
+import harvard.robobees.simbeeotic.model.BaseAutoHeliBehavior;
 import harvard.robobees.simbeeotic.model.Boundary;
 import harvard.robobees.simbeeotic.model.HeliControl;
 import harvard.robobees.simbeeotic.model.Platform;
@@ -47,20 +47,18 @@ import javax.vecmath.Vector3f;
  *
  * @author bkate
  */
-public class AutoHeliSquare extends BaseHeliBehavior {
+public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
     private java.util.Timer navTimer;
     private int heliID;
     
-    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(1, 1, 1),
-                                                   new Vector3f(1, -1, 1),
-                                                   new Vector3f(-1, -1, 1),
+    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0, 0, 1),
                                                    new Vector3f(-1, 1, 1),
-                                                   new Vector3f(1, 1, 1)};
-    
+                                                   new Vector3f(-1, -1, 1),
+                                                   new Vector3f(0, 0, 1)};
     private PositionSensor posSensor;
 
-    private static Logger logger = Logger.getLogger(AutoHeliSquare.class);
+    private static Logger logger = Logger.getLogger(AutoHeliWaypoint.class);
 
 
     @Override
@@ -99,7 +97,8 @@ public class AutoHeliSquare extends BaseHeliBehavior {
                         logger.info("Heli: " + heliID + " Finished scripted path, idling.");
 
                         // done the script, land the heli at the hive
-                        landAtHive();
+                        //landAtHive();
+                        land();
                     }
                     else
                     {
@@ -108,7 +107,7 @@ public class AutoHeliSquare extends BaseHeliBehavior {
                         moveToPoint(waypoints[currWaypoint].x,
                                     waypoints[currWaypoint].y,
                                     waypoints[currWaypoint].z,
-                                    0.1,
+                                    0.2,
                                     new MoveCallback()
                         			{
                                         @Override
@@ -121,7 +120,7 @@ public class AutoHeliSquare extends BaseHeliBehavior {
                     }
                 }
             }
-        }, 0, 1000);
+        }, 0, 10);
     }
 
 

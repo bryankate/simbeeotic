@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 
-    Copyright (c) 2012, The President and Fellows of Harvard College.
+    Copyright (c) 2013, The President and Fellows of Harvard College.
     All Rights Reserved.
 
      Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@
             <start-position x="0" y="0" z="0"/>
         </model>
         <model name="autoheli">
-            <java-class>harvard.robobees.simbeeotic.model.AutoHeliBee</java-class>
+            <java-class>harvard.robobees.simbeeotic.model.SimpleBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
                 <prop name="server-port" value="1234"/>
@@ -64,7 +64,7 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliWaypoint</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliSquare</java-class>
                     </behavior>
                 </behaviors>
             </custom-config>
