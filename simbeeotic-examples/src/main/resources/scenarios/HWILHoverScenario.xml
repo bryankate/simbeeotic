@@ -42,15 +42,19 @@
     </master-seed>
 
     <simulation>
-        <end-time>10</end-time>
+        <end-time>100000</end-time>
     </simulation>
 
     <models>
-        <model name="heli0">
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model name="heli1">
             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <prop name="server-port" value="8000"/>
+                <prop name="server-port" value="8001"/>
 
                 <prop name="trim-throttle" value="430"/>
                 <prop name="trim-roll" value="511"/>
@@ -60,7 +64,7 @@
             <custom-config>
                 <behaviors>
                     <behavior>
-                        <java-class>harvard.robobees.simbeeotic.example.HeliHover</java-class>
+                        <java-class>harvard.robobees.simbeeotic.example.AutoHeliBaseHover</java-class>
                     </behavior>
                 </behaviors>
             </custom-config>
@@ -84,7 +88,8 @@
             <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <prop name="object-names" value="heli0"/>
+                <prop name="server-port" value="7777"/>
+                <prop name="object-names" value="heli1"/>
             </properties>
         </variation>
         
