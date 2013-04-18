@@ -164,10 +164,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseAutoHeliBehavior.");
         }
 
-        throttlePID = new MedianPIDController(1.0, 0.4, 0.2, 0.2, 0.1);
+        throttlePID = new MedianPIDController(0.0, 0.4, 0.2, 0.2, 0.1);
         pitchPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
         rollPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
-        yawPID = new MedianPIDController(1.57, 0.2, 0.0, 0.0, 0.1);
+        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -381,6 +381,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                            pitchAdjustment = 0.1;
 //                        }
 
+                        // compute desired heading
+                        yawSetpoint = Math.atan2(targetWY, targetWX);
+
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
@@ -455,7 +458,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if(currState == MoveState.TERMINATED)
             return;
 
-        if( platform.getSensor("position-sensor", PositionSensor.class).getPosition().getZ() < LANDING_ALTITUDE ) {
+        Vector3f pos = platform.getSensor("position-sensor", PositionSensor.class).getPosition();
+        if( pos.getZ() < LANDING_ALTITUDE ) {
             currState = MoveState.TAKEOFF;
         } else {
             currState = MoveState.MOVE;
@@ -711,9 +715,13 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if (pitchDelta == null)
             pitchDelta = 0.0;
 
+        if( pitchDelta > 0.5 ) { pitchDelta = 0.5; }
+        if( pitchDelta < -0.5 ) { pitchDelta = -0.5; }
+
+//        System.out.println("PITCH: " + pitchDelta);
+
         control.setPitch(control.getPitchTrim() + pitchDelta);
     }
-
 
     private void updateRoll(long time, double yDisp)
     {
@@ -722,6 +730,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         // pid update can return null
         if (rollDelta == null)
             rollDelta = 0.0;
+
+        if( rollDelta > 0.5 ) { rollDelta = 0.5; }
+        if( rollDelta < -0.5 ) { rollDelta = -0.5; }
 
         control.setRoll(control.getRollTrim() + rollDelta);
     }
@@ -802,6 +813,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         control.setYaw(control.getYawTrim() + yawDelta);
 //        control.setYaw(control.getYawTrim());
+
+//        System.out.println("Heading: " + heading + " yawDiff: " + yawDiff + " yawDelta: " + yawDelta);
     }
 
     private void showState() {
@@ -861,7 +874,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                logWriter.write(System.currentTimeMillis() + " " + pose.z + "\n");
                  //  logWriter.write(s.toString() + " " + dt + " " + pos1.getX() + " " + pos2.getX() + " " + vel_z + " " + thrust + "\n");
 
-                logger.debug(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
+                logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
 
                 logWriter.write(time + " " + dt + " "
                         + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " "
