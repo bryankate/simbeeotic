@@ -112,7 +112,8 @@ public class PIDController {
      */
     public void setSetpoint(double set) {
 //        reset(set);
-          setPoint = set;
+        setPoint = set;
+        lastTime = 0;
     }
 
 

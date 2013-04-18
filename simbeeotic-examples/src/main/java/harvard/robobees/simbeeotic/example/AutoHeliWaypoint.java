@@ -52,10 +52,10 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private java.util.Timer navTimer;
     private int heliID;
 
-    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0, 1.0f, 1.0f),
-                                                   new Vector3f(0, -1.0f, 1.0f),
-                                                   new Vector3f(0, 1.0f, 1.0f),
-                                                   new Vector3f(0, -1.0f, 1.0f)};
+    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0.0f, 0.0f, 0.75f),
+                                                   new Vector3f(0.0f, -2.0f, 0.75f),
+                                                   new Vector3f(0.0f, 2.0f, 0.75f),
+                                                   new Vector3f(0.0f, -2.0f, 0.75f)};
     private PositionSensor posSensor;
 
     private static Logger logger = Logger.getLogger(AutoHeliWaypoint.class);
@@ -83,36 +83,43 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
             private boolean reachedWaypoint = true;
             private int currWaypoint = -1;
+            private int headingWaitCtr = 0;
 
             @Override
             public void run()
             {
-            	if (reachedWaypoint)
-            	{
+            	if (reachedWaypoint) {
                     currWaypoint++;
                     reachedWaypoint = false;
 
                     if (currWaypoint >= waypoints.length) {
                         logger.info("Heli: " + heliID + " Finished scripted path, idling.");
                         landAtHive();
-                    }
-                    else
-                    {
-                        logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
-                        moveToPoint(waypoints[currWaypoint].x,
-                                    waypoints[currWaypoint].y,
-                                    waypoints[currWaypoint].z,
-                                    0.1,
-                                    new MoveCallback()
-                                    {
-                                        @Override
-                                        public void reachedDestination()
+                    } else if( headingWaitCtr <= 0 ) {
+                            logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
+                            moveToPoint(waypoints[currWaypoint].x,
+                                        waypoints[currWaypoint].y,
+                                        waypoints[currWaypoint].z,
+                                        0.1,
+                                        new MoveCallback()
                                         {
-                                            //hover(1.0);
-                                            logger.info("Heli: " + heliID + " Reached waypoint.");
-                                            reachedWaypoint = true;
-                                        }
-                                    });
+                                            @Override
+                                            public void reachedDestination()
+                                            {
+                                                //hover(1.0);
+                                                logger.info("Heli: " + heliID + " Reached waypoint.");
+                                                reachedWaypoint = true;
+                                            }
+                                        });
+                            headingWaitCtr = 200;
+                    } else { // headingWaitCtr > 0
+                        if( (headingWaitCtr == 200) && (currWaypoint > 0) ) {
+                            hover(waypoints[currWaypoint-1]);
+                            face(waypoints[currWaypoint]);
+                        }
+                        headingWaitCtr--;
+                        currWaypoint--; // negate default run() operations
+                        reachedWaypoint = true; // negate default run() operations
                     }
                 }
             }
