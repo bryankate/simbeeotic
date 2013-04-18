@@ -33,7 +33,6 @@ package harvard.robobees.simbeeotic.model;
 
 
 import com.bulletphysics.linearmath.Transform;
-import com.bulletphysics.linearmath.VectorUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimEngine;
@@ -42,19 +41,18 @@ import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.Global
 import harvard.robobees.simbeeotic.model.sensor.PoseSensor;
 import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
 import harvard.robobees.simbeeotic.util.MathUtil;
-import harvard.robobees.simbeeotic.util.PIDController;
 import harvard.robobees.simbeeotic.util.MedianPIDController;
-import org.apache.commons.math.linear.MatrixUtils;
 import org.apache.log4j.Logger;
 
-import javax.vecmath.*;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.TimerTask;
 import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A base class that implements a simple movement abstraction on top of the
@@ -108,7 +106,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private boolean logData = true;
     private String logPath = "./heli_log.txt";
 
-    private enum MoveState {IDLE, TAKEOFF, HOVER, RUN, MOVE, LAND}
+    private enum MoveState {IDLE, TAKEOFF, HOVER, RUN, MOVE, LAND, TERMINATED}
 
     private static Logger logger = Logger.getLogger(BaseAutoHeliBehavior.class);
 
@@ -120,9 +118,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
     private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
     private static final float LANDING_EPSILON = 0.3f;            // m
-    private static final float LANDING_ALTITUDE = 0.25f;           // m, below which we can drop
+    private static final float LANDING_ALTITUDE = 0.1f;           // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
     private static final long LANDING_STAGING_TIME = 1;           // s
+    private static final float TAKEOFF_ALTITUDE = 0.25f;
 
 
     @Override
@@ -168,7 +167,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         throttlePID = new MedianPIDController(1.0, 0.4, 0.2, 0.2, 0.1);
         pitchPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
         rollPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
-        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1);
+        yawPID = new MedianPIDController(1.57, 0.2, 0.0, 0.0, 0.1);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -197,9 +196,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 goodOrientation = ( (Math.abs(euler.z) > 0.001) && ((Math.PI - Math.abs(euler.z)) > 0.001) );
 
                 if( Math.abs(euler.x) > (Math.PI / 4.0f) || Math.abs(euler.y) > (Math.PI / 4.0f) ) {
-                    if( ++badAttCnt > 10 ) {
+                    if( ++badAttCnt > 15 ) {
                         System.out.println("Terminating due to bad attitude!");
-                        currState = MoveState.IDLE;
+                        stop();
+
                     }
                 } else {
                     badAttCnt = 0;
@@ -275,7 +275,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case TAKEOFF:
-                        if( pos.z > LANDING_ALTITUDE ) {
+                        if( pos.z > TAKEOFF_ALTITUDE) {
                             currState = MoveState.MOVE;
                         }
 
@@ -288,22 +288,16 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                     case LAND:
 
                         // throttle down to land
-                        control.setThrust(control.getThrustTrim() - 0.1);
+                        control.setThrust(control.getThrustTrim() - 0.05);
 
                     	if (pos.z < LANDING_ALTITUDE) {
-
                             currState = MoveState.IDLE;
 
                             if (currMoveCallback != null) {
 
-//                                tmp = currMoveCallback;
                                 currMoveCallback.reachedDestination();
                                 currMoveCallback = null;
                             }
-
-//                            if ((tmp != null) && (currMoveCallback != null) && (tmp.equals(currMoveCallback))) {
-//                                currMoveCallback = null;
-//                            }
                         }
                     	else {
 
@@ -345,6 +339,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //
                             if (currMoveCallback != null) {
 //
+                                //hover(1.0);
 ////                                tmp = currMoveCallback;
                                 currMoveCallback.reachedDestination();
                                 currMoveCallback = null;
@@ -430,6 +425,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         }
         
         controlTimer.cancel();
+        currState = MoveState.TERMINATED;
     }
 
     
@@ -456,6 +452,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
      * @param callback An optional callback to be executed once the helicopter reaches the specified point.
      */
     protected void moveToPoint(double x, double y, double z, double epsilon, MoveCallback callback) {
+        if(currState == MoveState.TERMINATED)
+            return;
 
         if( platform.getSensor("position-sensor", PositionSensor.class).getPosition().getZ() < LANDING_ALTITUDE ) {
             currState = MoveState.TAKEOFF;
@@ -470,6 +468,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     }
 
     protected void runToPoint(double x, double y, double z, double pitchSet, double epsilon, MoveCallback callback) {
+        if(currState == MoveState.TERMINATED)
+            return;
 
         currState = MoveState.RUN;
         pitchSetPoint = pitchSet;
@@ -614,18 +614,29 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
      * @param angle The angle to turn (in radians).
      */
     protected void turn(double angle) {
-        yawSetpoint += angle;
+        if(currState == MoveState.TERMINATED)
+            return;
+
+        yawPID.setSetpoint(angle);
     }
 
+    protected void hover(float height) {
+        if(currState == MoveState.TERMINATED)
+            return;
+
+        throttlePID.setSetpoint(height);
+        hover();
+    }
 
     /**
      * Indicates that the helicopter should hover at the current altitude setpoint.
      */
     protected void hover() {
-
+        if(currState == MoveState.TERMINATED)
+            return;
     	currTarget = posSensor.getPosition();
-    	yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
-        throttlePID.setSetpoint(currTarget.z);
+    	//yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
+        //throttlePID.setSetpoint(currTarget.z);
         currState = MoveState.HOVER;
     }
 
@@ -850,7 +861,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                logWriter.write(System.currentTimeMillis() + " " + pose.z + "\n");
                  //  logWriter.write(s.toString() + " " + dt + " " + pos1.getX() + " " + pos2.getX() + " " + vel_z + " " + thrust + "\n");
 
-                logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
+                logger.debug(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
 
                 logWriter.write(time + " " + dt + " "
                         + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " "
