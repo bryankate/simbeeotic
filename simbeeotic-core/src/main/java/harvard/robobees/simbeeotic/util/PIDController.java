@@ -111,7 +111,9 @@ public class PIDController {
      * @param set The new target point.
      */
     public void setSetpoint(double set) {
-        reset(set);
+//        reset(set);
+        setPoint = set;
+        lastTime = 0;
     }
 
 

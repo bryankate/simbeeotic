@@ -57,6 +57,8 @@ public class MedianPIDController extends PIDController {
         super(set, p, i, d);
         alpha = a;
         median = new double[MFWIDTH];
+        for( int ii = 0; ii < MFWIDTH; ii++ )
+            median[ii] = 0;
         mptr=0;
         mediand = 0.0;
         ferr = 0.0;
@@ -82,19 +84,20 @@ public class MedianPIDController extends PIDController {
 
             lferr = error;
 
-            return null;
-        }
+            for( int ii = 0; ii < MFWIDTH; ii++ )
+                median[ii] = 0;
 
-        double dt = (double)(currTime - lastTime) / TimeUnit.SECONDS.toNanos(1);
-
-        if (dt == 0) {
-            return null;
+//            return null;
         }
 
         ferr = alpha*error + (1.0 - alpha)*ferr;
 
-//        double deriv = (error - lastError) / dt;
-        double fderiv = (ferr - lferr) / dt;
+        double dt = (double)(currTime - lastTime) / TimeUnit.SECONDS.toNanos(1);
+
+        double fderiv = 0;
+        if (dt > 0) {
+            fderiv = (ferr - lferr) / dt;
+        }
 
         double mval = 0.0;
         median[mptr] = fderiv;
@@ -136,5 +139,9 @@ public class MedianPIDController extends PIDController {
 
     public double getIErr() {
         return integral;
+    }
+
+    public double getSetPoint() {
+        return setPoint;
     }
 }

@@ -98,7 +98,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private int yawHistPtr;
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
     private boolean goodOrientation = false;
-    private int badAttCnt = 0;
+    private double prevRoll = 0, prevPitch = 0;
 
     private double pitchSetPoint = 0, yawSetpoint = 0.0;  // radians
 
@@ -110,18 +110,19 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
     private static Logger logger = Logger.getLogger(BaseAutoHeliBehavior.class);
 
-    private static final long CONTROL_LOOP_PERIOD = 10;           // ms (50 Hz)
-    private static final float COLLISION_BUFF = 1.0f;             // m
-    private static final float COLLISION_BUFF_HIVE = 0.4f;        // m
-    private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
-    private static final float DESTINATION_EPSILON = 0.3f;        // m
-    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
-    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
+//    private static final long CONTROL_LOOP_PERIOD = 10;           // ms (50 Hz)
+//    private static final float COLLISION_BUFF = 1.0f;             // m
+//    private static final float COLLISION_BUFF_HIVE = 0.4f;        // m
+//    private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
+//    private static final float DESTINATION_EPSILON = 0.3f;        // m
+//    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
+//    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
     private static final float LANDING_EPSILON = 0.3f;            // m
-    private static final float LANDING_ALTITUDE = 0.1f;           // m, below which we can drop
+    private static final float LANDING_ALTITUDE = 0.2f;          // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
-    private static final long LANDING_STAGING_TIME = 1;           // s
+//    private static final long LANDING_STAGING_TIME = 1;           // s
     private static final float TAKEOFF_ALTITUDE = 0.25f;
+    private static final float TURNING_CIRCLE_RADIUS = 0.5f;        // don't update heading when inside this distance to target
 
 
     @Override
@@ -164,10 +165,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseAutoHeliBehavior.");
         }
 
-        throttlePID = new MedianPIDController(1.0, 0.4, 0.2, 0.2, 0.1);
-        pitchPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
-        rollPID = new MedianPIDController(0.0, 0.3, 0.05, 0.1, 0.1);
-        yawPID = new MedianPIDController(1.57, 0.2, 0.0, 0.0, 0.1);
+        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.3, 0.5);
+        pitchPID = new MedianPIDController(0.0, 0.3, 0.1, 0.1, 0.1);
+        rollPID = new MedianPIDController(0.0, 0.25, 0.1, 0.1, 0.1);
+        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -194,16 +195,6 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 Vector3f euler = MathUtil.quaternionToEulerZYX(pose);
 
                 goodOrientation = ( (Math.abs(euler.z) > 0.001) && ((Math.PI - Math.abs(euler.z)) > 0.001) );
-
-                if( Math.abs(euler.x) > (Math.PI / 4.0f) || Math.abs(euler.y) > (Math.PI / 4.0f) ) {
-                    if( ++badAttCnt > 15 ) {
-                        System.out.println("Terminating due to bad attitude!");
-                        stop();
-
-                    }
-                } else {
-                    badAttCnt = 0;
-                }
 
                 while( !goodOrientation ) {
                     pose = orientSensor.getPose();
@@ -288,7 +279,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                     case LAND:
 
                         // throttle down to land
-                        control.setThrust(control.getThrustTrim() - 0.05);
+                        control.setThrust(control.getThrust()*0.999f);
 
                     	if (pos.z < LANDING_ALTITUDE) {
                             currState = MoveState.IDLE;
@@ -381,6 +372,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                            pitchAdjustment = 0.1;
 //                        }
 
+                        // compute desired heading
+                        if( dist > TURNING_CIRCLE_RADIUS ) {
+                            yawSetpoint = Math.atan2(targetWY, targetWX);
+                        }
+
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
@@ -414,8 +410,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         control.setThrust(0.0);
         control.sendCommands();
 
-        if (logData) {
+        logger.warn("Heli-" + myHeliId + " is stopping...\n");
 
+        if (logData) {
             try {
                 logWriter.close();
             }
@@ -455,16 +452,17 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if(currState == MoveState.TERMINATED)
             return;
 
-        if( platform.getSensor("position-sensor", PositionSensor.class).getPosition().getZ() < LANDING_ALTITUDE ) {
+        Vector3f pos = platform.getSensor("position-sensor", PositionSensor.class).getPosition();
+        if( pos.getZ() < LANDING_ALTITUDE ) {
             currState = MoveState.TAKEOFF;
         } else {
             currState = MoveState.MOVE;
         }
 
         currTarget = new Vector3f((float)x, (float)y, (float)z);
+        throttlePID.setSetpoint(z);
         currEpsilon = epsilon;
         currMoveCallback = callback;
-        throttlePID.setSetpoint(z);
     }
 
     protected void runToPoint(double x, double y, double z, double pitchSet, double epsilon, MoveCallback callback) {
@@ -475,49 +473,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         pitchSetPoint = pitchSet;
         //TODO: set yawSetPoint?
         currTarget = new Vector3f((float)x, (float)y, (float)z);
+        throttlePID.setSetpoint(z);
         currEpsilon = epsilon;
         currMoveCallback = callback;
-        throttlePID.setSetpoint(z);
     }
-
-
-    /**
-     * A convenience method for taking off.
-     *
-     * @param z The altitude to reach after takeoff.
-     *
-     */
-    protected void takeoff(double z) {
-
-        // center servos to make takeoff straighter
-        control.setRoll(control.getRollTrim());
-        control.setPitch(control.getPitchTrim());
-        control.setYaw(control.getYawTrim());
-
-        Vector3f pos = posSensor.getPosition();
-
-        moveToPoint(pos.x, pos.y, z, DESTINATION_EPSILON * 2);
-    }
-
-
-    /**
-     * A convenience method for taking off.
-     *
-     * @param z The altitude to reach after takeoff.
-     * @param callback The clalback to invoke when the altitude is reached.
-     */
-    protected void takeoff(double z, MoveCallback callback) {
-
-        // center servos to make takeoff straighter
-        control.setRoll(control.getRollTrim());
-        control.setPitch(control.getPitchTrim());
-        control.setYaw(control.getYawTrim());
-
-        Vector3f pos = posSensor.getPosition();
-
-        moveToPoint(pos.x, pos.y, z, DESTINATION_EPSILON * 2, callback);
-    }
-
 
     /**
      * Lands the helicopter at the current position.
@@ -531,26 +490,26 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
 
     /**
-     * Lands the helicopter at the current position.
+     * Lands the helicopter at the specified position.
      */
-    protected void landAtPoint(Vector3f target) {
-
-        target.z = posSensor.getPosition().z;
-        currTarget = target;
-
-        yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
-        currState = MoveState.LAND;
-    }
+//    protected void landAtPoint(Vector3f target) {
+//
+//        target.z = posSensor.getPosition().z;
+//        currTarget = target;
+//
+//        yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
+//        currState = MoveState.LAND;
+//    }
 
 
     /**
      * Lands the helicopter at the current position.
      */
-    protected void landAtPoint(Vector3f target, MoveCallback callback) {
-
-        currMoveCallback = callback;
-        landAtPoint(target);
-    }
+//    protected void landAtPoint(Vector3f target, MoveCallback callback) {
+//
+//        currMoveCallback = callback;
+//        landAtPoint(target);
+//    }
 
 
     /**
@@ -563,16 +522,16 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                         @Override
                         public void reachedDestination() {
-
-                            hoverAtPoint(landingSpot);
-
-                            platform.createTimer(new TimerCallback() {
-
-                                @Override
-                                public void fire(SimTime time) {
-                                    landAtPoint(landingSpot);
-                                }
-                            }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
+                            land();
+//                            hoverAtPoint(landingSpot);
+//
+//                            platform.createTimer(new TimerCallback() {
+//
+//                                @Override
+//                                public void fire(SimTime time) {
+//                                    landAtPoint(landingSpot);
+//                                }
+//                            }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
                         }
                     });
 
@@ -591,18 +550,19 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                         @Override
                         public void reachedDestination() {
+                            land(); // ignores callback
 
-                            hoverAtPoint(landingSpot);
-
-                            platform.createTimer(new TimerCallback() {
-
-                                @Override
-                                public void fire(SimTime time) {
-
-                                    currMoveCallback = callback;
-                                    landAtPoint(landingSpot);
-                                }
-                            }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
+//                            hoverAtPoint(landingSpot);
+//
+//                            platform.createTimer(new TimerCallback() {
+//
+//                                @Override
+//                                public void fire(SimTime time) {
+//
+//                                    currMoveCallback = callback;
+//                                    landAtPoint(landingSpot);
+//                                }
+//                            }, LANDING_STAGING_TIME, TimeUnit.SECONDS);
                         }
                     });
     }
@@ -613,19 +573,28 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
      *
      * @param angle The angle to turn (in radians).
      */
-    protected void turn(double angle) {
+    protected void face(double angle) {
         if(currState == MoveState.TERMINATED)
             return;
 
-        yawPID.setSetpoint(angle);
+        yawSetpoint = angle;
+    }
+
+    protected void face(Vector3f point)
+    {
+        if(currState == MoveState.TERMINATED)
+            return;
+
+        Vector3f pos = posSensor.getPosition();
+        face(Math.atan2(point.getY() - pos.getY(), point.getX() - pos.getX()));
     }
 
     protected void hover(float height) {
         if(currState == MoveState.TERMINATED)
             return;
 
-        throttlePID.setSetpoint(height);
         hover();
+        throttlePID.setSetpoint(height);
     }
 
     /**
@@ -634,18 +603,18 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     protected void hover() {
         if(currState == MoveState.TERMINATED)
             return;
+
     	currTarget = posSensor.getPosition();
-    	//yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
-        //throttlePID.setSetpoint(currTarget.z);
+        throttlePID.setSetpoint(currTarget.getZ());
         currState = MoveState.HOVER;
     }
-
 
     /**
      * Indicates that the helicopter should hover at the current altitude setpoint.
      */
     protected void hoverAtPoint(Vector3f target) {
-
+        if(currState == MoveState.TERMINATED)
+            return;
         currTarget = target;
         yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
         throttlePID.setSetpoint(currTarget.z);
@@ -705,25 +674,44 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
     private void updatePitch(long time, double xDisp)
     {
-        Double pitchDelta = pitchPID.update(time, xDisp);
+        Double newPitch = pitchPID.update(time, xDisp);
 
         // pid update can return null
-        if (pitchDelta == null)
-            pitchDelta = 0.0;
+        if (newPitch == null)
+            newPitch = 0.0;
 
-        control.setPitch(control.getPitchTrim() + pitchDelta);
+        if( newPitch > 0.5 ) { newPitch = 0.5; }
+        if( newPitch < -0.5 ) { newPitch = -0.5; }
+
+        double pitchDelta = newPitch - prevPitch;
+        if( pitchDelta > 0.01 ) { pitchDelta = 0.01; }
+        if( pitchDelta < -0.01 ) { pitchDelta = -0.01; }
+        newPitch = prevPitch + pitchDelta;
+
+        control.setPitch(control.getPitchTrim() + newPitch);
+
+        prevPitch = newPitch;
     }
-
 
     private void updateRoll(long time, double yDisp)
     {
-        Double rollDelta = rollPID.update(time, yDisp);
+        Double newRoll = rollPID.update(time, yDisp);
 
         // pid update can return null
-        if (rollDelta == null)
-            rollDelta = 0.0;
+        if (newRoll == null)
+            newRoll = 0.0;
 
-        control.setRoll(control.getRollTrim() + rollDelta);
+        if( newRoll > 0.5 ) { newRoll = 0.5; }
+        if( newRoll < -0.5 ) { newRoll = -0.5; }
+
+        double rollDelta = newRoll - prevRoll;
+        if( rollDelta > 0.01 ) { rollDelta = 0.01; }
+        if( rollDelta < -0.01 ) { rollDelta = -0.01; }
+        newRoll = prevRoll + rollDelta;
+
+        control.setRoll(control.getRollTrim() + newRoll);
+
+        prevRoll = newRoll;
     }
 
     private double filterHeading(double heading)
@@ -733,15 +721,15 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             currYaw = heading;
 
             double yawDiff = currYaw - prevYaw;
-            if( yawDiff >= Math.PI )
+            while( yawDiff >= Math.PI )
                 yawDiff -= 2.0 * Math.PI;
-            else if( yawDiff < -Math.PI )
+            while( yawDiff < -Math.PI )
                 yawDiff += 2.0 * Math.PI;
 
-            if( yawDiff > 2.0 )
-                yawDiff = 2.0;
-            if( yawDiff < -2.0 )
-                yawDiff = -2.0;
+            if( yawDiff > 0.1 )
+                yawDiff = 0.1;
+            if( yawDiff < -0.1 )
+                yawDiff = -0.1;
 
             yawDiffs[yawHistPtr] = yawDiff;
             yawHistPtr = (yawHistPtr + 1)%3;
@@ -802,6 +790,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         control.setYaw(control.getYawTrim() + yawDelta);
 //        control.setYaw(control.getYawTrim());
+
+//        System.out.println("Heading: " + heading + " yawDiff: " + yawDiff + " yawDelta: " + yawDelta);
     }
 
     private void showState() {
@@ -861,16 +851,17 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                logWriter.write(System.currentTimeMillis() + " " + pose.z + "\n");
                  //  logWriter.write(s.toString() + " " + dt + " " + pos1.getX() + " " + pos2.getX() + " " + vel_z + " " + thrust + "\n");
 
-                logger.debug(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
+                logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
 
                 logWriter.write(time + " " + dt + " "
                         + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " "
                         + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " "
+                        + currTarget.getX() + " " + currTarget.getY() + " " + currTarget.getZ() + " "
                         + thrust + " " + roll + " " + pitch + " " + yaw + " " + " "
-                        + throttlePID.getIErr() + " " + throttlePID.getDErr() + " "
-                        + rollPID.getIErr() + " " + rollPID.getDErr() + " "
-                        + pitchPID.getIErr() + " " + pitchPID.getDErr() + " "
-                        + yawPID.getIErr() + " " + yawPID.getDErr() + " "
+                        + throttlePID.getSetPoint() + " " + throttlePID.getIErr() + " " + throttlePID.getDErr() + " "
+                        + rollPID.getSetPoint() + " " + rollPID.getIErr() + " " + rollPID.getDErr() + " "
+                        + pitchPID.getSetPoint() + " " + pitchPID.getIErr() + " " + pitchPID.getDErr() + " "
+                        + yawPID.getSetPoint() + " " + yawPID.getIErr() + " " + yawPID.getDErr() + " "
                         + fHeading + "\n");
             }
             catch (IOException e) {

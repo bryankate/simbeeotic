@@ -51,16 +51,11 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
     private java.util.Timer navTimer;
     private int heliID;
-    long hoverCounter = 501;
 
-    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0, 1.0f, 1.0f),
-                                                   new Vector3f(0, -2.5f, 1.0f),
-                                                   new Vector3f(0, 1.0f, 1.0f),
-                                                   new Vector3f(0, -2.5f, 1.0f)};
-    private float[] headings = new float[] {1.57f,
-                                            -1.57f,
-                                            1.57f,
-                                            -1.57f};
+    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0.0f, 0.0f, 0.75f),
+                                                   new Vector3f(0.0f, -2.0f, 0.75f),
+                                                   new Vector3f(0.0f, 2.0f, 0.75f),
+                                                   new Vector3f(0.0f, -2.0f, 0.75f)};
     private PositionSensor posSensor;
 
     private static Logger logger = Logger.getLogger(AutoHeliWaypoint.class);
@@ -68,7 +63,6 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
     @Override
     public void start(Platform platform, final HeliControl control, final Boundary bounds) {
-
 
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
 
@@ -89,28 +83,19 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
             private boolean reachedWaypoint = true;
             private int currWaypoint = -1;
+            private int headingWaitCtr = 0;
 
             @Override
             public void run()
             {
-            	if (reachedWaypoint)
-            	{
-                    hoverCounter ++;
-                     if(hoverCounter > 400) {
-                        currWaypoint++;
-                        hoverCounter = 0;
-                        reachedWaypoint = false;
+            	if (reachedWaypoint) {
+                    currWaypoint++;
+                    reachedWaypoint = false;
 
-                        if (currWaypoint >= waypoints.length) {
-
-                            logger.info("Heli: " + heliID + " Finished scripted path, idling.");
-
-                            // done the script, land the heli at the hive
-                            //landAtHive();
-                            landAtHive();
-                        }
-                        else
-                        {
+                    if (currWaypoint >= waypoints.length) {
+                        logger.info("Heli: " + heliID + " Finished scripted path, idling.");
+                        landAtHive();
+                    } else if( headingWaitCtr <= 0 ) {
                             logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
                             moveToPoint(waypoints[currWaypoint].x,
                                         waypoints[currWaypoint].y,
@@ -126,15 +111,16 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                                                 reachedWaypoint = true;
                                             }
                                         });
+                            headingWaitCtr = 200;
+                    } else { // headingWaitCtr > 0
+                        if( (headingWaitCtr == 200) && (currWaypoint > 0) ) {
+                            hover(waypoints[currWaypoint-1]);
+                            face(waypoints[currWaypoint]);
                         }
+                        headingWaitCtr--;
+                        currWaypoint--; // negate default run() operations
+                        reachedWaypoint = true; // negate default run() operations
                     }
-                    else {
-                         if(currWaypoint >= 0)
-                             turn(headings[currWaypoint]);
-                         else
-                             turn(0.0);
-                    }
-                    hover(1.0);
                 }
             }
         }, 0, 10);
