@@ -126,7 +126,7 @@ public class AutoHeliBee extends AbstractHeli {
 
         // start out by zeroing the heli (thrust to zero, yaw, pitch and roll to 0.5)
         sendCommands();
-
+        receiveData();
         // setup a timer that checks for boundary violations
         if (boundsCheckEnabled) {
 
@@ -170,6 +170,7 @@ public class AutoHeliBee extends AbstractHeli {
                         }
 
                        sendCommands();
+                       receiveData();
 
                         // no need to check anymore
                         boundsTimer.cancel();
@@ -237,6 +238,7 @@ public class AutoHeliBee extends AbstractHeli {
         while(thrust > 0) {
             setThrust(getThrust() - 1);
             sendCommands();
+            receiveData();
             try {
                 Thread.currentThread().sleep(500);
             }
@@ -331,6 +333,39 @@ public class AutoHeliBee extends AbstractHeli {
         return yawTrim;
     }
 
+    public void receiveData() {
+        byte[] data = new byte[255], dptr;
+        long fps, gyros[] = new long[3];
+        char process[] = new char[8];
+        int i=0;
+
+        DatagramPacket rcv = new DatagramPacket(data, 18);
+        try {
+            sock.receive(rcv);
+        }
+        catch(IOException ioe) {
+            logger.error("Error in receiving data packet", ioe);
+        }
+
+        dptr = rcv.getData();
+
+        fps =  (dptr[0] << 24) + (dptr[1] << 16) + (dptr[2] << 8) + (dptr[3] & 0xFF);
+        for(i=0; i < 8; i++)
+            process[i] = (char) dptr[4+i];
+
+        for(i=0; i < 3; i++)
+            gyros[i] = (dptr[12 + 2*i] << 8) + dptr[12 + 2*i + 1];
+
+        System.out.format("fps: %05d\n", fps);
+        System.out.format("process: ");
+        for(i=0; i < 8; i++)
+            System.out.format(" %05u ", process[i]);
+        System.out.println();
+
+        for(i=0; i < 3; i++)
+            System.out.format(" %05u ", gyros[i]);
+        System.out.println();
+    }
 
     public void sendCommands() {
 
@@ -346,6 +381,7 @@ public class AutoHeliBee extends AbstractHeli {
             sock.send(dgram);
             //logger.info("Sent command of size " + commands.length + " t: " + commands[1] + " y: " + commands[2] + " p: " + commands[3] + " r: " + commands[4]);
         }
+
         catch(IOException ioe) {
             logger.error("Could not send command packet to heli_server.", ioe);
         }
