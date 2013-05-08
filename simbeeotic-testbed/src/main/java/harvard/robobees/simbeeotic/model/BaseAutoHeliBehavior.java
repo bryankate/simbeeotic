@@ -88,6 +88,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private Platform platform;
     private PositionSensor posSensor;
     private PoseSensor orientSensor;
+    private HeliDataStruct heliData;
 
     // controllers and set points
     private MedianPIDController throttlePID;
@@ -118,7 +119,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
 //    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
     private static final float LANDING_EPSILON = 0.3f;            // m
-    private static final float LANDING_ALTITUDE = 0.2f;          // m, below which we can drop
+    private static final float LANDING_ALTITUDE = 0.15f;          // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
 //    private static final long LANDING_STAGING_TIME = 1;           // s
     private static final float TAKEOFF_ALTITUDE = 0.25f;
@@ -156,6 +157,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         posSensor = platform.getSensor("position-sensor", PositionSensor.class);
         orientSensor = platform.getSensor("pose-sensor", PoseSensor.class);
+        heliData = new HeliDataStruct();
 
         if (posSensor == null) {
             throw new RuntimeModelingException("A position sensor is needed for BaseAutoHeliBehavior.");
@@ -165,10 +167,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseAutoHeliBehavior.");
         }
 
-        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.3, 0.5);
-        pitchPID = new MedianPIDController(0.0, 0.3, 0.1, 0.1, 0.1);
-        rollPID = new MedianPIDController(0.0, 0.25, 0.1, 0.1, 0.1);
-        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1);
+        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.25, 1.0);
+        pitchPID = new MedianPIDController(0.0, 0.4, 0.1, 0.2, 0.1, 1.0, 1.0);
+        rollPID = new MedianPIDController(0.0, 0.4, 0.1, 0.2, 0.1, 1.0, 1.0);
+        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -293,7 +295,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                     	else {
 
                             // try to stay on target while landing
-                            updateYaw(time, fHeading);
+                            updateYaw(time, 0);
                             updatePitch(time, -targetBX);
                             updateRoll(time, targetBY);
                     	}
@@ -399,6 +401,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         // do nothing
                 }
                 control.sendCommands();     // send updated commands to heli
+                heliData = control.receiveData();
+
             }
         }, 0, 10);        // start with delay of 0 ms and run every 10 ms
     }
@@ -406,9 +410,6 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
     @Override
     public void stop() {
-
-        control.setThrust(0.0);
-        control.sendCommands();
 
         logger.warn("Heli-" + myHeliId + " is stopping...\n");
 
@@ -680,8 +681,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if (newPitch == null)
             newPitch = 0.0;
 
-        if( newPitch > 0.5 ) { newPitch = 0.5; }
-        if( newPitch < -0.5 ) { newPitch = -0.5; }
+//        if( newPitch > 0.5 ) { newPitch = 0.5; }
+//        if( newPitch < -0.5 ) { newPitch = -0.5; }
 
         double pitchDelta = newPitch - prevPitch;
         if( pitchDelta > 0.01 ) { pitchDelta = 0.01; }
@@ -701,8 +702,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if (newRoll == null)
             newRoll = 0.0;
 
-        if( newRoll > 0.5 ) { newRoll = 0.5; }
-        if( newRoll < -0.5 ) { newRoll = -0.5; }
+//        if( newRoll > 0.5 ) { newRoll = 0.5; }
+//        if( newRoll < -0.5 ) { newRoll = -0.5; }
 
         double rollDelta = newRoll - prevRoll;
         if( rollDelta > 0.01 ) { rollDelta = 0.01; }
@@ -777,9 +778,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //        yawSetpoint = 1.0 * Math.PI / 2.0;
 
         double yawDiff = yawSetpoint - idYaw;
-        if( yawDiff >= Math.PI )
+        while( yawDiff >= Math.PI )
             yawDiff -= 2 * Math.PI;
-        else if( yawDiff < -Math.PI )
+        while( yawDiff < -Math.PI )
             yawDiff += 2 * Math.PI;
 
        Double yawDelta = yawPID.update(time, yawDiff);
@@ -862,13 +863,18 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         + rollPID.getSetPoint() + " " + rollPID.getIErr() + " " + rollPID.getDErr() + " "
                         + pitchPID.getSetPoint() + " " + pitchPID.getIErr() + " " + pitchPID.getDErr() + " "
                         + yawPID.getSetPoint() + " " + yawPID.getIErr() + " " + yawPID.getDErr() + " "
+                        + heliData.frameCount + " " + heliData.gyros[0] + " " + heliData.gyros[1] + " " + heliData.gyros[2] + " "
+                        + (heliData.process[0]) + " " + (heliData.process[1]) + " " + (heliData.process[2]) + " " + (heliData.process[3]) + " "
+                        + (heliData.process[4]) + " " + (heliData.process[5]) + " " + (heliData.process[6]) + " " + (heliData.process[7]) + " "
+                        + (heliData.process[8]) + " " + (heliData.process[9]) + " " + (heliData.process[10]) + " " + (heliData.process[11]) + " "
+                        + (heliData.process[12]) + " " + (heliData.process[13]) + " " + (heliData.process[14]) + " " + (heliData.process[15]) + " "
+                        + (heliData.debug[0]) + " " + (heliData.debug[1]) + " " + (heliData.debug[2]) + " " + (heliData.debug[3]) + " "
                         + fHeading + "\n");
             }
             catch (IOException e) {
                 // do nothing
             }
         }
-
     }
 
 

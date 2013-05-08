@@ -42,7 +42,7 @@
     </master-seed>
 
     <simulation>
-        <end-time>100000</end-time>
+        <end-time>1000000</end-time>
     </simulation>
 
     <models>

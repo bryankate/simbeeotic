@@ -164,4 +164,9 @@ public class HeliBee extends AbstractHeli {
     @Override
     public void sendCommands() {
     }
+
+    @Override
+    public HeliDataStruct receiveData() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

@@ -152,4 +152,6 @@ public interface HeliControl {
     public void setThrust(double level);
 
     public void sendCommands();
+
+    public HeliDataStruct receiveData();
 }

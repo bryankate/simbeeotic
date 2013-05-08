@@ -353,6 +353,11 @@ public class HWILBee extends AbstractHeli {
         }
     }
 
+    @Override
+    public HeliDataStruct receiveData() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 
     private static double cap(double in) {
 

@@ -53,7 +53,7 @@ public class AutoHeliBaseHover extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
-        moveToPoint(0, 0, 1, 0.1);
+//        moveToPoint(0, 0, 1, 0.1);
 
 //        moveToPoint(0, 0, 1, 0.2,
 //        			new MoveCallback() {

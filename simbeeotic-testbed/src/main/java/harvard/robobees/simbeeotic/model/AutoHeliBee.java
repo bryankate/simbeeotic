@@ -110,7 +110,7 @@ public class AutoHeliBee extends AbstractHeli {
 
         throttleTrim = normCommand(185);
         rollTrim = normCommand(127);//100);
-        pitchTrim = normCommand(127);//140);
+        pitchTrim = normCommand(147);//140);
         yawTrim = normCommand(127);
         try {
             sock = new DatagramSocket();
@@ -137,7 +137,7 @@ public class AutoHeliBee extends AbstractHeli {
                     Vector3f currPos = getTruthPosition();
 
 //                   logger.info("occlusion: " + externalSync.getOccluded(getName()));
-                   if(externalSync.getOccluded(getName()) > 5000) { // runs every 20 ms
+                   if(externalSync.getOccluded(getName()) > 10000) { // runs every 20 ms
                         // out of bounds, shutdown behaviors and heli
                         logger.warn("Heli (" + getName() + ") is occluded for more than half a second, shutting down.");
 
@@ -145,36 +145,34 @@ public class AutoHeliBee extends AbstractHeli {
                             b.stop();
                         }
 
-                        // if we are too high try a soft landing
-                        if (currPos.z >= landingHeight) {
-
-                            // reduce rotor speed for soft landing
-                            setThrust(getThrust() - 0.3);
-
-                            // set a timer a few seconds in the future to shutdown completely
-                            createTimer(new TimerCallback() {
-
-                                @Override
-                                public void fire(SimTime time) {
-                                    logger.info("Out of bounds timer fired");
-                                    setThrust(0);
-                                    setPitch(getPitchTrim());
-                                    setRoll(getRollTrim());
-                                    getSimEngine().requestScenarioTermination();
-                                    finish();
-                                }
-                            }, landingTime, TimeUnit.SECONDS);
-                        }
-                        else {
-                            setThrust(0);
-                        }
-
-                       sendCommands();
-                       receiveData();
+//                        // if we are too high try a soft landing
+//                        if (currPos.z >= landingHeight) {
+//
+//                            // reduce rotor speed for soft landing
+//                            setThrust(getThrust() - 0.3);
+//
+//                            // set a timer a few seconds in the future to shutdown completely
+//                            createTimer(new TimerCallback() {
+//
+//                                @Override
+//                                public void fire(SimTime time) {
+//                                    logger.info("Out of bounds timer fired");
+//                                    setThrust(0);
+//                                    setPitch(getPitchTrim());
+//                                    setRoll(getRollTrim());
+//                                    getSimEngine().requestScenarioTermination();
+//                                    finish();
+//                                }
+//                            }, landingTime, TimeUnit.SECONDS);
+//                        }
+//                        else {
+//                            setThrust(0);
+//                        }
 
                         // no need to check anymore
                         boundsTimer.cancel();
 
+                       finish();
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS, 20, TimeUnit.MILLISECONDS);
@@ -236,19 +234,16 @@ public class AutoHeliBee extends AbstractHeli {
 
         // try to shutdown the heli gently
         while(thrust > 0) {
-            setThrust(getThrust() - 1);
+            setThrust(getThrust()*0.9);
             sendCommands();
             receiveData();
             try {
-                Thread.currentThread().sleep(500);
+                Thread.currentThread().sleep(40);
             }
             catch(Exception e) {
                 System.out.println(" Exception " + e.toString());
             }
         }
-
-        setCmd(((byte)42));
-        setThrust(0.0);
 
         logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();
@@ -333,13 +328,12 @@ public class AutoHeliBee extends AbstractHeli {
         return yawTrim;
     }
 
-    public void receiveData() {
+    public HeliDataStruct receiveData() {
         byte[] data = new byte[255], dptr;
-        long fps, gyros[] = new long[3];
-        char process[] = new char[8];
+        HeliDataStruct h = new HeliDataStruct();
         int i=0;
 
-        DatagramPacket rcv = new DatagramPacket(data, 18);
+        DatagramPacket rcv = new DatagramPacket(data, 30);
         try {
             sock.receive(rcv);
         }
@@ -349,22 +343,36 @@ public class AutoHeliBee extends AbstractHeli {
 
         dptr = rcv.getData();
 
-        fps =  (dptr[0] << 24) + (dptr[1] << 16) + (dptr[2] << 8) + (dptr[3] & 0xFF);
-        for(i=0; i < 8; i++)
-            process[i] = (char) dptr[4+i];
+//        System.out.print("dptr: ");
+//        for(i = 0; i < 30; i++ )
+//            System.out.print(dptr[i] + " ");
+//        System.out.println();
+
+        h.frameCount =  (dptr[0] << 24) + (dptr[1] << 16) + (dptr[2] << 8) + (dptr[3] & 0xFF);
+        for(i=0; i < 16; i++)
+            h.process[i] = (short)(dptr[4+i] & 0xFF);
 
         for(i=0; i < 3; i++)
-            gyros[i] = (dptr[12 + 2*i] << 8) + dptr[12 + 2*i + 1];
+            h.gyros[i] = (short)((dptr[20 + 2*i] << 8) + (dptr[20 + 2*i + 1] & 0xFF));
 
-        System.out.format("fps: %05d\n", fps);
-        System.out.format("process: ");
-        for(i=0; i < 8; i++)
-            System.out.format(" %05u ", process[i]);
-        System.out.println();
+        h.debug[0] = (((short)dptr[26]) & 0xFF) * 360.0f/256.0f;
+        h.debug[1] = (((short)dptr[27]) & 0xFF) * 360.0f/256.0f;
+        h.debug[2] = (((short)dptr[28] & 0xFF) - 127.5f)*2.0f;
+        h.debug[3] = (((short)dptr[29] & 0xFF) - 127.5f)/25.0f;
 
-        for(i=0; i < 3; i++)
-            System.out.format(" %05u ", gyros[i]);
-        System.out.println();
+//        System.out.format("debug: %f %f %f %f\n", h.debug[0], h.debug[1], h.debug[2], h.debug[3]);
+
+//        System.out.format("frame_count: %d\n", h.frameCount);
+//        System.out.format("process: ");
+//        for(i=0; i < 16; i++)
+//            System.out.format(" %3d ", h.process[i]);
+//        System.out.println();
+
+//        for(i=0; i < 3; i++)
+//            System.out.format(" %5d ", h.gyros[i]);
+//        System.out.println();
+
+        return h;
     }
 
     public void sendCommands() {

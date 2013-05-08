@@ -47,15 +47,17 @@ public class MedianPIDController extends PIDController {
     final int MFWIDTH = 3;
     protected double[] median;
     int mptr;
-    double alpha;
+    double alpha, neg, pos;
     double mediand;
     double ferr, lferr;
 
     private static Logger logger = Logger.getLogger(MedianPIDController.class);
 
-    public MedianPIDController(double set, double p, double i, double d, double a) {
+    public MedianPIDController(double set, double p, double i, double d, double a, double na, double pa) {
         super(set, p, i, d);
         alpha = a;
+        neg = na;
+        pos = pa;
         median = new double[MFWIDTH];
         for( int ii = 0; ii < MFWIDTH; ii++ )
             median[ii] = 0;
@@ -130,7 +132,9 @@ public class MedianPIDController extends PIDController {
         lastError = error;
         lferr = ferr;
 
-        return (pGain * error) + (iGain * integral) + (dGain * mediand);
+        double ret = (pGain * error) + (iGain * integral) + (dGain * mediand);
+
+        return ret < 0 ? neg*ret : pos*ret;
     }
 
     public double getDErr() {
