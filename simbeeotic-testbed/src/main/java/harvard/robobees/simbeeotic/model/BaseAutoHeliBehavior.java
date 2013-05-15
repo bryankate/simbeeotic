@@ -166,7 +166,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         }
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.25, 1.0);
-        pitchPID = new MedianPIDController(0.0, 0.5, 0.1, 0.2, 0.1, 1.0, 1.0);
+        pitchPID = new MedianPIDController(0.0, 0.6, 0.1, 0.2, 0.1, 1.0, 1.0);
         rollPID = new MedianPIDController(0.0, 0.6, 0.1, 0.1, 0.1, 1.0, 1.0);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
 
@@ -255,7 +255,17 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                 long time = System.nanoTime();
                 double dist = getDistfromPosition3d(currTarget);
+                double dist2d = getDistfromPosition2d(currTarget);
+                double avgrflow=0.0, avglflow=0.0;
 
+                for(int i=0; i < 8; i++) {
+                    avglflow += heliData.process[i];
+                    avgrflow += heliData.process[8+i];
+                }
+                avglflow = (avglflow / 8.0 - 127.0)/127.0;
+                avgrflow = (avgrflow / 8.0 - 127.0)/127.0;
+
+                // Normalize roll so it doesnt react to how far it is from target
                 switch(currState) {
 
                     case IDLE:
@@ -307,84 +317,52 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                             }
                         }
 
-                        Double pitchDelta = pitchPID.update(time, 0);
-
-                        // pid update can return null
-                        if (pitchDelta == null)
-                            pitchDelta = 0.0;
-
-                        control.setPitch(control.getPitchTrim() + pitchDelta + pitchSetPoint);
-
+//                        if( dist2d > TURNING_CIRCLE_RADIUS ) {
+//                            //yawSetpoint = Math.atan2(targetWY, targetWX);
+//                            //targetBY /= dist2d;
+//                        }
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
-                        updateRoll(time, targetBY);
+                        updatePitch(time, -targetBX);
+
+                        if(false) {//(pos.getY() < 2.0) && (pos.getY() > -2.0)) {
+                            // Setting roll using OF
+                            double flowdiff = avglflow - avgrflow;
+                            double newRoll = -10.0 * (0.15 - flowdiff);
+
+    //                        double rollDelta = newRoll - prevRoll;
+    ////                        if( rollDelta > 0.01 ) { rollDelta = 0.01; }
+    ////                        if( rollDelta < -0.01 ) { rollDelta = -0.01; }
+    //                        newRoll = prevRoll + rollDelta;
+                            control.setRoll(newRoll + control.getRollTrim());
+                            prevRoll = newRoll;
+
+                            System.out.println(pos.getX() + " " + pos.getY() + " " + avgrflow + " " + avglflow + " " + flowdiff + " " + newRoll + " " + control.getRoll());
+                        }
+                        else {
+                            updateRoll(time, targetBY);
+                        }
                         break;
 
                     case MOVE:
-//                        double dist2 = 0;//getDistfromPosition3d(calcTarget);
-
                         if (dist <= currEpsilon) {
-//
-//                            // made it! go to the hovering state
-////                            hover();
-//
                             if (currMoveCallback != null) {
-//
-                                //hover(1.0);
-////                                tmp = currMoveCallback;
                                 currMoveCallback.reachedDestination();
                                 currMoveCallback = null;
-//                                break;
                             }
-//
-////                            if ((tmp != null) && (currMoveCallback != null) && (tmp.equals(currMoveCallback))) {
-////                                currMoveCallback = null;
-////                            }
-//
-//                            // we reached the destination, so break out of this iteration of the loop
-////                            break;
                         }
-                        
-                        
-                        // give the walls a repulsive force
-//                        calcTarget.x -= Math.tan(pos.x * Math.PI / 4) * Math.abs(calcTarget.x) / 5;
-//                        calcTarget.y -= Math.tan(pos.y * Math.PI / 4) * Math.abs(calcTarget.y) / 5;
-
-                        // avoid other helicopters
-//                        AbstractHeli closestHeli = findClosestHeli(allHelis, COLLISION_BUFF, COLLISION_BUFF_HIVE);
-//
-//                        if ((closestHeli != null) && (pos.z > FLYING_ALTITUDE)) {
-//
-//                            dist = getDistfromPosition3d(closestHeli.getTruthPosition());
-//
-//                            rVec = new Vector3f(pos);
-//                            rVec.sub(closestHeli.getTruthPosition());
-//                            rVec.scale((float) (1 / Math.pow(dist, 3)));
-//
-//                            calcTarget.add(rVec);
-//                        }
-                        
-                        // determine how much to pitch forward
-//                        double pitchAdjustment = 0.2;
-//                        dist = getDistfromPosition2d(calcTarget);
-//
-//                        if (dist < SLOWDOWN_DISTANCE) {
-//                            pitchAdjustment = 0.1;
-//                        }
 
                         // compute desired heading
-                        if( dist > TURNING_CIRCLE_RADIUS ) {
-                            yawSetpoint = Math.atan2(targetWY, targetWX);
-                        }
+//                        if( dist2d > TURNING_CIRCLE_RADIUS ) {
+//                            //yawSetpoint = Math.atan2(targetWY, targetWX);
+//                            //targetBY /= dist2d;
+//                        }
 
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
                         updateRoll(time, targetBY);
-//                        control.setPitch(control.getPitchTrim() + pitchAdjustment);
 
-//                        System.out.println("bodyX: " + disp.dot(bodyX));
-//                        System.out.println("bodyY: " + disp.dot(bodyY));
                         break;
 
                     case HOVER:
@@ -460,19 +438,23 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         currTarget = new Vector3f((float)x, (float)y, (float)z);
         throttlePID.setSetpoint(z);
+        rollPID.setSetpoint(0.0);
+        pitchPID.setSetpoint(0.0);
+
         currEpsilon = epsilon;
         currMoveCallback = callback;
     }
 
-    protected void runToPoint(double x, double y, double z, double pitchSet, double epsilon, MoveCallback callback) {
+    protected void runToPoint(double x, double y, double z, double epsilon, MoveCallback callback) {
         if(currState == MoveState.TERMINATED)
             return;
 
         currState = MoveState.RUN;
-        pitchSetPoint = pitchSet;
-        //TODO: set yawSetPoint?
         currTarget = new Vector3f((float)x, (float)y, (float)z);
         throttlePID.setSetpoint(z);
+        rollPID.setSetpoint(0.0);
+        pitchPID.setSetpoint(0.0);
+
         currEpsilon = epsilon;
         currMoveCallback = callback;
     }
@@ -485,6 +467,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     	currTarget = posSensor.getPosition();
 //    	yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
         currState = MoveState.LAND;
+        rollPID.setSetpoint(0.0);
+        pitchPID.setSetpoint(0.0);
+        throttlePID.setSetpoint(0.0); // So it is obvious in the log that we are landing. We do not updateThrottle while landing, so its ok
     }
 
 
@@ -605,6 +590,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
     	currTarget = posSensor.getPosition();
         throttlePID.setSetpoint(currTarget.getZ());
+        rollPID.setSetpoint(0.0);
+        pitchPID.setSetpoint(0.0);
         currState = MoveState.HOVER;
     }
 
@@ -617,6 +604,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         currTarget = target;
         yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
         throttlePID.setSetpoint(currTarget.z);
+        rollPID.setSetpoint(0.0);
+        pitchPID.setSetpoint(0.0);
         currState = MoveState.HOVER;
     }
 
@@ -857,7 +846,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                logWriter.write(System.currentTimeMillis() + " " + pose.z + "\n");
                  //  logWriter.write(s.toString() + " " + dt + " " + pos1.getX() + " " + pos2.getX() + " " + vel_z + " " + thrust + "\n");
 
-                logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
+                //logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
 
                 logWriter.write(time + " " + dt + " "
                         + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " "

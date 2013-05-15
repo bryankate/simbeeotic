@@ -100,7 +100,8 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                         land();
                     } else if( headingWaitCtr <= 0 ) {
                             logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
-                            moveToPoint(waypoints[currWaypoint].x,
+                            if(currWaypoint == 2) {
+                                runToPoint(waypoints[currWaypoint].x,
                                         waypoints[currWaypoint].y,
                                         waypoints[currWaypoint].z,
                                         tol,
@@ -114,7 +115,24 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                                                 reachedWaypoint = true;
                                             }
                                         });
-                            headingWaitCtr = headingWait;
+                            }
+                            else {
+                                moveToPoint(waypoints[currWaypoint].x,
+                                        waypoints[currWaypoint].y,
+                                        waypoints[currWaypoint].z,
+                                        tol,
+                                        new MoveCallback()
+                                        {
+                                            @Override
+                                            public void reachedDestination()
+                                            {
+                                                //hover(1.0);
+                                                logger.info("Heli: " + heliID + " Reached waypoint.");
+                                                reachedWaypoint = true;
+                                            }
+                                        });
+                                headingWaitCtr = headingWait;
+                            }
                     } else { // headingWaitCtr > 0
                         if( (headingWaitCtr == headingWait) && (currWaypoint > 0) ) {
                             hover(waypoints[currWaypoint-1]);

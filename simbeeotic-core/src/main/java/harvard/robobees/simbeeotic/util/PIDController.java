@@ -47,7 +47,7 @@ public class PIDController {
     protected double iGain;
     protected double dGain;
 
-    protected long lastTime;
+    protected long lastTime = 0;
     protected double lastError = 0;
     protected double integral = 0;
 
