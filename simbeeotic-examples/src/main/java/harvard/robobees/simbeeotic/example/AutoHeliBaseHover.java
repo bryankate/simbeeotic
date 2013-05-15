@@ -32,10 +32,11 @@
 package harvard.robobees.simbeeotic.example;
 
 
-import harvard.robobees.simbeeotic.model.*;
+import harvard.robobees.simbeeotic.model.BaseAutoHeliBehavior;
+import harvard.robobees.simbeeotic.model.Boundary;
+import harvard.robobees.simbeeotic.model.HeliControl;
+import harvard.robobees.simbeeotic.model.Platform;
 import org.apache.log4j.Logger;
-
-import javax.vecmath.Vector3f;
 
 
 /**
@@ -53,7 +54,7 @@ public class AutoHeliBaseHover extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
-//        moveToPoint(0, 0, 1, 0.1);
+        moveToPoint(0, 0, 1, 0.1);
 
 //        moveToPoint(0, 0, 1, 0.2,
 //        			new MoveCallback() {

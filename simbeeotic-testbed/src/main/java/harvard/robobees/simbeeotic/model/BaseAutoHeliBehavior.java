@@ -36,7 +36,6 @@ import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimEngine;
-import harvard.robobees.simbeeotic.SimTime;
 import harvard.robobees.simbeeotic.configuration.ConfigurationAnnotations.GlobalScope;
 import harvard.robobees.simbeeotic.model.sensor.PoseSensor;
 import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
@@ -52,7 +51,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A base class that implements a simple movement abstraction on top of the
@@ -168,9 +166,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         }
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.25, 1.0);
-        pitchPID = new MedianPIDController(0.0, 0.4, 0.1, 0.2, 0.1, 1.0, 1.0);
-        rollPID = new MedianPIDController(0.0, 0.4, 0.1, 0.2, 0.1, 1.0, 1.0);
-        yawPID = new MedianPIDController(0.0, 0.2, 0.0, 0.0, 0.1, 1.0, 1.0);
+        pitchPID = new MedianPIDController(0.0, 0.5, 0.1, 0.2, 0.1, 1.0, 1.0);
+        rollPID = new MedianPIDController(0.0, 0.6, 0.1, 0.1, 0.1, 1.0, 1.0);
+        yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -788,6 +786,13 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         // pid update can return null
         if(yawDelta == null)
             yawDelta = 0.0;
+
+        double yaw_clamp = 0.2;
+        double yaw_clamp_neg = -1.0 * yaw_clamp;
+        if(yawDelta > yaw_clamp)
+            yawDelta = yaw_clamp;
+        else if(yawDelta < yaw_clamp_neg)
+            yawDelta = yaw_clamp_neg;
 
         control.setYaw(control.getYawTrim() + yawDelta);
 //        control.setYaw(control.getYawTrim());

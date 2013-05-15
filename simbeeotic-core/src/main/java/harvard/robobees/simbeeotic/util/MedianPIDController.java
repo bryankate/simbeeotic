@@ -85,14 +85,15 @@ public class MedianPIDController extends PIDController {
             lastError = error;
 
             lferr = error;
+            ferr = error;
 
             for( int ii = 0; ii < MFWIDTH; ii++ )
                 median[ii] = 0;
 
 //            return null;
         }
-
-        ferr = alpha*error + (1.0 - alpha)*ferr;
+        else
+            ferr = alpha*error + (1.0 - alpha)*ferr;
 
         double dt = (double)(currTime - lastTime) / TimeUnit.SECONDS.toNanos(1);
 

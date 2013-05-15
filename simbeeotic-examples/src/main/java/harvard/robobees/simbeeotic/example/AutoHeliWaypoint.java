@@ -85,7 +85,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
             private int currWaypoint = -1;
             private int headingWaitCtr = 0;
 
-           double tol = 0.15;
+           double tol = 0.2;
            int headingWait = 350;
 
             @Override

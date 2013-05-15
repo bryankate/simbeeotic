@@ -145,32 +145,31 @@ public class AutoHeliBee extends AbstractHeli {
                             b.stop();
                         }
 
-//                        // if we are too high try a soft landing
+                        // if we are too high try a soft landing
 //                        if (currPos.z >= landingHeight) {
 //
 //                            // reduce rotor speed for soft landing
-//                            setThrust(getThrust() - 0.3);
+//                            setThrust(getThrust()*.99);
 //
-//                            // set a timer a few seconds in the future to shutdown completely
-//                            createTimer(new TimerCallback() {
-//
-//                                @Override
-//                                public void fire(SimTime time) {
-//                                    logger.info("Out of bounds timer fired");
-//                                    setThrust(0);
-//                                    setPitch(getPitchTrim());
-//                                    setRoll(getRollTrim());
-//                                    getSimEngine().requestScenarioTermination();
-//                                    finish();
-//                                }
-//                            }, landingTime, TimeUnit.SECONDS);
+////                            // set a timer a few seconds in the future to shutdown completely
+////                            createTimer(new TimerCallback() {
+////
+////                                @Override
+////                                public void fire(SimTime time) {
+////                                    logger.info("Out of bounds timer fired");
+////                                    setThrust(0);
+////                                    setPitch(getPitchTrim());
+////                                    setRoll(getRollTrim());
+////                                    getSimEngine().requestScenarioTermination();
+////                                    finish();
+////                                }
+////                            }, landingTime, TimeUnit.SECONDS);
 //                        }
 //                        else {
 //                            setThrust(0);
-//                        }
-
-                        // no need to check anymore
-                        boundsTimer.cancel();
+//                            // no need to check anymore
+//                            boundsTimer.cancel();
+//Z                       }
 
                        finish();
                     }
@@ -233,8 +232,9 @@ public class AutoHeliBee extends AbstractHeli {
         }
 
         // try to shutdown the heli gently
-        while(thrust > 0) {
-            setThrust(getThrust()*0.9);
+        while(thrust > 50) {
+            setThrust(getThrust()*0.995);
+            logger.info("Landing: setting thrust to " + getThrust());
             sendCommands();
             receiveData();
             try {
