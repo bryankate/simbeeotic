@@ -110,7 +110,7 @@ public class AutoHeliBee extends AbstractHeli {
 
         throttleTrim = normCommand(185);
         rollTrim = normCommand(127);//100);
-        pitchTrim = normCommand(147);//140);
+        pitchTrim = normCommand(127);//140);
         yawTrim = normCommand(127);
         try {
             sock = new DatagramSocket();
@@ -263,8 +263,8 @@ public class AutoHeliBee extends AbstractHeli {
         return (thrust - THROTTLE_LOW) / (double)(THROTTLE_HIGH - THROTTLE_LOW);
     }
 
-    @Override
-    public final void setThrust(double level) {
+    @Inject (optional = true)
+    public final void setThrust(@Named("trim-throttle") double level) {
         thrust = (int) round(THROTTLE_LOW + cap(level) * (double)(THROTTLE_HIGH - THROTTLE_LOW));
         logger.debug("thrust: " + thrust);
     }
@@ -276,8 +276,8 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
 
-    @Override
-    public final void setRoll(double level) {
+    @Inject (optional = true)
+    public final void setRoll(@Named("trim-roll") double level) {
         roll = rawCommand(cap(level));
         logger.debug("roll: " + roll);
     }
@@ -289,8 +289,8 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
 
-    @Override
-    public final void setPitch(double level) {
+    @Inject (optional = true)
+    public final void setPitch(@Named("trim-pitch") double level) {
         pitch = rawCommand(cap(level));
         logger.debug("pitch: " + pitch);
     }
@@ -302,8 +302,8 @@ public class AutoHeliBee extends AbstractHeli {
     }
 
 
-    @Override
-    public final void setYaw(double level) {
+    @Inject (optional = true)
+    public final void setYaw(@Named("trim-yaw") double level) {
         yaw = rawCommand(cap(level));
         logger.debug("yaw: " + yaw);
     }
