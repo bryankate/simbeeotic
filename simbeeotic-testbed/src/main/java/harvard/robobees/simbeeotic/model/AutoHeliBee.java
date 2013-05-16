@@ -232,7 +232,7 @@ public class AutoHeliBee extends AbstractHeli {
         }
 
         // try to shutdown the heli gently
-        while(getThrust() > 0.5) {
+        while(getThrust() > 0.625) {
             setThrust(getThrust()*0.995);
             logger.info("Landing: setting thrust to " + getThrust());
             sendCommands();
@@ -245,6 +245,8 @@ public class AutoHeliBee extends AbstractHeli {
             }
         }
         setThrust(0.0);
+        sendCommands();
+        receiveData();
 
         logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();

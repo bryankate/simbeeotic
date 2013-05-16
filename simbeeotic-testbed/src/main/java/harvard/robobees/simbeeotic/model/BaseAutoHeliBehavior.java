@@ -93,6 +93,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private MedianPIDController pitchPID;
     private MedianPIDController rollPID;
     private MedianPIDController yawPID;
+    private MedianPIDController flowPID;
     private double[] yawDiffs;
     private int yawHistPtr;
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
@@ -166,9 +167,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         }
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.25, 1.0);
-        pitchPID = new MedianPIDController(0.0, 0.6, 0.1, 0.2, 0.1, 1.0, 1.0);
-        rollPID = new MedianPIDController(0.0, 0.6, 0.1, 0.1, 0.1, 1.0, 1.0);
+        pitchPID = new MedianPIDController(0.0, 0.8, 0.1, 0.2, 0.1, 1.0, 1.0);
+        rollPID = new MedianPIDController(0.0, 0.8, 0.1, 0.1, 0.1, 1.0, 1.0);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
+        flowPID = new MedianPIDController(0.10, -5.0, -0.1, 0.0, 0.1, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -265,7 +267,6 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 avglflow = (avglflow / 8.0 - 127.0)/127.0;
                 avgrflow = (avgrflow / 8.0 - 127.0)/127.0;
 
-                // Normalize roll so it doesnt react to how far it is from target
                 switch(currState) {
 
                     case IDLE:
@@ -325,21 +326,13 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
 
-                        if(false) {//(pos.getY() < 2.0) && (pos.getY() > -2.0)) {
+                        if((pos.getY() < 1.5) && (pos.getY() > -1.5)) {
                             // Setting roll using OF
                             double flowdiff = avglflow - avgrflow;
-                            double newRoll = -10.0 * (0.15 - flowdiff);
-
-    //                        double rollDelta = newRoll - prevRoll;
-    ////                        if( rollDelta > 0.01 ) { rollDelta = 0.01; }
-    ////                        if( rollDelta < -0.01 ) { rollDelta = -0.01; }
-    //                        newRoll = prevRoll + rollDelta;
-                            control.setRoll(newRoll + control.getRollTrim());
-                            prevRoll = newRoll;
-
-                            System.out.println(pos.getX() + " " + pos.getY() + " " + avgrflow + " " + avglflow + " " + flowdiff + " " + newRoll + " " + control.getRoll());
+                            updateRollFlow(time, flowdiff);
                         }
                         else {
+                            // setting roll using vicon
                             updateRoll(time, targetBY);
                         }
                         break;
@@ -696,6 +689,27 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if( rollDelta > 0.01 ) { rollDelta = 0.01; }
         if( rollDelta < -0.01 ) { rollDelta = -0.01; }
         newRoll = prevRoll + rollDelta;
+
+        control.setRoll(control.getRollTrim() + newRoll);
+
+        prevRoll = newRoll;
+    }
+
+    private void updateRollFlow(long time, double flowDiff)
+    {
+        Double newRoll = flowPID.update(time, flowDiff);
+
+        // pid update can return null
+        if (newRoll == null)
+            newRoll = 0.0;
+
+//        if( newRoll > 0.5 ) { newRoll = 0.5; }
+//        if( newRoll < -0.5 ) { newRoll = -0.5; }
+
+//        double rollDelta = newRoll - prevRoll;
+//        if( rollDelta > 0.01 ) { rollDelta = 0.01; }
+//        if( rollDelta < -0.01 ) { rollDelta = -0.01; }
+//        newRoll = prevRoll + rollDelta;
 
         control.setRoll(control.getRollTrim() + newRoll);
 
