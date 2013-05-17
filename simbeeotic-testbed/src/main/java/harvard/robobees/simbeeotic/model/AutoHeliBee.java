@@ -137,7 +137,7 @@ public class AutoHeliBee extends AbstractHeli {
                     Vector3f currPos = getTruthPosition();
 
 //                   logger.info("occlusion: " + externalSync.getOccluded(getName()));
-                   if(externalSync.getOccluded(getName()) > 10000) { // runs every 20 ms
+                   if(externalSync.getOccluded(getName()) > 7500) { // runs every 20 ms
                         // out of bounds, shutdown behaviors and heli
                         logger.warn("Heli (" + getName() + ") is occluded for more than half a second, shutting down.");
 
@@ -247,6 +247,13 @@ public class AutoHeliBee extends AbstractHeli {
         setThrust(0.0);
         sendCommands();
         receiveData();
+
+        try {
+            Thread.currentThread().sleep(40);
+        }
+        catch(Exception e) {
+            System.out.println(" Exception " + e.toString());
+        }
 
         logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();

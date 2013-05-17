@@ -53,8 +53,8 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private int heliID;
 
     private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0.0f, 0.0f, 0.75f),
-                                                   new Vector3f(0.5f, 2.5f, 0.75f),
-                                                   new Vector3f(0.5f, -2.5f, 0.75f),
+                                                   new Vector3f(0.5f, 2.25f, 0.75f),
+                                                   new Vector3f(0.5f, -2.25f, 0.75f),
                                                    new Vector3f(0.0f, 0.0f, 0.75f)};
     private PositionSensor posSensor;
 
@@ -81,12 +81,12 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
        navTimer = new java.util.Timer();
        navTimer.scheduleAtFixedRate(new java.util.TimerTask() {
 
+            double tol = 0.2;
+            int headingWait = 350;
+
             private boolean reachedWaypoint = true;
             private int currWaypoint = -1;
-            private int headingWaitCtr = 0;
-
-           double tol = 0.2;
-           int headingWait = 350;
+            private int headingWaitCtr = headingWait;
 
             @Override
             public void run()
@@ -115,6 +115,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                                                 reachedWaypoint = true;
                                             }
                                         });
+                                headingWaitCtr = headingWait;
                             }
                             else {
                                 moveToPoint(waypoints[currWaypoint].x,
@@ -134,8 +135,12 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                                 headingWaitCtr = headingWait;
                             }
                     } else { // headingWaitCtr > 0
-                        if( (headingWaitCtr == headingWait) && (currWaypoint > 0) ) {
-                            hover(waypoints[currWaypoint-1]);
+                        if( headingWaitCtr == headingWait ) {
+                            if( currWaypoint > 0 ) {
+                                hover(waypoints[currWaypoint-1]);
+                            } else {
+                                hover(waypoints[currWaypoint].getZ());
+                            }
                             face(waypoints[currWaypoint]);
                         }
                         headingWaitCtr--;
@@ -144,7 +149,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                     }
                 }
             }
-        }, 0, 10);
+        }, 100, 10);
     }
 
 

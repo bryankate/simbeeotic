@@ -99,6 +99,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
     private boolean goodOrientation = false;
     private double prevRoll = 0, prevPitch = 0;
+    private double pflowdiff = 0, fflowdiff = 0;
+    private Vector3f beginPathPos = new Vector3f();
+    private int landCntrMax = 15;
+    private int landCntr = landCntrMax;
 
     private double pitchSetPoint = 0, yawSetpoint = 0.0;  // radians
 
@@ -167,10 +171,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         }
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.25, 1.0);
-        pitchPID = new MedianPIDController(0.0, 0.8, 0.1, 0.2, 0.1, 1.0, 1.0);
-        rollPID = new MedianPIDController(0.0, 0.8, 0.1, 0.1, 0.1, 1.0, 1.0);
+        pitchPID = new MedianPIDController(0.0, 0.8, 0.1, 0.3, 0.1, 1.0, 1.0);
+        rollPID = new MedianPIDController(0.0, 0.8, 0.1, 0.3, 0.1, 1.0, 1.0);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
-        flowPID = new MedianPIDController(0.10, -5.0, -0.1, 0.0, 0.1, 1.0, 1.0);
+        flowPID = new MedianPIDController(0.10, -5.0, -2.0, 0.0, 0.1, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -206,6 +210,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                    System.out.println("Dropping orientation!");
                 }
 
+                // initialise heading to VICON
+                if( lastTime == 0 ) {
+                    idYaw = euler.getZ();
+                }
+
                 long realTime = System.currentTimeMillis();
 
                 if((realTime - lastTime) == 0)
@@ -216,7 +225,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 lastPose = pose;
                 lastTime = realTime;
 
-                fHeading = filterHeading(euler.z);
+                fHeading = filterHeading(euler.getZ());
 
 //                System.out.println("Filtered heading: " + fHeading);
 
@@ -225,6 +234,14 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                 double targetBX = 1 * (targetWX * Math.cos(-fHeading) + targetWY * -Math.sin(-fHeading));
                 double targetBY = 1 * (targetWX * Math.sin(-fHeading) + targetWY * Math.cos(-fHeading));
+
+                // path control - assume fast heading dynamics!
+                // (x2-x1)*(y1-y0) - (x1-x0)*(y2-y1) / sqrt((x2-x1)^2 + (y2-y1)^2)
+                double x0 = pos.getX(), y0 = pos.getY(), x1 = beginPathPos.getX(), y1 = beginPathPos.getY(), x2 = currTarget.getX(), y2 = currTarget.getY();
+                double crossTrackError = ((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+
+                double pathAngle = Math.atan2(y2-y1,x2-x1);
+                double rollError = Math.cos(fHeading - pathAngle) * crossTrackError;
 
                 // assume heading dynamics are fast!
 //                yawSetpoint = 1.0 * Math.PI / 2.0;
@@ -266,6 +283,14 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 }
                 avglflow = (avglflow / 8.0 - 127.0)/127.0;
                 avgrflow = (avgrflow / 8.0 - 127.0)/127.0;
+                double flowdiff = avglflow - avgrflow;
+
+                boolean do_flow_roll = false;
+                if( Math.abs(flowdiff-pflowdiff) > 1e-3 ) {
+                    fflowdiff = 0.5*flowdiff + 0.5*fflowdiff;
+                    pflowdiff = flowdiff;
+                    do_flow_roll = true;
+                }
 
                 switch(currState) {
 
@@ -290,7 +315,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                     case LAND:
 
                         // throttle down to land
-                        control.setThrust(control.getThrust()*0.999f);
+                        if( landCntr-- == 0 ) {
+                            control.setThrust(control.getThrust()-1.0/160.0);
+                            landCntr = landCntrMax;
+                        }
 
                     	if (pos.z < LANDING_ALTITUDE) {
                             currState = MoveState.IDLE;
@@ -304,7 +332,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                     	else {
 
                             // try to stay on target while landing
-                            updateYaw(time, 0);
+                            updateYaw(time, fHeading);
                             updatePitch(time, -targetBX);
                             updateRoll(time, targetBY);
                     	}
@@ -319,21 +347,23 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         }
 
 //                        if( dist2d > TURNING_CIRCLE_RADIUS ) {
-//                            //yawSetpoint = Math.atan2(targetWY, targetWX);
+                            yawSetpoint = Math.atan2(targetWY, targetWX);
 //                            //targetBY /= dist2d;
 //                        }
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
 
-                        if((pos.getY() < 1.5) && (pos.getY() > -1.5)) {
+                        if((pos.getY() < 1.75) && (pos.getY() > -1.75)) {
                             // Setting roll using OF
-                            double flowdiff = avglflow - avgrflow;
-                            updateRollFlow(time, flowdiff);
+                            if( do_flow_roll ) {
+                                updateRollFlow(time, fflowdiff);
+                            }
                         }
                         else {
                             // setting roll using vicon
-                            updateRoll(time, targetBY);
+//                            updateRoll(time, targetBY);
+                            updateRoll(time, rollError);
                         }
                         break;
 
@@ -347,15 +377,15 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                         // compute desired heading
 //                        if( dist2d > TURNING_CIRCLE_RADIUS ) {
-//                            //yawSetpoint = Math.atan2(targetWY, targetWX);
+                            yawSetpoint = Math.atan2(targetWY, targetWX);
 //                            //targetBY /= dist2d;
 //                        }
 
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
                         updatePitch(time, -targetBX);
-                        updateRoll(time, targetBY);
-
+//                        updateRoll(time, targetBY);
+                        updateRoll(time, rollError);
                         break;
 
                     case HOVER:
@@ -433,6 +463,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         throttlePID.setSetpoint(z);
         rollPID.setSetpoint(0.0);
         pitchPID.setSetpoint(0.0);
+
+        // compute path
+        beginPathPos = new Vector3f(pos);
 
         currEpsilon = epsilon;
         currMoveCallback = callback;
@@ -555,6 +588,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             return;
 
         yawSetpoint = angle;
+
+        System.out.println("facing: " + yawSetpoint*180.0/Math.PI);
     }
 
     protected void face(Vector3f point)
@@ -564,6 +599,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         Vector3f pos = posSensor.getPosition();
         face(Math.atan2(point.getY() - pos.getY(), point.getX() - pos.getX()));
+
+        System.out.println("face: " + point.getX() + " " + point.getY());
+        System.out.println("from: " + pos.getX() + " " + pos.getY());
     }
 
     protected void hover(float height) {
@@ -778,7 +816,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //             yawSetpoint = 0.0;
 //        yawSetpoint = 1.0 * Math.PI / 2.0;
 
-        double yawDiff = yawSetpoint - idYaw;
+        double yawDiff = yawSetpoint - heading;
         while( yawDiff >= Math.PI )
             yawDiff -= 2 * Math.PI;
         while( yawDiff < -Math.PI )
@@ -798,7 +836,6 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             yawDelta = yaw_clamp_neg;
 
         control.setYaw(control.getYawTrim() + yawDelta);
-//        control.setYaw(control.getYawTrim());
 
 //        System.out.println("Heading: " + heading + " yawDiff: " + yawDiff + " yawDelta: " + yawDelta);
     }
@@ -871,13 +908,15 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         + rollPID.getSetPoint() + " " + rollPID.getIErr() + " " + rollPID.getDErr() + " "
                         + pitchPID.getSetPoint() + " " + pitchPID.getIErr() + " " + pitchPID.getDErr() + " "
                         + yawPID.getSetPoint() + " " + yawPID.getIErr() + " " + yawPID.getDErr() + " "
+                        + flowPID.getSetPoint() + " " + flowPID.getIErr() + " " + flowPID.getDErr() + " "
                         + heliData.frameCount + " " + heliData.gyros[0] + " " + heliData.gyros[1] + " " + heliData.gyros[2] + " "
                         + (heliData.process[0]) + " " + (heliData.process[1]) + " " + (heliData.process[2]) + " " + (heliData.process[3]) + " "
                         + (heliData.process[4]) + " " + (heliData.process[5]) + " " + (heliData.process[6]) + " " + (heliData.process[7]) + " "
                         + (heliData.process[8]) + " " + (heliData.process[9]) + " " + (heliData.process[10]) + " " + (heliData.process[11]) + " "
                         + (heliData.process[12]) + " " + (heliData.process[13]) + " " + (heliData.process[14]) + " " + (heliData.process[15]) + " "
                         + (heliData.debug[0]) + " " + (heliData.debug[1]) + " " + (heliData.debug[2]) + " " + (heliData.debug[3]) + " "
-                        + fHeading + "\n");
+                        + fHeading + " " + fflowdiff + " "
+                        + "\n");
             }
             catch (IOException e) {
                 // do nothing
