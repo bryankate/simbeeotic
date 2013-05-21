@@ -101,7 +101,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double prevRoll = 0, prevPitch = 0;
     private double pflowdiff = 0, fflowdiff = 0;
     private Vector3f beginPathPos = new Vector3f();
-    private int landCntrMax = 15;
+    private int landCntrMax = 25;
     private int landCntr = landCntrMax;
 
     private double pitchSetPoint = 0, yawSetpoint = 0.0;  // radians
@@ -122,7 +122,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
 //    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
     private static final float LANDING_EPSILON = 0.3f;            // m
-    private static final float LANDING_ALTITUDE = 0.15f;          // m, below which we can drop
+    private static final float LANDING_ALTITUDE = 0.1f;          // m, below which we can drop
     private static final float LANDING_STAGING_ALTITUDE = 0.5f;   // m
 //    private static final long LANDING_STAGING_TIME = 1;           // s
     private static final float TAKEOFF_ALTITUDE = 0.25f;
@@ -589,7 +589,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         yawSetpoint = angle;
 
-        System.out.println("facing: " + yawSetpoint*180.0/Math.PI);
+//        System.out.println("facing: " + yawSetpoint*180.0/Math.PI);
     }
 
     protected void face(Vector3f point)
@@ -600,8 +600,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         Vector3f pos = posSensor.getPosition();
         face(Math.atan2(point.getY() - pos.getY(), point.getX() - pos.getX()));
 
-        System.out.println("face: " + point.getX() + " " + point.getY());
-        System.out.println("from: " + pos.getX() + " " + pos.getY());
+//        System.out.println("face: " + point.getX() + " " + point.getY());
+//        System.out.println("from: " + pos.getX() + " " + pos.getY());
     }
 
     protected void hover(float height) {

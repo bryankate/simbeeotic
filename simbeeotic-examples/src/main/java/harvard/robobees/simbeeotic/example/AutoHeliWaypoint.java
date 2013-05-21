@@ -53,8 +53,8 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private int heliID;
 
     private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0.0f, 0.0f, 0.75f),
-                                                   new Vector3f(0.5f, 2.25f, 0.75f),
-                                                   new Vector3f(0.5f, -2.25f, 0.75f),
+                                                   new Vector3f(-0.40f, 2.25f, 0.75f),
+                                                   new Vector3f(-0.40f, -2.25f, 0.75f),
                                                    new Vector3f(0.0f, 0.0f, 0.75f)};
     private PositionSensor posSensor;
 
@@ -100,7 +100,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                         land();
                     } else if( headingWaitCtr <= 0 ) {
                             logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
-                            if(currWaypoint == 2) {
+                            if(currWaypoint == 20) {
                                 runToPoint(waypoints[currWaypoint].x,
                                         waypoints[currWaypoint].y,
                                         waypoints[currWaypoint].z,
