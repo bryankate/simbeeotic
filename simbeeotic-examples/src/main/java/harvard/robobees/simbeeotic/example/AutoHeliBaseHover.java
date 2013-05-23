@@ -55,34 +55,6 @@ public class AutoHeliBaseHover extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
-//        moveToPoint(0, 0, 1, 0.1);
-
-        moveToPoint(0, 0, 1, 0.2,
-        			new MoveCallback() {
-
-						@Override
-						public void reachedDestination() {
-							hover(new Vector3f(0, 0, 1));
-                            face(0);
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            }
-                            face(Math.PI);
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            }
-                            face(0);
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            }
-                            land();
-						}
-                    });
+        hover(new Vector3f(0.0f, 0.0f, 0.75f));
     }
 }

@@ -343,7 +343,7 @@ public class AutoHeliBee extends AbstractHeli {
         HeliDataStruct h = new HeliDataStruct();
         int i=0;
 
-        DatagramPacket rcv = new DatagramPacket(data, 30);
+        DatagramPacket rcv = new DatagramPacket(data, 44);
         try {
             sock.receive(rcv);
         }
@@ -365,10 +365,8 @@ public class AutoHeliBee extends AbstractHeli {
         for(i=0; i < 3; i++)
             h.gyros[i] = (short)((dptr[20 + 2*i] << 8) + (dptr[20 + 2*i + 1] & 0xFF));
 
-        h.debug[0] = (((short)dptr[26]) & 0xFF) * 360.0f/256.0f;
-        h.debug[1] = (((short)dptr[27]) & 0xFF) * 360.0f/256.0f;
-        h.debug[2] = (((short)dptr[28] & 0xFF) - 127.5f)*2.0f;
-        h.debug[3] = (((short)dptr[29] & 0xFF) - 127.5f)/25.0f;
+        for(i = 0; i < 18; i++)
+            h.debug[i] = (((short)dptr[26+i]) & 0xFF);
 
 //        System.out.format("debug: %f %f %f %f\n", h.debug[0], h.debug[1], h.debug[2], h.debug[3]);
 

@@ -17,7 +17,7 @@ public class HeliDataStruct {
         frameCount = 0;
         process = new short[16];
         gyros   = new short[3];
-        debug   = new float[4];
+        debug   = new float[18];
     }
 }
 
