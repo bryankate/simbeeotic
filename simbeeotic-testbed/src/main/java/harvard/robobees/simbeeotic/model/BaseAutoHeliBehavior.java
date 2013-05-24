@@ -180,7 +180,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         pitchPID = new MedianPIDController(0.0, 0.8, 0.1, 0.3, 0.1, 1.0, 1.0);
         rollPID = new MedianPIDController(0.0, 0.7, 0.1, 0.3, 0.1, 1.0, 1.0);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
-        flowPID = new MedianPIDController(0.25, -2.25, -0.4, -0.0, 0.5, 1.0, 1.0);
+        flowPID = new MedianPIDController(0.25, -2.25, -0.4, -1.5, 0.5, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
@@ -271,14 +271,16 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 double avgrflow=0.0, avglflow=0.0;
 
                 for(int i=0; i < 8; i++) {
-                    avglflow += heliData.process[i];
-                    avgrflow += heliData.process[8+i];
+                    avglflow += Math.abs(heliData.process[i] - 127.0);
+                    avgrflow += Math.abs(heliData.process[8+i] - 127.0);
                 }
-                avglflow = (avglflow / 8.0 - 127.0)/127.0;
-                avgrflow = (avgrflow / 8.0 - 127.0)/127.0;
+                /*** CHANGE THIS TO DEGREES **/
+                avglflow = (avglflow / 8.0) / 127.0;
+                avgrflow = (avgrflow / 8.0) / 127.0;
                 double flowdiff = avglflow - avgrflow;
 
                 boolean do_flow_roll = false;
+
                 if( (Math.abs(flowdiff-pflowdiff) > 1e-3) && (Math.abs(flowdiff-pflowdiff) < 0.25) ) {
                     fflowdiff = 0.35*flowdiff + 0.65*fflowdiff;
                     do_flow_roll = true;
