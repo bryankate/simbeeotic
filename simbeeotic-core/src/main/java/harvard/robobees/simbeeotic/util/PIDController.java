@@ -131,4 +131,16 @@ public class PIDController {
         lastError = 0;
         integral = 0;
     }
+
+    public double getP() {
+        return pGain;
+    }
+
+    public double getI() {
+        return iGain;
+    }
+
+    public double getD() {
+        return dGain;
+    }
 }

@@ -52,10 +52,10 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private java.util.Timer navTimer;
     private int heliID;
 
-    private Vector3f[] waypoints = new Vector3f[] {new Vector3f(0.0f, 0.0f, 0.75f),
-                                                   new Vector3f(0.0f, 2.15f, 0.75f),
-                                                   new Vector3f(0.0f, -2.15f, 0.75f),
-                                                   new Vector3f(0.0f, 0.0f, 0.75f)};
+    private Vector3f[] waypoints = new Vector3f[] { new Vector3f(0.0f, 0.0f, 0.75f),
+                                                    new Vector3f(0.0f, 2.25f, 0.75f),
+                                                    new Vector3f(0.0f, -2.25f, 0.75f),
+                                                    new Vector3f(0.0f, 0.0f, 0.75f)};
     private PositionSensor posSensor;
 
     private static Logger logger = Logger.getLogger(AutoHeliWaypoint.class);

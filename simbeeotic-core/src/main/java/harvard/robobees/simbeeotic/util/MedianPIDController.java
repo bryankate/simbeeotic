@@ -149,4 +149,8 @@ public class MedianPIDController extends PIDController {
     public double getSetPoint() {
         return setPoint;
     }
+
+    public void setIErr(double ierr) {
+        integral = ierr;
+    }
 }

@@ -108,7 +108,7 @@ public class AutoHeliBee extends AbstractHeli {
         THROTTLE_LOW = 80;
         super.initialize();
 
-        throttleTrim = normCommand(185);
+        throttleTrim = normCommand(210);
         rollTrim = normCommand(127);//100);
         pitchTrim = normCommand(127);//140);
         yawTrim = normCommand(127);
