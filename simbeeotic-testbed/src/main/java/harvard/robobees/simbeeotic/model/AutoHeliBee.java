@@ -393,13 +393,13 @@ public class AutoHeliBee extends AbstractHeli {
 //
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 
-        try {
-            sock.send(dgram);
-            //logger.info("Sent command of size " + commands.length + " t: " + commands[1] + " y: " + commands[2] + " p: " + commands[3] + " r: " + commands[4]);
-        }
-
-        catch(IOException ioe) {
-            logger.error("Could not send command packet to heli_server.", ioe);
+        if( !sock.isClosed() ) {
+            try {
+                sock.send(dgram);
+                //logger.info("Sent command of size " + commands.length + " t: " + commands[1] + " y: " + commands[2] + " p: " + commands[3] + " r: " + commands[4]);
+            } catch(IOException ioe) {
+                logger.error("Could not send command packet to heli_server.", ioe);
+            }
         }
     }
 
