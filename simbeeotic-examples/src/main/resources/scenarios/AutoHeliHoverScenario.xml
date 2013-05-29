@@ -95,6 +95,19 @@
         
         <!--<variation>-->
             <!--<java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="show-controls" value="false"/>-->
+                <!--<prop name="testbed-overhead-view" value="true"/>-->
+                <!--<prop name="second-screen" value="true"/>-->
+            <!--</properties>-->
+        <!--</variation>-->
+        <!--<variation>-->
+            <!--<java-class>harvard.robobees.simbeeotic.component.VisComponent3D</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="show-controls" value="false"/>-->
+                <!--<prop name="testbed-angle-view" value="true"/>-->
+                <!--<prop name="second-screen" value="true"/>-->
+            <!--</properties>-->
         <!--</variation>-->
     </components>
 </scenario>

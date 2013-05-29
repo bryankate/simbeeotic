@@ -41,7 +41,9 @@ import harvard.robobees.simbeeotic.model.sensor.PoseSensor;
 import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
 import harvard.robobees.simbeeotic.util.MathUtil;
 import harvard.robobees.simbeeotic.util.MedianPIDController;
+import harvard.robobees.simbeeotic.util.SimVis;
 import org.apache.log4j.Logger;
+import org.jfree.ui.RefineryUtilities;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -131,6 +133,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private static final float TAKEOFF_ALTITUDE = 0.25f;
     private static final float TURNING_CIRCLE_RADIUS = 0.5f;        // don't update heading when inside this distance to target
 
+    // plotting
+    private SimVis vis = SimVis.getInstance();
+    private boolean visEnabled = true;
 
     @Override
     public void start(final Platform platform, final HeliControl control, final Boundary bounds) {
@@ -195,7 +200,26 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         final long firstTime = System.currentTimeMillis();
 
-         controlTimer.scheduleAtFixedRate(new TimerTask() {
+        // Initialize the visualization
+        if(visEnabled) {
+            vis.addAggregate("favglflow"); // Filtered average left flow
+            vis.addAggregate("favgrflow"); // Filtered avarage right flow
+            vis.addAggregate("flowdiff"); // Flow difference
+            vis.addAggregate("flow_ierr"); // Flow error integral
+            vis.addAggregate("flow_derr"); // Flow error derivative
+
+            for(int i=0; i < 16; i++) {
+                vis.addFlow("process" + i);
+            }
+
+            vis.pack();
+            RefineryUtilities.centerFrameOnScreen(vis);
+        }
+
+//        vis.testVis();
+
+
+        controlTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run(){
                 
@@ -402,10 +426,34 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 control.sendCommands();     // send updated commands to heli
                 heliData = control.receiveData();
 
-            }
+                if(visEnabled)
+                    plot();
+
+           }
         }, 0, 10);        // start with delay of 0 ms and run every 10 ms
     }
 
+    private void plot() {
+        vis.addDataPoint(SimVis.PlotType.CONTROLS, "thrust", heliData.frameCount, control.getThrust() - 0.5);
+        vis.addDataPoint(SimVis.PlotType.CONTROLS, "roll", heliData.frameCount, control.getRoll() - 0.5);
+        vis.addDataPoint(SimVis.PlotType.CONTROLS, "pitch", heliData.frameCount, control.getPitch() - 0.5);
+        vis.addDataPoint(SimVis.PlotType.CONTROLS, "yaw", heliData.frameCount, control.getYaw() - 0.5);
+
+        for(int i=0; i < 16; i++) {
+            String pname = "process" + i;
+            vis.addDataPoint(SimVis.PlotType.FLOW, pname, heliData.frameCount, ((double)heliData.process[i])/255.0 - 0.5);
+        }
+
+        vis.addDataPoint(SimVis.PlotType.AGGREGATE, "favglflow", heliData.frameCount, favglflow);
+        vis.addDataPoint(SimVis.PlotType.AGGREGATE, "favgrflow", heliData.frameCount, favgrflow);
+        vis.addDataPoint(SimVis.PlotType.AGGREGATE, "flowdiff", heliData.frameCount, fflowdiff);
+        vis.addDataPoint(SimVis.PlotType.AGGREGATE, "flow_ierr", heliData.frameCount, flowRollPID.getIErr());
+        vis.addDataPoint(SimVis.PlotType.AGGREGATE, "flow_derr", heliData.frameCount, flowRollPID.getDErr());
+
+        if(!vis.isVisible()) {
+            vis.setVisible(true);
+        }
+    }
 
     @Override
     public void stop() {
