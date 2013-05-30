@@ -48,12 +48,12 @@ public class MedianPIDController extends PIDController {
     protected double[] median;
     int mptr;
     double alpha, neg, pos;
-    double mediand;
-    double ferr, lferr;
+    double fderiv, ferr, lferr;
+    boolean do_median;
 
     private static Logger logger = Logger.getLogger(MedianPIDController.class);
 
-    public MedianPIDController(double set, double p, double i, double d, double a, double na, double pa) {
+    public MedianPIDController(double set, double p, double i, double d, double a, double na, double pa, boolean do_med) {
         super(set, p, i, d);
         alpha = a;
         neg = na;
@@ -62,9 +62,10 @@ public class MedianPIDController extends PIDController {
         for( int ii = 0; ii < MFWIDTH; ii++ )
             median[ii] = 0;
         mptr=0;
-        mediand = 0.0;
+        fderiv = 0.0;
         ferr = 0.0;
         lferr = 0.0;
+        do_median = do_med;
     }
 
     /**
@@ -97,49 +98,51 @@ public class MedianPIDController extends PIDController {
 
         double dt = (double)(currTime - lastTime) / TimeUnit.SECONDS.toNanos(1);
 
-        double fderiv = 0;
+        fderiv = 0;
         if (dt > 0) {
             fderiv = (ferr - lferr) / dt;
         }
 
-        double mval = 0.0;
-        median[mptr] = fderiv;
-        mptr = (mptr + 1)%MFWIDTH;
+        if( do_median ) {
+            double mval = 0.0;
+            median[mptr] = fderiv;
+            mptr = (mptr + 1)%MFWIDTH;
 
-        if((median[0] > median[1]) && (median[0] > median[2])) {
-            if(median[1] > median[2])
-                mval = median[1];
-            else
-                mval = median[2];
-        } else if((median[1] > median[0]) && (median[1] > median[2])) {
-            if(median[0] > median[2])
-                mval = median[0];
-            else
-                mval = median[2];
-        } else if((median[2] > median[1]) && (median[2] > median[0])) {
-            if(median[1] > median[0])
-                mval = median[1];
-            else
-                mval = median[0];
+            if((median[0] > median[1]) && (median[0] > median[2])) {
+                if(median[1] > median[2])
+                    mval = median[1];
+                else
+                    mval = median[2];
+            } else if((median[1] > median[0]) && (median[1] > median[2])) {
+                if(median[0] > median[2])
+                    mval = median[0];
+                else
+                    mval = median[2];
+            } else if((median[2] > median[1]) && (median[2] > median[0])) {
+                if(median[1] > median[0])
+                    mval = median[1];
+                else
+                    mval = median[0];
+            }
+            fderiv = mval;
         }
 
-//        mediand += alpha * (mval - mediand);
-        mediand = mval;
-
-        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + fderiv);
-        if(mediand * error > 0.0)
+//        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + fderiv);
+        if(fderiv * error > 0.0)
             integral += error * dt;
+        if( Math.abs(integral) > Math.abs(0.25/iGain) )
+            integral *= Math.abs(0.25/iGain)/Math.abs(integral);
         lastTime = currTime;
         lastError = error;
         lferr = ferr;
 
-        double ret = (pGain * error) + (iGain * integral) + (dGain * mediand);
+        double ret = (pGain * error) + (iGain * integral) + (dGain * fderiv);
 
         return ret < 0 ? neg*ret : pos*ret;
     }
 
     public double getDErr() {
-        return mediand;
+        return fderiv;
     }
 
     public double getIErr() {

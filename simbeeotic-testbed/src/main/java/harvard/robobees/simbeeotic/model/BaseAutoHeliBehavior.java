@@ -98,7 +98,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
     private boolean goodOrientation = false;
     private double prevRoll = 0, prevPitch = 0;
-    private double controlMaxDelta = 0.02;
+    private double controlMaxDelta = 0.025;
     private double pflowdiff = 0, fflowdiff = 0;
     private Vector3f beginPathPos = new Vector3f(0,0,1);
     private int landCntrMax = 25;
@@ -134,8 +134,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private static final float TURNING_CIRCLE_RADIUS = 0.5f;        // don't update heading when inside this distance to target
 
     // plotting
-    private SimVis vis = SimVis.getInstance();
-    private boolean visEnabled = true;
+    private SimVis vis;
+    private boolean visEnabled = false;
 
     @Override
     public void start(final Platform platform, final HeliControl control, final Boundary bounds) {
@@ -178,11 +178,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseAutoHeliBehavior.");
         }
 
-        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.5, 1.0);
-        pitchPID = new MedianPIDController(0.0, 0.8, 0.15, 0.3, 0.1, 1.0, 1.0);
-        rollPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.1, 1.0, 1.0);
-        yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0);
-        flowRollPID = new MedianPIDController(0.15, 2.5, 0.0, 2.0, 0.3, 1.0, 1.0);
+        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.75, 1.0, true);
+        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.5, 1.0, 1.0, true);
+        rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
+        yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0, true);
+        flowRollPID = new MedianPIDController(0.1, 3.0, 0.25, 1.5, 0.25, 1.0, 1.0, true);
 //        flowPitchPID = new MedianPIDController(0.15, 2.5, 0.0, 2.0, 0.3, 1.0, 1.0);
 
         // send an inital command to the heli to put in a neutral state
@@ -202,6 +202,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         // Initialize the visualization
         if(visEnabled) {
+            vis = SimVis.getInstance();
+
             vis.addAggregate("favglflow"); // Filtered average left flow
             vis.addAggregate("favgrflow"); // Filtered avarage right flow
             vis.addAggregate("flowdiff"); // Flow difference
@@ -290,23 +292,24 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 long time = System.nanoTime();
                 double dist = getDistfromPosition3d(currTarget);
                 double dist2d = getDistfromPosition2d(currTarget);
-                double avgrflow=0.0, avglflow=0.0;
+                double avgrflow=0.0, avglflow=0.0, flowdiff=0.0;
 
                 for(int i=0; i < 8; i++) {
                     avglflow += Math.abs(heliData.process[i] - 127.0);
                     avgrflow += Math.abs(heliData.process[8+i] - 127.0);
+                    flowdiff += heliData.debug[i+2] - heliData.debug[i+8+2];
                 }
                 /*** CHANGE THIS TO DEGREES **/
                 avglflow = (avglflow / 8.0) / 127.0;
                 avgrflow = (avgrflow / 8.0) / 127.0;
-                double flowdiff = avglflow - avgrflow;
+                flowdiff = (flowdiff / 8.0) / 127.0;
 
                 boolean do_flow_roll = false;
 
-                if( (Math.abs(flowdiff-pflowdiff) > 1e-3) && (Math.abs(flowdiff-pflowdiff) < 0.25) ) {
-                    fflowdiff = 0.5 * flowdiff + 0.5 * fflowdiff;
-                    favglflow = 0.35 * avglflow + 0.65 * favglflow;
-                    favgrflow = 0.35 * avgrflow + 0.65 * favgrflow;
+                if( (Math.abs(flowdiff-pflowdiff) > 1e-4) && (Math.abs(flowdiff-pflowdiff) < 0.25) ) {
+                    fflowdiff = 1.0 * flowdiff + 0.0 * fflowdiff;
+                    favglflow = 1.0 * avglflow + 0.0 * favglflow;
+                    favgrflow = 1.0 * avgrflow + 0.0 * favgrflow;
                     do_flow_roll = true;
                 }
                 pflowdiff = flowdiff;
@@ -374,18 +377,19 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
-                        updatePitch(time, -targetBX);
 
-                        if( pos.getY() > (beginPathPos.getY()+0.35) ) {
+                        if( pos.getY() > (beginPathPos.getY()+0.5) ) {
                             // Setting roll using OF
                             if( do_flow_roll ) {
 //                                updateRollFlow(time, favglflow);
                                 updateRollFlow(time, favgrflow);
+                                control.setPitch(control.getPitchTrim() + 0.35);
                             }
                         } else {
                             // setting roll using vicon
 //                            updateRoll(time, targetBY);
                             updateRoll(time, rollError);
+                            updatePitch(time, -targetBX);
 //                            flowRollPID.setIErr(rollPID.getIErr()*rollPID.getI()/flowRollPID.getI());
                         }
                         break;
@@ -441,7 +445,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         for(int i=0; i < 16; i++) {
             String pname = "process" + i;
-            vis.addDataPoint(SimVis.PlotType.FLOW, pname, heliData.frameCount, ((double)heliData.process[i])/255.0 - 0.5);
+//            vis.addDataPoint(SimVis.PlotType.FLOW, pname, heliData.frameCount, ((double)heliData.process[i])/255.0 - 0.5);
+            vis.addDataPoint(SimVis.PlotType.FLOW, pname, heliData.frameCount, ((double)heliData.debug[i+2])/254.0 - 0.5);
         }
 
         vis.addDataPoint(SimVis.PlotType.AGGREGATE, "favglflow", heliData.frameCount, favglflow);
@@ -736,13 +741,13 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         if (newPitch == null)
             newPitch = 0.0;
 
-//        if( newPitch > 0.5 ) { newPitch = 0.5; }
-//        if( newPitch < -0.5 ) { newPitch = -0.5; }
+        if( newPitch > 0.35 ) { newPitch = 0.35; }
+        if( newPitch < -0.35 ) { newPitch = -0.35; }
 
-        double pitchDelta = newPitch - prevPitch;
-        if( pitchDelta > controlMaxDelta ) { pitchDelta = controlMaxDelta; }
-        if( pitchDelta < -controlMaxDelta ) { pitchDelta = -controlMaxDelta; }
-        newPitch = prevPitch + pitchDelta;
+//        double pitchDelta = newPitch - prevPitch;
+//        if( pitchDelta > controlMaxDelta ) { pitchDelta = controlMaxDelta; }
+//        if( pitchDelta < -controlMaxDelta ) { pitchDelta = -controlMaxDelta; }
+//        newPitch = prevPitch + pitchDelta;
 
         control.setPitch(control.getPitchTrim() + newPitch);
 
@@ -760,10 +765,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //        if( newRoll > 0.5 ) { newRoll = 0.5; }
 //        if( newRoll < -0.5 ) { newRoll = -0.5; }
 
-        double rollDelta = newRoll - prevRoll;
-        if( rollDelta > controlMaxDelta ) { rollDelta = controlMaxDelta; }
-        if( rollDelta < -controlMaxDelta ) { rollDelta = -controlMaxDelta; }
-        newRoll = prevRoll + rollDelta;
+//        double rollDelta = newRoll - prevRoll;
+//        if( rollDelta > controlMaxDelta ) { rollDelta = controlMaxDelta; }
+//        if( rollDelta < -controlMaxDelta ) { rollDelta = -controlMaxDelta; }
+//        newRoll = prevRoll + rollDelta;
 
         control.setRoll(control.getRollTrim() + newRoll);
 
@@ -828,7 +833,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             else if( yawErr < -Math.PI )
                 yawErr += 2.0 * Math.PI;
 
-            double yawCorrection = 0.05*yawErr;
+            double yawCorrection = 0.075*yawErr;
             if( yawCorrection > 0.02 ) { yawCorrection = 0.02; }
             if( yawCorrection < -0.02 ) { yawCorrection = -0.02; }
 
@@ -933,7 +938,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                logger.info(System.currentTimeMillis() + " " + pose.z);
 //                logWriter.write(System.currentTimeMillis() + " " + pose.z + "\n");
 
-                logger.info(s.toString() + " " + dt + " " + pos1.getX() + " " + pos2.getX() + " " + pos2.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw + "\n");
+                logger.info(s.toString() + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw + "\n");
 
                 //logger.info(s.toString() + " " + time + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw);
 
