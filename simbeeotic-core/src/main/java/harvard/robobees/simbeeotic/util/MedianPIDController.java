@@ -130,8 +130,8 @@ public class MedianPIDController extends PIDController {
 //        logger.debug("realtime: " + System.currentTimeMillis() + " dt: " + dt + " deriv: " + fderiv);
         if(fderiv * error > 0.0)
             integral += error * dt;
-        if( Math.abs(integral) > Math.abs(0.25/iGain) )
-            integral *= Math.abs(0.25/iGain)/Math.abs(integral);
+//        if( Math.abs(integral) > Math.abs(0.25/iGain) )
+//            integral *= Math.abs(0.25/iGain)/Math.abs(integral);
         lastTime = currTime;
         lastError = error;
         lferr = ferr;
