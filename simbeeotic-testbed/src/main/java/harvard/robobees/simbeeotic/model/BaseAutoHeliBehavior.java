@@ -183,7 +183,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0, true);
         flowRollPID = new MedianPIDController(0.1, 3.0, 0.25, 1.5, 0.25, 1.0, 1.0, true);
-        flowPitchPID = new MedianPIDController(0.1, 0.0, 2.0, 0.0, 0.5, 1.0, 1.0, true);
+        flowPitchPID = new MedianPIDController(0.05, 0.0, 2.0, 0.3, 0.5, 1.0, 1.0, true);
 
         // send an inital command to the heli to put in a neutral state
         control.setThrust(control.getThrustTrim());
