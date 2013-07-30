@@ -125,7 +125,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //    private static final long CONTROL_LOOP_PERIOD = 10;           // ms (50 Hz)
 //    private static final float COLLISION_BUFF = 1.0f;             // m
 //    private static final float COLLISION_BUFF_HIVE = 0.4f;        // m
-//    private static final float BOUNDARY_BUFF = 0.5f;              // m, whithin which we will avoid walls
+//    private static final float BOUNDARY_BUFF = 0.5f;              // m, within which we will avoid walls
 //    private static final float DESTINATION_EPSILON = 0.3f;        // m
 //    private static final float SLOWDOWN_DISTANCE = 0.8f;          // m
 //    private static final float FLYING_ALTITUDE = 0.1f;            // m, below which we do not consider obstacles
