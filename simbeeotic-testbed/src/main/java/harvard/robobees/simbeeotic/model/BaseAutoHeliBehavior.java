@@ -329,10 +329,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 boolean do_flow_control = false;
 
                 if( Math.abs(flowdiff-pflowdiff) > 1e-4 ) {
-                    fFlowDiff = flowdiff;
-                    fFlowSum = flowsum;
-                    fAvgLFlow = avglflow;
-                    fAvgRFlow = avgrflow;
+                    fFlowDiff = 1.0*flowdiff + 0.0*fFlowDiff;
+                    fFlowSum = 1.0*flowsum + 0.0*fFlowSum;
+                    fAvgLFlow = 1.0*avglflow + 0.0*fAvgLFlow;
+                    fAvgRFlow = 1.0*avgrflow + 0.0*fAvgRFlow;
                     fAbsFlowDiff = 0.25*(avglflow - avgrflow) + 0.75*fAbsFlowDiff;
                     fScaledFlowSum = 0.25*scaledFlowSum + 0.75*fScaledFlowSum;
                     do_flow_control = true;
@@ -387,7 +387,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case RUN:
-                        if (pos.getY() < currTarget.getY()) {
+                        if (pos.getY() > currTarget.getY()) {
                             if (currMoveCallback != null) {
                                 currMoveCallback.reachedDestination();
                                 currMoveCallback = null;
@@ -966,33 +966,35 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         if (logData) {
 
-            Vector3f vel = new Vector3f();
-            vel.sub(pos2, pos1);
-            vel.scale(1/dt);
+//            Vector3f vel = new Vector3f();
+//            vel.sub(pos2, pos1);
+//            vel.scale(1/dt);
+//
+//            Transform orient = new Transform();
+//            orient.setIdentity();
+//            orient.setRotation(pose2);
+//            Vector3f x = new Vector3f(1, 0, 0);
+//            Vector3f y = new Vector3f(0, 1, 0);
+//            Vector3f z = new Vector3f(0, 0, 1);
+//            orient.transform(x);
+//            orient.transform(y);
+//            orient.transform(z);
+//
+//            double vel_x = vel.dot(x);
+//            double vel_y = vel.dot(y);
+//            double vel_z = vel.dot(z);
+//
+//            Quat4f dQ = new Quat4f();
+//            dQ.mulInverse(pose2, pose1);
+//
+//            Vector3f dEuler = MathUtil.quaternionToEulerZYX(dQ);
+//            dEuler.scale(1/dt);
+//            Vector3f pose = MathUtil.quaternionToEulerZYX(pose2);
+//
+//            Vector3f dEulerApprox = new Vector3f(dQ.x, dQ.y, dQ.z);
+//            dEulerApprox.scale(2/dt);
 
-            Transform orient = new Transform();
-            orient.setIdentity();
-            orient.setRotation(pose2);
-            Vector3f x = new Vector3f(1, 0, 0);
-            Vector3f y = new Vector3f(0, 1, 0);
-            Vector3f z = new Vector3f(0, 0, 1);
-            orient.transform(x);
-            orient.transform(y);
-            orient.transform(z);
-
-            double vel_x = vel.dot(x);
-            double vel_y = vel.dot(y);
-            double vel_z = vel.dot(z);
-
-            Quat4f dQ = new Quat4f();
-            dQ.mulInverse(pose2, pose1);
-
-            Vector3f dEuler = MathUtil.quaternionToEulerZYX(dQ);
-            dEuler.scale(1/dt);
             Vector3f pose = MathUtil.quaternionToEulerZYX(pose2);
-
-            Vector3f dEulerApprox = new Vector3f(dQ.x, dQ.y, dQ.z);
-            dEulerApprox.scale(2/dt);
 
             int thrust = AutoHeliBee.rawCommand(control.getThrust());
             int roll = AutoHeliBee.rawCommand(control.getRoll());
