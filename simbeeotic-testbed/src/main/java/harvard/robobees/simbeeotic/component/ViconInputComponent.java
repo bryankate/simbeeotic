@@ -72,7 +72,7 @@ public class ViconInputComponent implements VariationComponent {
 
     @Inject(optional = true)
     @Named("server-port")
-    private int serverPort = 6789;
+    private int serverPort = 7777;
 
     private AtomicBoolean running = new AtomicBoolean(true);
 

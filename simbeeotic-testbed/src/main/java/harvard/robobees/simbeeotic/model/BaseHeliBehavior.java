@@ -94,6 +94,9 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
     private PIDController rollPID;
     private double yawSetpoint = 0;          // radians
 
+    private int avCnt;
+    private float avThrottle, avYaw, avPitch, avRoll;
+
     // data logging parameters
     private boolean logData = false;
     private String logPath = "./heli_log.txt";
@@ -155,7 +158,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseHeliBehavior.");
         }
 
-        throttlePID = new PIDController(1, 0.4, 0.0, 0.1);
+        throttlePID = new PIDController(1, 0.4, 0.0, 1.0);
         pitchPID = new PIDController(0, 0.4, 0.0, 0.1);
         rollPID = new PIDController(0, 0.4, 0.0, 0.1);
 
@@ -165,6 +168,11 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         control.setRoll(control.getRollTrim());
         control.setYaw(control.getYawTrim());
 
+        avCnt = 0;
+        avThrottle = 0;
+        avYaw = 0;
+        avPitch = 0;
+        avRoll = 0;
 
         // a timer that implements the low level control of the heli altitude and bearing
         controlTimer = platform.createTimer(new TimerCallback() {
@@ -246,7 +254,7 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         double dist2 = getDistfromPosition3d(calcTarget);
 
                         if (Math.min(dist, dist2) <= currEpsilon) {
-                            
+
                             // made it! go to the hovering state
                             hover();
 
@@ -303,12 +311,20 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
                         updateYaw(pos, euler);
                         updatePitch(time.getTime(), disp.dot(bodyX));
                         updateRoll(time.getTime(), disp.dot(bodyY));
+
+//                        avThrottle += HWILBee.rawCommand(control.getThrust());
+//                        avYaw += HWILBee.rawCommand(control.getYaw());
+//                        avPitch += HWILBee.rawCommand(control.getPitch());
+//                        avRoll += HWILBee.rawCommand(control.getRoll());
+//                        avCnt++;
                         
                         break;
 
                     default:
                         // do nothing
                 }
+
+//                System.out.println("avThrottle/avYaw/avPitch/avRoll: " + avThrottle/avCnt + "/" + avYaw/avCnt + "/" + avPitch/avCnt + "/" + avRoll/avCnt);
             }
         }, 0, TimeUnit.MILLISECONDS, CONTROL_LOOP_PERIOD, TimeUnit.MILLISECONDS);
     }
@@ -580,8 +596,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
         if (newThrottle > control.getThrustTrim() + 0.5)
             newThrottle = control.getThrustTrim() + 0.5;
 
-        if (newThrottle < control.getThrustTrim() - 0.1)
-            newThrottle = control.getThrustTrim() - 0.1;
+        if (newThrottle < control.getThrustTrim() - 0.25)
+            newThrottle = control.getThrustTrim() - 0.25;
 
         control.setThrust(newThrottle);
     }
@@ -665,6 +681,8 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
             Quat4f dQ = new Quat4f();
             dQ.mulInverse(pose2, pose1);
 
+            Vector3f euler = MathUtil.quaternionToEulerZYX(pose2);
+
             Vector3f dEuler = MathUtil.quaternionToEulerZYX(dQ);
             dEuler.scale(1/dt);
 
@@ -678,10 +696,13 @@ public abstract class BaseHeliBehavior implements HeliBehavior {
 
             try {
 
-                logWriter.write(dt + ", 0, " + thrust + ", " + roll +
-                                ", " + pitch + ", " + yaw + ", " +
-                                vel_x + ", " + vel_y + ", " + vel_z + ", " + dEuler.x +
-                                ", " + dEuler.y + ", " + dEuler.z + "\n");
+                logWriter.write(Integer.parseInt(dt + ", "
+                        + pos2.x + ", " + pos2.y + ", " + pos2.z + ", "
+                        + vel_x + ", " + vel_y + ", " + vel_z + ", "
+                        + euler.x + ", " + euler.y + ", " + euler.z + ", "
+                        + dEuler.x + ", " + dEuler.y + ", " + dEuler.z + ", "
+                        + thrust + ", " + roll + ", " + pitch + ", " + yaw + ", "
+                        + "\n"));
             }
             catch (IOException e) {
                 // do nothing

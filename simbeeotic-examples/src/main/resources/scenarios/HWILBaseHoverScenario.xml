@@ -42,20 +42,24 @@
     </master-seed>
 
     <simulation>
-        <end-time>120</end-time>
+        <end-time>5000</end-time>
     </simulation>
 
     <models>
-        <model name="heli1">
+        <model>
+            <java-class>harvard.robobees.simbeeotic.model.SimpleHive</java-class>
+            <start-position x="0" y="0" z="0"/>
+        </model>
+        <model name="heli0">
             <java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <prop name="server-port" value="8001"/>
+                <prop name="server-port" value="8000"/>
 
-                <prop name="trim-throttle" value="430"/>
-                <prop name="trim-roll" value="511"/>
-                <prop name="trim-pitch" value="503"/>
-                <prop name="trim-yaw" value="511"/>
+                <prop name="trim-throttle" value="520"/>
+                <prop name="trim-roll" value="545"/>
+                <prop name="trim-pitch" value="499"/>
+                <prop name="trim-yaw" value="512"/>
             </properties>
             <custom-config>
                 <behaviors>
@@ -77,6 +81,130 @@
                 </properties>
             </sensor>
         </model>
+        <!--<model name="heli1">-->
+            <!--<java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="server-host" value="192.168.7.11"/>-->
+                <!--<prop name="server-port" value="8001"/>-->
+
+                <!--<prop name="trim-throttle" value="514"/>-->
+                <!--<prop name="trim-roll" value="477"/>-->
+                <!--<prop name="trim-pitch" value="536"/>-->
+                <!--<prop name="trim-yaw" value="514"/>-->
+            <!--</properties>-->
+            <!--<custom-config>-->
+                <!--<behaviors>-->
+                    <!--<behavior>-->
+                        <!--<java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>-->
+                    <!--</behavior>-->
+                <!--</behaviors>-->
+            <!--</custom-config>-->
+            <!--<sensor name="position-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+            <!--<sensor name="pose-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+        <!--</model>-->
+        <!--<model name="heli2">-->
+            <!--<java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="server-host" value="192.168.7.11"/>-->
+                <!--<prop name="server-port" value="8002"/>-->
+
+                <!--<prop name="trim-throttle" value="517"/>-->
+                <!--<prop name="trim-roll" value="502"/>-->
+                <!--<prop name="trim-pitch" value="606"/>-->
+                <!--<prop name="trim-yaw" value="510"/>-->
+            <!--</properties>-->
+            <!--<custom-config>-->
+                <!--<behaviors>-->
+                    <!--<behavior>-->
+                        <!--<java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>-->
+                    <!--</behavior>-->
+                <!--</behaviors>-->
+            <!--</custom-config>-->
+            <!--<sensor name="position-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+            <!--<sensor name="pose-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+        <!--</model>-->
+        <!--<model name="heli3">-->
+            <!--<java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="server-host" value="192.168.7.11"/>-->
+                <!--<prop name="server-port" value="8003"/>-->
+
+                <!--<prop name="trim-throttle" value="533"/>-->
+                <!--<prop name="trim-roll" value="565"/>-->
+                <!--<prop name="trim-pitch" value="513"/>-->
+                <!--<prop name="trim-yaw" value="509"/>-->
+            <!--</properties>-->
+            <!--<custom-config>-->
+                <!--<behaviors>-->
+                    <!--<behavior>-->
+                        <!--<java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>-->
+                    <!--</behavior>-->
+                <!--</behaviors>-->
+            <!--</custom-config>-->
+            <!--<sensor name="position-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+            <!--<sensor name="pose-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+        <!--</model>-->
+        <!--<model name="heli4">-->
+            <!--<java-class>harvard.robobees.simbeeotic.model.HWILBee</java-class>-->
+            <!--<properties>-->
+                <!--<prop name="server-host" value="192.168.7.11"/>-->
+                <!--<prop name="server-port" value="8004"/>-->
+
+                <!--<prop name="trim-throttle" value="636"/>-->
+                <!--<prop name="trim-roll" value="411"/>-->
+                <!--<prop name="trim-pitch" value="568"/>-->
+                <!--<prop name="trim-yaw" value="512"/>-->
+            <!--</properties>-->
+            <!--<custom-config>-->
+                <!--<behaviors>-->
+                    <!--<behavior>-->
+                        <!--<java-class>harvard.robobees.simbeeotic.example.HeliBaseHover</java-class>-->
+                    <!--</behavior>-->
+                <!--</behaviors>-->
+            <!--</custom-config>-->
+            <!--<sensor name="position-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPositionSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+            <!--<sensor name="pose-sensor">-->
+                <!--<java-class>harvard.robobees.simbeeotic.model.sensor.DefaultPoseSensor</java-class>-->
+                <!--<properties>-->
+                    <!--<prop name="sigma" value="0"/>-->
+                <!--</properties>-->
+            <!--</sensor>-->
+        <!--</model>-->
     </models>
 
     <components>
@@ -84,7 +212,8 @@
             <java-class>harvard.robobees.simbeeotic.component.ViconInputComponent</java-class>
             <properties>
                 <prop name="server-host" value="192.168.7.11"/>
-                <prop name="object-names" value="heli1"/>
+                <prop name="server-port" value="7777"/>
+                <prop name="object-names" value="heli0,heli1,heli2,heli3,heli4,heli5"/>
             </properties>
         </variation>
         

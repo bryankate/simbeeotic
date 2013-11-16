@@ -78,6 +78,7 @@ public class AutoHeliBee extends AbstractHeli {
     private InetAddress server;
 
     private int cmd, thrust, roll, pitch, yaw;
+    private byte auto_mask;
 
     private Timer boundsTimer;
     private long landingTime = 1;        // seconds, duration of soft landing command
@@ -86,6 +87,11 @@ public class AutoHeliBee extends AbstractHeli {
     private static final short CMD_HIGH = 255;
     private static final short CMD_RANGE = CMD_HIGH - CMD_LOW;
 
+    // masks for onboard control
+    private static final byte AUTO_THRUST = 0x01;
+    private static final byte AUTO_ROLL = 0x02;
+    private static final byte AUTO_PITCH = 0x04;
+    private static final byte AUTO_YAW = 0x08;
 
     // params
     private String serverHost = "192.168.7.11";
@@ -99,7 +105,7 @@ public class AutoHeliBee extends AbstractHeli {
     protected int THROTTLE_HIGH, THROTTLE_LOW;
     private static Logger logger = Logger.getLogger(AutoHeliBee.class);
 
-    private byte[] commands = new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+    private byte[] commands = new byte[] {(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
 
     @Override
     public void initialize() {
@@ -123,6 +129,7 @@ public class AutoHeliBee extends AbstractHeli {
         logger.debug("Connected to " + serverHost + " on port " + serverPort);
 
         setCmd(((byte)142));
+        disableHeliAutoAll();  // no onboard control
 
         // start out by zeroing the heli (thrust to zero, yaw, pitch and roll to 0.5)
         sendCommands();
@@ -231,6 +238,9 @@ public class AutoHeliBee extends AbstractHeli {
             boundsTimer.cancel();
         }
 
+        // reclaim control
+        disableHeliAutoAll();
+
         // try to shutdown the heli gently
         while(getThrust() > 0.625) {
             setThrust(getThrust()*0.995);
@@ -257,6 +267,50 @@ public class AutoHeliBee extends AbstractHeli {
 
         logger.debug("Finishing up in AutoHeliBee ..");
         sock.close();
+    }
+
+    public byte getHeliAutoMask() {
+        return auto_mask;
+    }
+
+    public void enableHeliAutoAll() {
+        auto_mask = AUTO_THRUST | AUTO_ROLL | AUTO_PITCH | AUTO_YAW;
+    }
+
+    public void disableHeliAutoAll() {
+        auto_mask = 0;
+    }
+
+    public void enableHeliAutoThrust() {
+        auto_mask |= AUTO_THRUST;
+    }
+
+    public void disableHeliAutoThrust() {
+        auto_mask &= ~AUTO_THRUST;
+    }
+
+    public void enableHeliAutoRoll() {
+        auto_mask |= AUTO_ROLL;
+    }
+
+    public void disableHeliAutoRoll() {
+        auto_mask &= ~AUTO_ROLL;
+    }
+
+    public void enableHeliAutoPitch() {
+        auto_mask |= AUTO_PITCH;
+    }
+
+    public void disableHeliAutoPitch() {
+        auto_mask &= ~AUTO_PITCH;
+    }
+
+    public void enableHeliAutoYaw() {
+        auto_mask |= AUTO_YAW;
+    }
+
+    public void disableHeliAutoYaw() {
+        auto_mask &= ~AUTO_YAW;
     }
 
     public int getCmd() {
@@ -338,12 +392,17 @@ public class AutoHeliBee extends AbstractHeli {
         return yawTrim;
     }
 
+    @Override
     public HeliDataStruct receiveData() {
         byte[] data = new byte[255], dptr;
         HeliDataStruct h = new HeliDataStruct();
         int i=0;
 
-        DatagramPacket rcv = new DatagramPacket(data, 44);
+        // request data packet from server
+        requestDataPacket();
+
+        // receive data packet
+        DatagramPacket rcv = new DatagramPacket(data, 32);
         try {
             sock.receive(rcv);
         }
@@ -353,36 +412,41 @@ public class AutoHeliBee extends AbstractHeli {
 
         dptr = rcv.getData();
 
-//        System.out.print("dptr: ");
-//        for(i = 0; i < 30; i++ )
-//            System.out.print(dptr[i] + " ");
-//        System.out.println();
-
+        // frame counter
         h.frameCount =  (dptr[0] << 24) + (dptr[1] << 16) + (dptr[2] << 8) + (dptr[3] & 0xFF);
-        for(i=0; i < 16; i++)
-            h.process[i] = (short)(dptr[4+i] & 0xFF);
 
-        for(i=0; i < 3; i++)
-            h.gyros[i] = (short)((dptr[20 + 2*i] << 8) + (dptr[20 + 2*i + 1] & 0xFF));
+        // heli control debug
+        for(i=0;i<6;i++) {
+            h.cntl[i] = dptr[4+i];
+        }
 
-        for(i = 0; i < 18; i++)
-            h.debug[i] = (((short)dptr[26+i]) & 0xFF);
+        // gyros
+        for(i=0;i<3;i++) {
+            h.gyros[i] = (short)((dptr[10 + 2*i] << 8) + (dptr[10 + 2*i + 1] & 0xFF));
+        }
 
-//        System.out.format("debug: %f %f %f %f\n", h.debug[0], h.debug[1], h.debug[2], h.debug[3]);
-
-//        System.out.format("frame_count: %d\n", h.frameCount);
-//        System.out.format("process: ");
-//        for(i=0; i < 16; i++)
-//            System.out.format(" %3d ", h.process[i]);
-//        System.out.println();
-
-//        for(i=0; i < 3; i++)
-//            System.out.format(" %5d ", h.gyros[i]);
-//        System.out.println();
+        // heli process debug
+        for(i=0;i<16;i++) {
+            h.process[i] = dptr[16+i];
+        }
 
         return h;
     }
 
+    private void requestDataPacket() {
+        byte[] pkt = {0};    // dummy packet
+        DatagramPacket dgram = new DatagramPacket(pkt, 1, server, serverPort);
+
+        if( !sock.isClosed() ) {
+            try {
+                sock.send(dgram);
+            } catch(IOException ioe) {
+                logger.error("Could not send command packet to heli_server.", ioe);
+            }
+        }
+    }
+
+    @Override
     public void sendCommands() {
 
         commands[0] = (byte) (cmd & 0xFF);
@@ -390,6 +454,7 @@ public class AutoHeliBee extends AbstractHeli {
         commands[2] = (byte) (yaw & 0xFF);
         commands[3] = (byte) (pitch & 0xFF);
         commands[4] = (byte) (roll & 0xFF);
+        commands[5] = auto_mask;
 //
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
 

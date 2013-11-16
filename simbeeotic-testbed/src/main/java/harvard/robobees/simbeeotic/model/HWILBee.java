@@ -340,7 +340,7 @@ public class HWILBee extends AbstractHeli {
         return yawTrim;
     }
 
-
+    @Override
     public void sendCommands() {
 
         DatagramPacket dgram = new DatagramPacket(commands, commands.length, server, serverPort);
