@@ -53,8 +53,8 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private int heliID;
 
     private Vector3f[] waypoints = new Vector3f[] { new Vector3f(0.0f, 0.0f, 0.75f),
-                                                    new Vector3f(0.5f, -2.15f, 0.75f),
-                                                    new Vector3f(-1.0f, 2.15f, 0.75f),
+                                                    new Vector3f(0.0f, -2.0f, 0.75f),
+                                                    new Vector3f(0.0f, 2.0f, 0.75f),
                                                     new Vector3f(0.0f, 0.0f, 0.75f)};
     private PositionSensor posSensor;
 
@@ -68,9 +68,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
-
         Vector3f pos = posSensor.getPosition();
-        //moveToPoint(pos.x, pos.y, 1, 0.1, null);
 
         logger.info("Starting program.");
 
@@ -82,7 +80,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
        navTimer.scheduleAtFixedRate(new java.util.TimerTask() {
 
             double tol = 0.2;
-            int headingWait = 400;
+            int headingWait = 40;
 
             private boolean reachedWaypoint = true;
             private int currWaypoint = -1;
@@ -100,24 +98,24 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                         land();
                     } else if( headingWaitCtr <= 0 ) {
                             logger.info("Heli: " + heliID + " Moving to waypoint " + currWaypoint + " " + waypoints[currWaypoint]);
-                            if(currWaypoint == 2) {
-                                runToPoint(waypoints[currWaypoint].x,
-                                        waypoints[currWaypoint].y,
-                                        waypoints[currWaypoint].z,
-                                        tol,
-                                        new MoveCallback()
-                                        {
-                                            @Override
-                                            public void reachedDestination()
-                                            {
-                                                //hover(1.0);
-                                                logger.info("Heli: " + heliID + " Reached waypoint.");
-                                                reachedWaypoint = true;
-                                            }
-                                        });
-                                headingWaitCtr = headingWait;
-                            }
-                            else {
+//                            if(currWaypoint == 2) {
+//                                runToPoint(waypoints[currWaypoint].x,
+//                                        waypoints[currWaypoint].y,
+//                                        waypoints[currWaypoint].z,
+//                                        tol,
+//                                        new MoveCallback()
+//                                        {
+//                                            @Override
+//                                            public void reachedDestination()
+//                                            {
+//                                                //hover(1.0);
+//                                                logger.info("Heli: " + heliID + " Reached waypoint.");
+//                                                reachedWaypoint = true;
+//                                            }
+//                                        });
+//                                headingWaitCtr = headingWait;
+//                            }
+//                            else {
                                 moveToPoint(waypoints[currWaypoint].x,
                                         waypoints[currWaypoint].y,
                                         waypoints[currWaypoint].z,
@@ -133,7 +131,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                                             }
                                         });
                                 headingWaitCtr = headingWait;
-                            }
+//                            }
                     } else { // headingWaitCtr > 0
                         if( headingWaitCtr == headingWait ) {
                             if( currWaypoint > 0 ) {
@@ -149,7 +147,7 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
                     }
                 }
             }
-        }, 100, 10);
+        }, 100, 100);
     }
 
 

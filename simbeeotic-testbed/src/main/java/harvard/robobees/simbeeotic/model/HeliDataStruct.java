@@ -9,15 +9,15 @@ package harvard.robobees.simbeeotic.model;
  */
 public class HeliDataStruct {
     long frameCount;
-    byte[] process;
-    short[] gyros;
-    byte[] cntl;
+    int[] process;
+    int[] gyros;
+    int[] cntl;
 
     public HeliDataStruct() {
         frameCount = 0;
-        process = new byte[16];
-        gyros   = new short[3];
-        cntl   = new byte[6];
+        process = new int[16];
+        gyros   = new int[3];
+        cntl   = new int[6];
     }
 }
 

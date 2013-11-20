@@ -55,6 +55,16 @@ public class AutoHeliBaseHover extends BaseAutoHeliBehavior {
 
         super.start(platform, control, bounds);
 
+        // sit idle for a while for heading filter
+        idle();
+        try {
+            Thread.currentThread().sleep(1000);
+        }
+        catch(Exception e) {
+            System.out.println(" Exception " + e.toString());
+        }
+
+        // hover at point
         hover(new Vector3f(0.0f, 0.0f, 0.75f));
     }
 }

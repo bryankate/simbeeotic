@@ -32,7 +32,6 @@
 package harvard.robobees.simbeeotic.model;
 
 
-import com.bulletphysics.linearmath.Transform;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import harvard.robobees.simbeeotic.SimEngine;
@@ -42,7 +41,6 @@ import harvard.robobees.simbeeotic.model.sensor.PositionSensor;
 import harvard.robobees.simbeeotic.util.MathUtil;
 import harvard.robobees.simbeeotic.util.MedianPIDController;
 import org.apache.log4j.Logger;
-import org.jfree.ui.RefineryUtilities;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -105,11 +103,17 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double crossTrackError = 0;
     private double pathAngle = 0;
     private double rollError = 0;
+    private double targetBX = 0, targetBY = 0;
 
     private double pitchSetPoint = 0, yawSetpoint = 0.0;  // radians
 
-    byte heli_auto;
+    private Vector3f takeoff_currTarget = new Vector3f();
+    private double takeoff_yawSetpoint = 0.0;
+
+    int heli_auto;
     double heli_lflow, heli_rflow, heli_phase, heli_speed, heli_heading;
+
+    private int shutdown_cnt = 0;
 
     // data logging parameters
     private boolean logData = true;
@@ -174,16 +178,18 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             throw new RuntimeModelingException("A pose sensor is needed for the BaseAutoHeliBehavior.");
         }
 
-        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.2, 0.5, 0.75, 1.0, true);
-        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.5, 1.0, 1.0, true);
-        rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
+        throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.4, 1.0, 0.75, 1.0, false);
+//        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.5, 1.0, 1.0, true);
+        pitchPID = new MedianPIDController(0.0, 0.7, 0.1, 0.2, 1.0, 1.0, 1.0, false);
+//        rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
+        rollPID = new MedianPIDController(0.0, 0.7, 0.1, 0.2, 1.0, 1.0, 1.0, false);
         yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0, true);
 //        flowRollPID = new MedianPIDController(0.1, 3.0, 0.25, 1.5, 0.25, 1.0, 1.0, true);     // 1 wall roll control
         flowRollPID = new MedianPIDController(0.0, 2.0, 0.05, 0.0, 0.25, 1.0, 1.0, true);
         flowPitchPID = new MedianPIDController(0.2, 0.0, 2.0, 0.5, 0.4, 1.0, 1.0, true);
 
         // send an inital command to the heli to put in a neutral state
-        control.setThrust(control.getThrustTrim());
+        control.setThrust(0);
         control.setPitch(control.getPitchTrim());
         control.setRoll(control.getRollTrim());
         control.setYaw(control.getYawTrim());
@@ -227,7 +233,21 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                 if((realTime - lastTime) == 0)
                     return;
-                logModelData(currState, lastPos, pos, lastPose, pose, (realTime - firstTime)/1000.0f, (realTime - lastTime) / 1000.0f);
+
+                float dt = (realTime - lastTime) / 1000.0f;
+
+                // emergency shutdown
+                if( (Math.abs(pos.x + 1*(pos.x-lastPos.x)/dt) > 2.35) || (Math.abs(pos.y + 1*(pos.y-lastPos.y)/dt) > 3.75) ) {
+                    shutdown_cnt++;
+                } else {
+                    shutdown_cnt = 0;
+                }
+                if( shutdown_cnt >= 3 ) {
+                    // terminate
+                    stop();
+                }
+
+                logModelData(currState, lastPos, pos, lastPose, pose, (realTime - firstTime)/1000.0f, dt);
                 
                 lastPos = pos;
                 lastPose = pose;
@@ -242,8 +262,17 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 double targetWY = currTarget.getY()-pos.getY();
 
                 // body frame cartesian posiion error
-                double targetBX = 1 * (targetWX * Math.cos(-fHeading) + targetWY * -Math.sin(-fHeading));
-                double targetBY = 1 * (targetWX * Math.sin(-fHeading) + targetWY * Math.cos(-fHeading));
+                targetBX = 1 * (targetWX * Math.cos(-fHeading) + targetWY * -Math.sin(-fHeading));
+                targetBY = 1 * (targetWX * Math.sin(-fHeading) + targetWY * Math.cos(-fHeading));
+
+                // take off specific
+                // world frame cartesian position error
+                double takeoff_targetWX = takeoff_currTarget.getX()-pos.getX();
+                double takeoff_targetWY = takeoff_currTarget.getY()-pos.getY();
+
+                // body frame cartesian posiion error
+                double takeoff_targetBX = 1 * (takeoff_targetWX * Math.cos(-fHeading) + takeoff_targetWY * -Math.sin(-fHeading));
+                double takeoff_targetBY = 1 * (takeoff_targetWX * Math.sin(-fHeading) + takeoff_targetWY * Math.cos(-fHeading));
 
                 // path control - assume fast heading dynamics!
                 // (x2-x1)*(y1-y0) - (x1-x0)*(y2-y1) / sqrt((x2-x1)^2 + (y2-y1)^2)
@@ -276,8 +305,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                 // old control was (? / 8 / 127)
 
+                System.out.println("Recv auto: " + heli_auto + "  lflow: " + heli_lflow + "  rflow: " + heli_rflow + "  phase: " + heli_phase + "  speed: " + heli_speed + "  heading: " + heli_heading);
+
                 switch(currState) {
 
+                    case TERMINATED:     // for safety
                     case IDLE:
                         ((AutoHeliBee)control).disableHeliAutoAll();
                         control.setThrust(0.0);
@@ -293,9 +325,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                             nextState = MoveState.IDLE;
                         }
                         control.setThrust(1.0);
-                        control.setRoll(control.getRollTrim());
-                        control.setPitch(control.getPitchTrim());
-                        control.setYaw(control.getYawTrim());
+                        updateYaw(time, fHeading);
+                        updatePitch(time, -takeoff_targetBX);
+                        updateRoll(time, takeoff_targetBY);
                         break;
 
                     case LAND:
@@ -358,6 +390,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //                            yawSetpoint = Math.atan2(targetWY, targetWX);
 //                            //targetBY /= dist2d;
 //                        }
+
                         yawSetpoint = pathAngle;
 
                         updateThrottle(time, pos.z);
@@ -380,7 +413,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 }
                 control.sendCommands();     // send updated commands to heli
            }
-        }, 0, 10);        // start with delay of 0 ms and run every 10 ms
+        }, 0, 100);        // start with delay of 0 ms and run every 100 ms
     }
 
     @Override
@@ -396,7 +429,15 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 // do nothing
             }
         }
-        
+
+        // send last command to heli?
+        ((AutoHeliBee)control).disableHeliAutoAll();
+        control.setThrust(0.0);
+        control.setRoll(control.getRollTrim());
+        control.setPitch(control.getPitchTrim());
+        control.setYaw(control.getYawTrim());
+        control.sendCommands();
+
         controlTimer.cancel();
         currState = MoveState.TERMINATED;
     }
@@ -430,6 +471,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         Vector3f pos = posSensor.getPosition();
         if( pos.getZ() < LANDING_ALTITUDE ) {
+            takeoff_currTarget = posSensor.getPosition();  // take off where we are
+            takeoff_yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
             currState = MoveState.TAKEOFF;
             nextState = MoveState.MOVE;
         } else {
@@ -478,30 +521,6 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         pitchPID.setSetpoint(0.0);
         throttlePID.setSetpoint(0.0); // So it is obvious in the log that we are landing. We do not updateThrottle while landing, so its ok
     }
-
-
-    /**
-     * Lands the helicopter at the specified position.
-     */
-//    protected void landAtPoint(Vector3f target) {
-//
-//        target.z = posSensor.getPosition().z;
-//        currTarget = target;
-//
-//        yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
-//        currState = MoveState.LAND;
-//    }
-
-
-    /**
-     * Lands the helicopter at the current position.
-     */
-//    protected void landAtPoint(Vector3f target, MoveCallback callback) {
-//
-//        currMoveCallback = callback;
-//        landAtPoint(target);
-//    }
-
 
     /**
      * Lands the helicopter at the hive.
@@ -594,6 +613,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         Vector3f pos = posSensor.getPosition();
         if( pos.getZ() < LANDING_ALTITUDE ) {
+            takeoff_currTarget = posSensor.getPosition();  // take off where we are
+            takeoff_yawSetpoint = MathUtil.quaternionToEulerZYX(orientSensor.getPose()).z;
             currState = MoveState.TAKEOFF;
             nextState = MoveState.HOVER;
         } else {
@@ -752,10 +773,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             while( yawDiff < -Math.PI )
                 yawDiff += 2.0 * Math.PI;
 
-            if( yawDiff > 0.1 )
-                yawDiff = 0.1;
-            if( yawDiff < -0.1 )
-                yawDiff = -0.1;
+            if( yawDiff > 0.5 )
+                yawDiff = 0.5;
+            if( yawDiff < -0.5 )
+                yawDiff = -0.5;
 
             yawDiffs[yawHistPtr] = yawDiff;
             yawHistPtr = (yawHistPtr + 1)%3;
@@ -777,9 +798,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
             else if( yawErr < -Math.PI )
                 yawErr += 2.0 * Math.PI;
 
-            double yawCorrection = 0.075*yawErr;
-            if( yawCorrection > 0.02 ) { yawCorrection = 0.02; }
-            if( yawCorrection < -0.02 ) { yawCorrection = -0.02; }
+            double yawCorrection = 0.1*yawErr;
+            if( yawCorrection > 0.05 ) { yawCorrection = 0.05; }
+            if( yawCorrection < -0.05 ) { yawCorrection = -0.05; }
 
             idYaw += yawCorrection;
         }
@@ -891,7 +912,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         + throttlePID.getSetPoint() + " " + throttlePID.getIErr() + " " + throttlePID.getDErr() + " "
                         + rollPID.getSetPoint() + " " + rollPID.getIErr() + " " + rollPID.getDErr() + " "
                         + pitchPID.getSetPoint() + " " + pitchPID.getIErr() + " " + pitchPID.getDErr() + " "
-                        + yawPID.getSetPoint() + " " + yawPID.getIErr() + " " + yawPID.getDErr() + " "
+                        + yawSetpoint + " " + yawPID.getIErr() + " " + yawPID.getDErr() + " "
                         + flowRollPID.getSetPoint() + " " + flowRollPID.getIErr() + " " + flowRollPID.getDErr() + " "
                         + flowPitchPID.getSetPoint() + " " + flowPitchPID.getIErr() + " " + flowPitchPID.getDErr() + " "
                         + heliData.frameCount + " " + heliData.gyros[0] + " " + heliData.gyros[1] + " " + heliData.gyros[2] + " "
@@ -899,7 +920,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         + (heliData.process[4]) + " " + (heliData.process[5]) + " " + (heliData.process[6]) + " " + (heliData.process[7]) + " "
                         + (heliData.process[8]) + " " + (heliData.process[9]) + " " + (heliData.process[10]) + " " + (heliData.process[11]) + " "
                         + (heliData.process[12]) + " " + (heliData.process[13]) + " " + (heliData.process[14]) + " " + (heliData.process[15]) + " "
-                        + fHeading + " " + crossTrackError + " " + pathAngle + " " + rollError + " "
+                        + fHeading + " " + crossTrackError + " " + pathAngle + " " + rollError + " " + targetBX  + " " + targetBY + " "
                         + heli_auto + " " + heli_lflow + " " + heli_rflow + " " + heli_phase + " " + heli_speed + " " + heli_heading + " "
                         + "\n");
             }

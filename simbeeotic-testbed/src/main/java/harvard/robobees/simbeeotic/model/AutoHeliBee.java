@@ -128,12 +128,9 @@ public class AutoHeliBee extends AbstractHeli {
 
         logger.debug("Connected to " + serverHost + " on port " + serverPort);
 
-        setCmd(((byte)142));
+        setCmd(((byte)142));   // computer sticks command
         disableHeliAutoAll();  // no onboard control
 
-        // start out by zeroing the heli (thrust to zero, yaw, pitch and roll to 0.5)
-        sendCommands();
-        receiveData();
         // setup a timer that checks for boundary violations
         if (boundsCheckEnabled) {
 
@@ -417,17 +414,17 @@ public class AutoHeliBee extends AbstractHeli {
 
         // heli control debug
         for(i=0;i<6;i++) {
-            h.cntl[i] = dptr[4+i];
+            h.cntl[i] = (int)(dptr[4+i] & 0xFF);
         }
 
         // gyros
         for(i=0;i<3;i++) {
-            h.gyros[i] = (short)((dptr[10 + 2*i] << 8) + (dptr[10 + 2*i + 1] & 0xFF));
+            h.gyros[i] = (int)((dptr[10 + 2*i] << 8) + (dptr[10 + 2*i + 1] & 0xFF));
         }
 
         // heli process debug
         for(i=0;i<16;i++) {
-            h.process[i] = dptr[16+i];
+            h.process[i] = (int)(dptr[16+i] & 0xFF);
         }
 
         return h;
@@ -461,7 +458,13 @@ public class AutoHeliBee extends AbstractHeli {
         if( !sock.isClosed() ) {
             try {
                 sock.send(dgram);
-                //logger.info("Sent command of size " + commands.length + " t: " + commands[1] + " y: " + commands[2] + " p: " + commands[3] + " r: " + commands[4]);
+//                System.out.println("Sent command packet to " + dgram.getAddress() + ":" + dgram.getPort());
+//                System.out.print("sent cmds: ");
+//                for(int i=0;i<6;i++) {
+//                    short tmp = (short)(commands[i] & 0xFF);
+//                    System.out.print(tmp + " ");
+//                }
+//                System.out.println();
             } catch(IOException ioe) {
                 logger.error("Could not send command packet to heli_server.", ioe);
             }
