@@ -95,7 +95,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
     private boolean goodOrientation = false;
     private double prevRoll = -999, prevPitch = -999;
-    private double controlMaxDelta = 0.05;
+    private double controlMaxDelta = 0.1;
     private Vector3f beginPathPos = new Vector3f(0,0,1);
     private int landCntrMax = 25;
     private int landCntr = landCntrMax;
@@ -182,9 +182,9 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.4, 1.0, 0.75, 1.0, false);
 //        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.5, 1.0, 1.0, true);
-        pitchPID = new MedianPIDController(0.0, 0.7, 0.1, 0.3, 1.0, 1.0, 1.0, false);
+        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.5, 1.0, 1.0, 1.0, false);
 //        rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
-        rollPID = new MedianPIDController(0.0, 0.7, 0.1, 0.3, 1.0, 1.0, 1.0, false);
+        rollPID = new MedianPIDController(0.0, 0.7, 0.15, 0.5, 1.0, 1.0, 1.0, false);
         yawPID = new MedianPIDController(0.0, 0.25, 0.0, 0.0, 1.0, 1.0, 1.0, false);
 //        flowRollPID = new MedianPIDController(0.1, 3.0, 0.25, 1.5, 0.25, 1.0, 1.0, true);     // 1 wall roll control
         flowRollPID = new MedianPIDController(0.0, 2.0, 0.05, 0.0, 0.25, 1.0, 1.0, true);
