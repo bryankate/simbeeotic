@@ -94,8 +94,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private int yawHistPtr;
     private double currYaw = 0, prevYaw = 0, idYaw = 0, fHeading = 0;
     private boolean goodOrientation = false;
-    private double prevRoll = 0, prevPitch = 0;
-    private double controlMaxDelta = 0.025;
+    private double prevRoll = -999, prevPitch = -999;
+    private double controlMaxDelta = 0.05;
     private Vector3f beginPathPos = new Vector3f(0,0,1);
     private int landCntrMax = 25;
     private int landCntr = landCntrMax;
@@ -106,6 +106,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
     private double targetBX = 0, targetBY = 0;
 
     private double pitchSetPoint = 0, yawSetpoint = 0.0;  // radians
+
+    private int currStateInt = 0;
 
     private Vector3f takeoff_currTarget = new Vector3f();
     private double takeoff_yawSetpoint = 0.0;
@@ -180,10 +182,10 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
         throttlePID = new MedianPIDController(0.0, 0.4, 0.4, 0.4, 1.0, 0.75, 1.0, false);
 //        pitchPID = new MedianPIDController(0.0, 0.7, 0.15, 0.3, 0.5, 1.0, 1.0, true);
-        pitchPID = new MedianPIDController(0.0, 0.7, 0.1, 0.2, 1.0, 1.0, 1.0, false);
+        pitchPID = new MedianPIDController(0.0, 0.7, 0.1, 0.3, 1.0, 1.0, 1.0, false);
 //        rollPID = new MedianPIDController(0.0, 0.6, 0.15, 0.3, 0.5, 1.0, 1.0, true);
-        rollPID = new MedianPIDController(0.0, 0.7, 0.1, 0.2, 1.0, 1.0, 1.0, false);
-        yawPID = new MedianPIDController(0.0, 0.3, 0.0, 0.0, 0.1, 1.0, 1.0, true);
+        rollPID = new MedianPIDController(0.0, 0.7, 0.1, 0.3, 1.0, 1.0, 1.0, false);
+        yawPID = new MedianPIDController(0.0, 0.25, 0.0, 0.0, 1.0, 1.0, 1.0, false);
 //        flowRollPID = new MedianPIDController(0.1, 3.0, 0.25, 1.5, 0.25, 1.0, 1.0, true);     // 1 wall roll control
         flowRollPID = new MedianPIDController(0.0, 2.0, 0.05, 0.0, 0.25, 1.0, 1.0, true);
         flowPitchPID = new MedianPIDController(0.2, 0.0, 2.0, 0.5, 0.4, 1.0, 1.0, true);
@@ -310,7 +312,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                 switch(currState) {
 
                     case TERMINATED:     // for safety
+                        currStateInt = -1;
+                        // no break
                     case IDLE:
+                        currStateInt = 0;
+
                         ((AutoHeliBee)control).disableHeliAutoAll();
                         control.setThrust(0.0);
                         control.setRoll(control.getRollTrim());
@@ -319,6 +325,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case TAKEOFF:
+                        currStateInt = 1;
+
                         ((AutoHeliBee)control).disableHeliAutoAll();
                         if( pos.z > TAKEOFF_ALTITUDE) {
                             currState = nextState;
@@ -331,12 +339,12 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case LAND:
+                        currStateInt = 2;
+
                         // throttle down to land
                         ((AutoHeliBee)control).disableHeliAutoAll();
-                        if( landCntr-- == 0 ) {
-                            control.setThrust(control.getThrust()-1.0/160.0);
-                            landCntr = landCntrMax;
-                        }
+                        currTarget.setZ(currTarget.getZ()-0.02f);
+                        throttlePID.setSetpointSoft(currTarget.getZ());     // don't reset PID when updating setpoint
 
                     	if (pos.z < LANDING_ALTITUDE) {
                             currState = MoveState.IDLE;
@@ -347,6 +355,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         }
                     	else {
                             // try to stay on target while landing
+                            updateThrottle(time, pos.z);
                             updateYaw(time, fHeading);
                             updatePitch(time, -targetBX);
                             updateRoll(time, targetBY);
@@ -354,6 +363,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case RUN:
+                        currStateInt = 3;
+
                         if (pos.getY() > currTarget.getY()) {
                             if (currMoveCallback != null) {
                                 currMoveCallback.reachedDestination();
@@ -378,6 +389,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case MOVE:
+                        currStateInt = 4;
+
                         if (dist <= currEpsilon) {
                             if (currMoveCallback != null) {
                                 currMoveCallback.reachedDestination();
@@ -401,6 +414,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     case HOVER:
+                        currStateInt = 5;
+
                         ((AutoHeliBee)control).disableHeliAutoAll();
                         updateThrottle(time, pos.z);
                         updateYaw(time, fHeading);
@@ -409,6 +424,8 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
                         break;
 
                     default:
+                        currStateInt = 9;
+
                         // do nothing
                 }
                 control.sendCommands();     // send updated commands to heli
@@ -519,7 +536,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
         currState = MoveState.LAND;
         rollPID.setSetpoint(0.0);
         pitchPID.setSetpoint(0.0);
-        throttlePID.setSetpoint(0.0); // So it is obvious in the log that we are landing. We do not updateThrottle while landing, so its ok
+        throttlePID.setSetpoint(currTarget.getZ());
     }
 
     /**
@@ -688,10 +705,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //        if( newPitch > 0.35 ) { newPitch = 0.35; }
 //        if( newPitch < -0.35 ) { newPitch = -0.35; }
 
-//        double pitchDelta = newPitch - prevPitch;
-//        if( pitchDelta > controlMaxDelta ) { pitchDelta = controlMaxDelta; }
-//        if( pitchDelta < -controlMaxDelta ) { pitchDelta = -controlMaxDelta; }
-//        newPitch = prevPitch + pitchDelta;
+        if( prevPitch == -999 ) { prevPitch = newPitch; }
+        double pitchDelta = newPitch - prevPitch;
+        if( pitchDelta > controlMaxDelta ) { pitchDelta = controlMaxDelta; }
+        if( pitchDelta < -controlMaxDelta ) { pitchDelta = -controlMaxDelta; }
+        newPitch = prevPitch + pitchDelta;
 
         control.setPitch(control.getPitchTrim() + newPitch);
 
@@ -730,10 +748,11 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 //        if( newRoll > 0.5 ) { newRoll = 0.5; }
 //        if( newRoll < -0.5 ) { newRoll = -0.5; }
 
-//        double rollDelta = newRoll - prevRoll;
-//        if( rollDelta > controlMaxDelta ) { rollDelta = controlMaxDelta; }
-//        if( rollDelta < -controlMaxDelta ) { rollDelta = -controlMaxDelta; }
-//        newRoll = prevRoll + rollDelta;
+        if( prevRoll == -999 ) { prevRoll = newRoll; }
+        double rollDelta = newRoll - prevRoll;
+        if( rollDelta > controlMaxDelta ) { rollDelta = controlMaxDelta; }
+        if( rollDelta < -controlMaxDelta ) { rollDelta = -controlMaxDelta; }
+        newRoll = prevRoll + rollDelta;
 
         control.setRoll(control.getRollTrim() + newRoll);
 
@@ -904,7 +923,7 @@ public abstract class BaseAutoHeliBehavior implements HeliBehavior {
 
                 logger.info(s.toString() + " " + dt + " " + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " " + thrust + " " + roll + " " + pitch + " " + yaw + " " + auto_mask + "\n");
 
-                logWriter.write(time + " " + dt + " "
+                logWriter.write(time + " " + dt + " " + currStateInt + " "
                         + pos2.getX() + " " + pos2.getY() + " " + pos2.getZ() + " "
                         + pose.getX() + " " + pose.getY() + " " + pose.getZ() + " "
                         + currTarget.getX() + " " + currTarget.getY() + " " + currTarget.getZ() + " "

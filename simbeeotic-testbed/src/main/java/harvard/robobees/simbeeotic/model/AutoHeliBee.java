@@ -115,8 +115,8 @@ public class AutoHeliBee extends AbstractHeli {
         super.initialize();
 
         throttleTrim = normCommand(210);
-        rollTrim = normCommand(127);
-        pitchTrim = normCommand(140);
+        rollTrim = normCommand(140);    // trim right
+        pitchTrim = normCommand(130);   // trim forward
         yawTrim = normCommand(127);
         try {
             sock = new DatagramSocket();

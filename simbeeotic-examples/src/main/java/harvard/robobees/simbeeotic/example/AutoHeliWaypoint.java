@@ -53,8 +53,8 @@ public class AutoHeliWaypoint extends BaseAutoHeliBehavior {
     private int heliID;
 
     private Vector3f[] waypoints = new Vector3f[] { new Vector3f(0.0f, 0.0f, 0.75f),
-                                                    new Vector3f(0.0f, -2.0f, 0.75f),
-                                                    new Vector3f(0.0f, 2.0f, 0.75f),
+                                                    new Vector3f(-0.8f, 0.4f, 0.75f),
+                                                    new Vector3f(0.8f, 0.4f, 0.75f),
                                                     new Vector3f(0.0f, 0.0f, 0.75f)};
     private PositionSensor posSensor;
 

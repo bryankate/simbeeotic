@@ -116,6 +116,11 @@ public class PIDController {
         lastTime = 0;
     }
 
+    public void setSetpointSoft(double set) {
+        setPoint = set;
+        // don't reset other variables
+    }
+
 
     /**
      * Resets the PID controller to target a new setpoint. This includes
